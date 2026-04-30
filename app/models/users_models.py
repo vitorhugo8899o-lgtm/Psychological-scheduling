@@ -13,6 +13,7 @@ class User(Base):
     __tablename__ = 'users'
 
     id: Mapped[int] = mapped_column(primary_key=True)
+    fullname: Mapped[str] = mapped_column(String(1000), nullable=False)
     email: Mapped[str] = mapped_column(String(200), unique=True, nullable=False)
     password: Mapped[str] = mapped_column(String(255), nullable=False)
     role: Mapped[UserRole] = mapped_column(

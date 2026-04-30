@@ -16,7 +16,7 @@ class Psychologist(Base):
     crp: Mapped[int] = mapped_column(Integer, nullable=False)
     
     user: Mapped['User'] = relationship(
-        back_populates='psychologist_profile', uselist=False, cascade="all, delete-orphan",
+        back_populates='psychologist_profile', uselist=False,
         lazy="selectin"
     )
     appointments: Mapped[List['Appointment']] = relationship(
