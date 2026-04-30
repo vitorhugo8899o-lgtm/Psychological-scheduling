@@ -10,12 +10,7 @@ from alembic import context
 from app.db.base import Base
 from app.core.config import Settings
 
-import app.models.users_models
-import app.models.psychologist_models
-import app.models.service_models
-import app.models.avaliabilites_models
-import app.models.appointments_models
-import app.models.paymentes_models
+import app.models
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
