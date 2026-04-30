@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: container_agendamento
+    environment:
+      POSTGRES_USER: teste
+      POSTGRES_PASSWORD: senha
+      POSTGRES_DB: db_name
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: always
+
+volumes:
+  postgres_data:
