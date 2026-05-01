@@ -1,10 +1,14 @@
+from typing import TYPE_CHECKING
 from fastapi import HTTPException
 from sqlalchemy import select
 
-from app.api.v1.dependencies import DBSession
+
 from app.api.v1.repositories import auth_repo
 from app.models.users_models import User
 from app.schemas.user_schema import UserCreate
+
+if TYPE_CHECKING:
+    from app.api.v1.dependencies import DBSession
 
 
 async def new_user(db: DBSession, user_data: UserCreate) -> User:
