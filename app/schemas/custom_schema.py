@@ -1,5 +1,7 @@
 from enum import Enum
-from pydantic import BaseModel
+
+from pydantic import BaseModel, EmailStr
+
 
 class UserRole(str, Enum):
     client = 'cliente'
@@ -21,3 +23,14 @@ class AppointmentStatus(str, Enum):
 class Token(BaseModel):
     access_token: str
     token_type: str
+
+
+class UserLoginResponse(BaseModel):
+    email: EmailStr
+    fullname: str
+    role: str
+
+
+class LoginSuccess(BaseModel):
+    status: str = "success"
+    user: UserLoginResponse
