@@ -1,6 +1,8 @@
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, Request
+from fastapi.security import OAuth2PasswordBearer
+
 from redis import asyncio as aioredis
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -40,3 +42,8 @@ async def get_current_user(request: Request, db: DBSession) -> User:
 
 DBSession = Annotated[AsyncSession, Depends(get_db)]
 rediscon = Annotated[aioredis.Redis, Depends(get_redis)]
+CurrentUser = Annotated[User, Depends(get_current_user)]
+
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl='/api/v1/login', auto_error=False
+)  

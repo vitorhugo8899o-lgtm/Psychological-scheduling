@@ -33,7 +33,7 @@ def upgrade() -> None:
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('email', sa.String(length=200), nullable=False),
     sa.Column('password', sa.String(length=255), nullable=False),
-    sa.Column('role', sa.Enum('client', 'psychologist', name='user_role_enum'), nullable=False),
+    sa.Column('role', sa.Enum('client', 'psychologist', 'adm', name='user_role_enum'), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), nullable=False),
     sa.PrimaryKeyConstraint('id'),
     sa.UniqueConstraint('email')

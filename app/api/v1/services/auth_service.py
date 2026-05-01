@@ -1,16 +1,20 @@
+from typing import TYPE_CHECKING
 import jwt
 from fastapi import HTTPException, Request
 from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import EmailStr, TypeAdapter, ValidationError
 
-from app.api.v1.dependencies import DBSession
 from app.api.v1.repositories import auth_repo, user_repo
 from app.core.config import Settings
 from app.schemas.custom_schema import Token
 
+if TYPE_CHECKING:
+    from app.api.v1.dependencies import DBSession
+
 settings = Settings()
 
 email_validator = TypeAdapter(EmailStr)
+
 
 
 async def login(db: DBSession, user_data: OAuth2PasswordRequestForm):
@@ -50,12 +54,21 @@ async def login(db: DBSession, user_data: OAuth2PasswordRequestForm):
 
 
 def get_token(request: Request):
+    token = None  
     cookie_token = request.cookies.get('Login_info')
 
-    if not cookie_token:
+    if cookie_token:
+        token = cookie_token
+    else:
         auth_header = request.headers.get('Authorization')
         if auth_header and auth_header.startswith('Bearer '):
             token = auth_header.split(' ')[1]
+
+    if not token:
+        raise HTTPException(
+            status_code=401,
+            detail="Usuário não autenticado."
+        )
 
     return token
 
