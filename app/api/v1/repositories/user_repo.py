@@ -1,15 +1,17 @@
-from app.models.users_models import User
-from app.api.v1.dependencies import DBSession
-from app.schemas.user_schema import UserCreate
-from sqlalchemy import select
 from fastapi import HTTPException
+from sqlalchemy import select
+
+from app.api.v1.dependencies import DBSession
+from app.models.users_models import User
+from app.schemas.user_schema import UserCreate
+from app.api.v1.repositories import auth_repo
 
 
-async def new_user(db:DBSession, user_data:UserCreate) -> User:
+async def new_user(db: DBSession, user_data: UserCreate) -> User:
     user = User(
-        fullname = user_data.fullname,
-        email = user_data.email,
-        password = user_data.password
+        fullname=user_data.fullname,
+        email=user_data.email,
+        password=auth_repo.hash_password(user_data.password)
     )
     try:
         db.add(user)
@@ -19,15 +21,14 @@ async def new_user(db:DBSession, user_data:UserCreate) -> User:
     except Exception as e:
         await db.rollback()
         raise HTTPException(
-            status_code=500, 
-            detail={'message': 'Error inesperado', 'contexto': str(e)}
+            status_code=500,
+            detail={'message': 'Error inesperado', 'contexto': str(e)},
         )
 
 
-async def get_user_by_email(db:DBSession,email:str) -> User | None:
-    stmt = select(User).where(
-        User.email == email
-    )
+async def get_user_by_email(db: DBSession, email: str) -> User | None:
+    stmt = select(User).where(User.email == email)
     exist = await db.execute(stmt)
 
     return exist.scalar_one_or_none()
+
