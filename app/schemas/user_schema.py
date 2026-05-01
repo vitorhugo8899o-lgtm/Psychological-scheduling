@@ -51,4 +51,5 @@ class UserPublic(BaseModel):
     id: int
     fullname: str
     email: EmailStr
+    role: str
     created_at: datetime
