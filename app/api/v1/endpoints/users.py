@@ -22,23 +22,20 @@ async def user_create(db: DBSession, user_data: UserCreate):
 
 
 @user_route.post(
-        '/login', status_code=HTTPStatus.OK, response_model=LoginSuccess
+    '/login', status_code=HTTPStatus.OK, response_model=LoginSuccess
 )
 async def login_user(db: DBSession, user: Form_data, response: Response):
     token, user_info = await auth_service.login(db, user)
 
     response.set_cookie(
-        key="Login_info",
+        key='Login_info',
         value=token.access_token,
         max_age=60 * 60,
         httponly=True,
         secure=False,
-        samesite="none",
+        samesite='none',
     )
 
     response.headers['Cache-Control'] = 'no-store'
 
-    return {
-        "status": "success",
-        "user": user_info
-    }
+    return {'status': 'success', 'user': user_info}

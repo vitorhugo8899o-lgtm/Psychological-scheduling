@@ -32,5 +32,5 @@ class UserLoginResponse(BaseModel):
 
 
 class LoginSuccess(BaseModel):
-    status: str = "success"
+    status: str = 'success'
     user: UserLoginResponse
