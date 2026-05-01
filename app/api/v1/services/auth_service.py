@@ -11,11 +11,10 @@ email_validator = TypeAdapter(EmailStr)
 
 async def login(db: DBSession, user_data: OAuth2PasswordRequestForm):
     try:
-        print(f'{user_data.username}')
         email_validator.validate_python(user_data.username)
     except ValidationError:
         raise HTTPException(
-            status_code=422, 
+            status_code=422,
             detail="O formato do e-mail enviado é inválido."
         )
 
@@ -44,4 +43,4 @@ async def login(db: DBSession, user_data: OAuth2PasswordRequestForm):
 
     token = Token(access_token=access_token, token_type='Bearer')
 
-    return token
+    return token, user
