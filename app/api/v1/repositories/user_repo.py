@@ -2,16 +2,16 @@ from fastapi import HTTPException
 from sqlalchemy import select
 
 from app.api.v1.dependencies import DBSession
+from app.api.v1.repositories import auth_repo
 from app.models.users_models import User
 from app.schemas.user_schema import UserCreate
-from app.api.v1.repositories import auth_repo
 
 
 async def new_user(db: DBSession, user_data: UserCreate) -> User:
     user = User(
         fullname=user_data.fullname,
         email=user_data.email,
-        password=auth_repo.hash_password(user_data.password)
+        password=auth_repo.hash_password(user_data.password),
     )
     try:
         db.add(user)
@@ -31,4 +31,3 @@ async def get_user_by_email(db: DBSession, email: str) -> User | None:
     exist = await db.execute(stmt)
 
     return exist.scalar_one_or_none()
-
