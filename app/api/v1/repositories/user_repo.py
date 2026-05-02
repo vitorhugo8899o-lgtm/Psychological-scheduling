@@ -1,15 +1,19 @@
 from typing import TYPE_CHECKING
+
 from fastapi import HTTPException
 from sqlalchemy import select
-import json
-
+from sqlalchemy.exc import (
+    IntegrityError,
+    InvalidRequestError,
+    OperationalError,
+)
 
 from app.api.v1.repositories import auth_repo
 from app.models.users_models import User
-from app.schemas.user_schema import UserCreate, UserPublic
+from app.schemas.user_schema import UserCreate, UserPublic, UserUpdate
 
 if TYPE_CHECKING:
-    from app.api.v1.dependencies import DBSession, rediscon
+    from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
 
 
 async def new_user(db: DBSession, user_data: UserCreate) -> User:
@@ -45,24 +49,61 @@ async def get_user_by_id(db: DBSession, id_user: int) -> User | None:
     return exist.scalar_one_or_none()
 
 
-async def cache_user(db: DBSession, r: rediscon, id_user: int) -> UserPublic | None:
+async def update_data(
+    db: DBSession, user: CurrentUser, update: UserUpdate
+) -> User:
+
+    try:
+        user.email = update.email
+        user.password = auth_repo.hash_password(update.password)
+
+        await db.commit()
+        await db.refresh(user)
+
+        return user
+
+    except IntegrityError as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f'{e}')
+    except OperationalError as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f'{e}')
+    except InvalidRequestError as e:
+        raise HTTPException(status_code=500, detail=f'{e}')
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail=f'{e}')
+
+
+async def cache_user(
+    db: DBSession, r: rediscon, id_user: int
+) -> UserPublic | None:
+
     cache_key = f'user:{id_user}'
     user_cached = await r.get(cache_key)
 
     if user_cached:
         return UserPublic.model_validate_json(user_cached)
-    
+
     user_obj = await get_user_by_id(db, id_user)
 
     if user_obj:
         user_schema = UserPublic.model_validate(user_obj)
-        
-        await r.set(
-            cache_key,
-            user_schema.model_dump_json(),
-            ex=600
-        )
-        
+
+        await r.set(cache_key, user_schema.model_dump_json(), ex=600)
+
         return user_schema
 
     return None
+
+
+async def cache_delete(r: rediscon, id_user: int) -> str | None:
+    cache_key = f'user:{id_user}'
+    user_cached = await r.exists(cache_key)
+
+    if not user_cached:
+        return None
+
+    await r.delete(cache_key)
+
+    return 'Cache deletado!'
