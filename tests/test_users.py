@@ -99,3 +99,12 @@ async def test_update_in_use_email(token_client, user_client2):
 
     assert req.status_code == status
     assert req.json()['detail'] == 'Esse endereço de Email já está em uso!'
+
+
+@pytest.mark.asyncio
+async def test_delete_user(token_client):
+    req = await token_client.delete('/api/v1/users')
+
+    status = 204
+
+    assert req.status_code == status

@@ -70,9 +70,6 @@ async def update_user_data(
 
     user_cache = await user_repo.cache_user(db, r, user.id)
 
-    if not user_cache:
-        raise HTTPException(status_code=404, detail='Usuário não encontrado!')
-
     return user_cache
 
 
