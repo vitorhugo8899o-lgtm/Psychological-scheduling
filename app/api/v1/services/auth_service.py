@@ -33,11 +33,10 @@ async def login(
 
     if not user:
         raise HTTPException(
-            status_code=409,
+            status_code=401,
             detail=(
-                'Esse endereço de email não foi encontrado no servidor!'
-                ',verifique se digitou corretamente'
-            ),
+                'Email ou senha incorretos!, verifique se digitou corretamente'
+            )
         )
 
     if not user or not auth_repo.verify_password(
