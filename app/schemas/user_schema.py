@@ -7,7 +7,7 @@ from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 class UserCreate(BaseModel):
     fullname: str = Field(max_length=1000)
     email: EmailStr = Field(max_length=50)
-    password: str = Field(min_length=8, max_length=128)
+    password: str = Field(max_length=128)
 
     @field_validator('fullname')
     def validate_fullname(cls, v: str):
