@@ -68,3 +68,11 @@ async def uptade_user(
     response.delete_cookie('Login_info')
 
     return update
+
+
+@user_route.delete('/users', status_code=HTTPStatus.NO_CONTENT)
+async def delete_user(
+    db: DBSession, user: CurrentUser, r: rediscon, response: Response
+):
+    await user_service.delete_user(db, user, r)
+    response.delete_cookie('Login_info')

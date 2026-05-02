@@ -74,3 +74,8 @@ async def update_user_data(
         raise HTTPException(status_code=404, detail='Usuário não encontrado!')
 
     return user_cache
+
+
+async def delete_user(db: DBSession, user: CurrentUser, r: rediscon):
+    await user_repo.delete_user(db, r, user)
+    await user_repo.cache_delete(r, user.id)
