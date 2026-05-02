@@ -70,6 +70,23 @@ async def user_client(db_session):
 
 
 @pytest_asyncio.fixture(scope='function')
+async def user_client2(db_session):
+    raw_password = 'Senha12@#'
+
+    user = models.User(
+        fullname='Full Name',
+        email='user2@example.com',
+        password=auth_repo.hash_password(raw_password),
+    )
+
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+
+    return user, raw_password
+
+
+@pytest_asyncio.fixture(scope='function')
 async def token_client(client, user_client):
     data = {'username': 'user@example.com', 'password': 'Senha12@#'}
 
@@ -78,5 +95,14 @@ async def token_client(client, user_client):
     status = 200
 
     assert response.status_code == status
+
+    return client
+
+
+@pytest_asyncio.fixture(scope='function')
+async def token_user_does_not_exist(client):
+    cookie = auth_repo.create_token(data={'sub': 'email@não.existe'})
+
+    client.cookies.set('Login_info', cookie)
 
     return client

@@ -87,3 +87,15 @@ async def test_update_user(token_client):
     assert 'fullname' in response
     assert 'role' in response
     assert 'created_at' in response
+
+
+@pytest.mark.asyncio
+async def test_update_in_use_email(token_client, user_client2):
+    payload = {'email': 'user2@example.com', 'password': 'Senha12@#'}
+
+    req = await token_client.put('/api/v1/users', json=payload)
+
+    status = 409
+
+    assert req.status_code == status
+    assert req.json()['detail'] == 'Esse endereço de Email já está em uso!'
