@@ -59,7 +59,7 @@ class UserPublic(BaseModel):
 
 class UserUpdate(BaseModel):
     email: EmailStr = Field(max_length=50)
-    password: str = Field(min_length=8, max_length=128)
+    password: str = Field(max_length=128)
 
     @field_validator('password')
     def validate_password(cls, v: str):

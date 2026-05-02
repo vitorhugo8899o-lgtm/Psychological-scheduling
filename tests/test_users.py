@@ -73,10 +73,7 @@ async def test_email_with_invalid_format_login(client):
 
 @pytest.mark.asyncio
 async def test_update_user(token_client):
-    new_info = {
-        'email': 'new@email.com',
-        'password': 'Senha12@#'
-    }
+    new_info = {'email': 'new@email.com', 'password': 'Senha12@#'}
 
     req = await token_client.put('/api/v1/users', json=new_info)
 
