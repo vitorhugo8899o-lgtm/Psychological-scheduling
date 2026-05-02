@@ -1,7 +1,7 @@
 import re
 from datetime import datetime
 
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, ConfigDict
 
 
 class UserCreate(BaseModel):
@@ -53,3 +53,5 @@ class UserPublic(BaseModel):
     email: EmailStr
     role: str
     created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)

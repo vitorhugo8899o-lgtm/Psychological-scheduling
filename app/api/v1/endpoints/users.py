@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends
 from fastapi.responses import Response
 from fastapi.security import OAuth2PasswordRequestForm
 
-from app.api.v1.dependencies import DBSession, CurrentUser
+from app.api.v1.dependencies import DBSession, CurrentUser, rediscon
 from app.api.v1.services import auth_service, user_service
 from app.schemas.custom_schema import LoginSuccess
 from app.schemas.user_schema import UserCreate, UserPublic
@@ -40,6 +40,12 @@ async def login_user(db: DBSession, user: Form_data, response: Response):
 
     return {'status': 'success', 'user': user_info}
 
+
 @user_route.get('/users', status_code=HTTPStatus.OK, response_model=List[UserPublic])
 async def users(db:DBSession, user: CurrentUser):
     return await user_service.get_users(db,user)
+
+
+@user_route.get('/users/{id_user}', status_code=HTTPStatus.OK, response_model=UserPublic)
+async def user(db:DBSession,r:rediscon,user:CurrentUser, id_user:int):
+    return await user_service.get_user(db,r,user,id_user)

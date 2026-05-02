@@ -16,7 +16,6 @@ settings = Settings()
 email_validator = TypeAdapter(EmailStr)
 
 
-
 async def login(db: DBSession, user_data: OAuth2PasswordRequestForm):
     try:
         email_validator.validate_python(user_data.username)
