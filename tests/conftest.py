@@ -67,3 +67,16 @@ async def user_client(db_session):
     await db_session.refresh(user)
 
     return user, raw_password
+
+
+@pytest_asyncio.fixture(scope='function')
+async def token_client(client):
+    data = {'username':'user@example.com','password':'Senha12@#'}
+
+    response = client.post('/api/v1/login',data=data)
+
+    status = 200
+
+    assert response.status_code == status
+
+    return client
