@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+
 import jwt
 from fastapi import HTTPException, Request
 from fastapi.security import OAuth2PasswordRequestForm
@@ -6,6 +7,7 @@ from pydantic import EmailStr, TypeAdapter, ValidationError
 
 from app.api.v1.repositories import auth_repo, user_repo
 from app.core.config import Settings
+from app.models.users_models import User
 from app.schemas.custom_schema import Token
 
 if TYPE_CHECKING:
@@ -16,8 +18,10 @@ settings = Settings()
 email_validator = TypeAdapter(EmailStr)
 
 
+async def login(
+    db: DBSession, user_data: OAuth2PasswordRequestForm
+) -> tuple[Token, User]:
 
-async def login(db: DBSession, user_data: OAuth2PasswordRequestForm):
     try:
         email_validator.validate_python(user_data.username)
     except ValidationError:
@@ -53,8 +57,8 @@ async def login(db: DBSession, user_data: OAuth2PasswordRequestForm):
     return token, user
 
 
-def get_token(request: Request):
-    token = None  
+def get_token(request: Request) -> str:
+    token = None
     cookie_token = request.cookies.get('Login_info')
 
     if cookie_token:
@@ -65,15 +69,12 @@ def get_token(request: Request):
             token = auth_header.split(' ')[1]
 
     if not token:
-        raise HTTPException(
-            status_code=401,
-            detail="Usuário não autenticado."
-        )
+        raise HTTPException(status_code=401, detail='Usuário não autenticado.')
 
     return token
 
 
-def decode_token(token: str):
+def decode_token(token: str) -> str:
     try:
         payload = jwt.decode(
             token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]

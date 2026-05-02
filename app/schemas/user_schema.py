@@ -1,7 +1,7 @@
 import re
 from datetime import datetime
 
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 
 class UserCreate(BaseModel):
@@ -53,3 +53,36 @@ class UserPublic(BaseModel):
     email: EmailStr
     role: str
     created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class UserUpdate(BaseModel):
+    email: EmailStr = Field(max_length=50)
+    password: str = Field(min_length=8, max_length=128)
+
+    @field_validator('password')
+    def validate_password(cls, v: str):
+        num = 8
+        if len(v) < num:
+            raise ValueError('Senha deve ter no mínimo 8 caracteres')
+
+        if not re.search(r'[a-z]', v):
+            raise ValueError(
+                'Sua senha deve conter pelo menos uma letra minúscula'
+            )
+
+        if not re.search(r'[A-Z]', v):
+            raise ValueError(
+                'Sua senha deve conter pelo menos uma letra maiúscula'
+            )
+
+        if not re.search(r'\d', v):
+            raise ValueError('Sua senha deve conter um número')
+
+        if not re.search(r'[@$!%*?&]', v):
+            raise ValueError(
+                'Sua senha deve conter um caracter especial do tipo: @#$%!&?'
+            )
+
+        return v

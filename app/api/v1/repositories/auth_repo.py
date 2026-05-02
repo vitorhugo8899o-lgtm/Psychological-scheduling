@@ -24,7 +24,7 @@ def verify_password(password: str, db_password: str) -> bool:
         return False
 
 
-def create_token(data: dict):
+def create_token(data: dict) -> str:
     to_encode = data.copy()
 
     expire = datetime.now(timezone.utc) + timedelta(
