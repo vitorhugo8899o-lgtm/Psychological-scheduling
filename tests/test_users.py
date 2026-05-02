@@ -72,12 +72,21 @@ async def test_email_with_invalid_format_login(client):
 
 
 @pytest.mark.asyncio
-async def test_email_with_invalid_format_login(client):
-    data = {'username': 'user@', 'password': 'Senha12@#'}
+async def test_update_user(token_client):
+    new_info = {
+        'email': 'new@email.com',
+        'password': 'Senha12@#'
+    }
 
-    req = await client.post('/api/v1/login', data=data)
+    req = await token_client.put('/api/v1/users', json=new_info)
 
-    status = 422
+    response = req.json()
+
+    status = 200
 
     assert req.status_code == status
-    assert req.json()['detail'] == 'O formato do e-mail enviado é inválido.'
+    assert response['email'] == 'new@email.com'
+    assert 'id' in response
+    assert 'fullname' in response
+    assert 'role' in response
+    assert 'created_at' in response
