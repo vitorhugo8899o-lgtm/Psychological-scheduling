@@ -3,9 +3,9 @@ from typing import Annotated
 from fastapi import Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordBearer
 from redis import asyncio as aioredis
-from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.api.v1.repositories import user_repo
 from app.api.v1.services import auth_service
 from app.db.session import AsyncSessionLocal
 from app.models.users_models import User
@@ -29,9 +29,7 @@ async def get_current_user(request: Request, db: DBSession) -> User:
 
     user_email = auth_service.decode_token(token)
 
-    stmt = select(User).where(User.email == user_email)
-    result = await db.execute(stmt)
-    user = result.scalar_one_or_none()
+    user = await user_repo.get_user_by_email(db, user_email)
 
     if not user:
         raise HTTPException(status_code=409, detail='Usuário não encontrado!')
