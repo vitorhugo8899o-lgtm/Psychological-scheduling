@@ -41,6 +41,12 @@ async def login_user(db: DBSession, user: Form_data, response: Response):
     return {'status': 'success', 'user': user_info}
 
 
+@user_route.post('/logout',status_code=HTTPStatus.OK, response_model=str)
+async def user_logout(user:CurrentUser, response: Response):
+    response.delete_cookie('Login_info')
+    return 'Usuário deslogado.'
+
+
 @user_route.get(
     '/users', status_code=HTTPStatus.OK, response_model=List[UserPublic]
 )
