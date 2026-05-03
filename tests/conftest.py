@@ -1,6 +1,7 @@
 import asyncio
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
+import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import (
@@ -22,6 +23,13 @@ test_engine = create_async_engine(TEST_DATABASE_URL, echo=False)
 TestingSessionLocal = async_sessionmaker(
     bind=test_engine, class_=AsyncSession, expire_on_commit=False
 )
+
+
+@pytest.fixture(autouse=True)
+def bypass_lifespan_db_check():
+    with patch('app.main.check_database_connection') as mock_check:
+        mock_check.return_value = None
+        yield mock_check
 
 
 @pytest_asyncio.fixture(scope='function')
@@ -89,7 +97,7 @@ async def user_client(db_session):
     await db_session.commit()
     await db_session.refresh(user)
 
-    return user, raw_password
+    return user
 
 
 @pytest_asyncio.fixture(scope='function')
@@ -106,7 +114,51 @@ async def user_client2(db_session):
     await db_session.commit()
     await db_session.refresh(user)
 
-    return user, raw_password
+    return user
+
+
+@pytest_asyncio.fixture(scope='function')
+async def user_adm(db_session):
+    raw_password = 'Senha12@#'
+
+    user = models.User(
+        fullname='Full Name',
+        email='useradm@example.com',
+        password=auth_repo.hash_password(raw_password),
+        role='adm',
+    )
+
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+
+    return user
+
+
+@pytest_asyncio.fixture(scope='function')
+async def user_psych(db_session):
+    raw_password = 'Senha12@#'
+
+    user = models.User(
+        fullname='Full Name',
+        email='userpsych@example.com',
+        password=auth_repo.hash_password(raw_password),
+        role='psychologist',
+    )
+
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+
+    psych = models.Psychologist(
+        user=user,
+        crp='CRP 01/5596'
+    )
+
+    db_session.add(psych)
+    await db_session.commit()
+
+    return user
 
 
 @pytest_asyncio.fixture(scope='function')
@@ -123,9 +175,13 @@ async def token_client(client, user_client):
 
 
 @pytest_asyncio.fixture(scope='function')
-async def token_user_does_not_exist(client):
-    cookie = auth_repo.create_token(data={'sub': 'email@não.existe'})
+async def token_adm(client, user_adm):
+    data = {'username': 'useradm@example.com', 'password': 'Senha12@#'}
 
-    client.cookies.set('Login_info', cookie)
+    response = await client.post('/api/v1/login', data=data)
+
+    status = 200
+
+    assert response.status_code == status
 
     return client

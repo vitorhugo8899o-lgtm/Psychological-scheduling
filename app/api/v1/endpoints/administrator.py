@@ -13,8 +13,9 @@ adm_router = APIRouter()
 
 
 @adm_router.post(
-        '/psychologist', status_code=HTTPStatus.CREATED,
-        response_model=PsychologistPublic
+    '/psychologist',
+    status_code=HTTPStatus.CREATED,
+    response_model=PsychologistPublic,
 )
 async def create_psychologist(
     db: DBSession, user: CurrentUser, psych: PsychologistCreate

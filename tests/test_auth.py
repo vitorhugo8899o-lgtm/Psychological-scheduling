@@ -42,7 +42,10 @@ async def test_email_incorrect(client):
     status = 401
 
     assert req.status_code == status
-    assert req.json()['detail'] == 'Email ou senha incorretos!, verifique se digitou corretamente' #noqa
+    assert (
+        req.json()['detail']
+        == 'Email ou senha incorretos!, verifique se digitou corretamente'
+    )  # noqa
 
 
 @pytest.mark.asyncio
@@ -54,4 +57,7 @@ async def test_password_incorrect(client, user_client):
     status = 401
 
     assert req.status_code == status
-    assert req.json()['detail'] == 'Email ou senha incorretos!, verifique se digitou corretamente' #noqa
+    assert (
+        req.json()['detail']
+        == 'Email ou senha incorretos!, verifique se digitou corretamente'
+    )  # noqa
