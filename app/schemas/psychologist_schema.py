@@ -1,6 +1,7 @@
+from datetime import time
 from typing import ClassVar, Set
 
-from pydantic import BaseModel, ConfigDict, EmailStr, field_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
 
 from app.schemas.user_schema import UserPublic
 
@@ -64,3 +65,20 @@ class PsychologistPublic(BaseModel):
     user_id: int
     crp: str
     user: UserPublic
+
+
+class PsychologistAvaliabilite(BaseModel):
+    day_of_the_week: int = Field(ge=0, le=6, description="0 para Segunda, 6 para Domingo") #noqa
+    start_time: time
+    end_time: time
+
+    class Config:
+        from_attributes = True
+
+
+class AvaliabiliteResponse(BaseModel):
+    id: int
+    id_psychologist: int
+    day_of_the_week: int
+    start_time: time
+    end_time: time
