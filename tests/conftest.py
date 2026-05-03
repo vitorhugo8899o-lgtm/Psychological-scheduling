@@ -136,6 +136,32 @@ async def user_adm(db_session):
 
 
 @pytest_asyncio.fixture(scope='function')
+async def user_psych(db_session):
+    raw_password = 'Senha12@#'
+
+    user = models.User(
+        fullname='Full Name',
+        email='userpsych@example.com',
+        password=auth_repo.hash_password(raw_password),
+        role='psychologist',
+    )
+
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+
+    psych = models.Psychologist(
+        user=user,
+        crp='CRP 01/5596'
+    )
+
+    db_session.add(psych)
+    await db_session.commit()
+
+    return user
+
+
+@pytest_asyncio.fixture(scope='function')
 async def token_client(client, user_client):
     data = {'username': 'user@example.com', 'password': 'Senha12@#'}
 
