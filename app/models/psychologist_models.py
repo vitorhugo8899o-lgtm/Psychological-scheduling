@@ -1,6 +1,6 @@
 from typing import TYPE_CHECKING, List
 
-from sqlalchemy import ForeignKey, Integer
+from sqlalchemy import ForeignKey, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base
@@ -18,7 +18,7 @@ class Psychologist(Base):
     user_id: Mapped[int] = mapped_column(
         ForeignKey('users.id'), nullable=False
     )
-    crp: Mapped[int] = mapped_column(Integer, nullable=False)
+    crp: Mapped[int] = mapped_column(Text, nullable=False, unique=True)
 
     user: Mapped['User'] = relationship(
         back_populates='psychologist_profile', uselist=False, lazy='selectin'
