@@ -1,4 +1,3 @@
-
 from sqlalchemy import select
 
 from app.api.v1.dependencies import DBSession
@@ -16,16 +15,14 @@ async def get_psych(db: DBSession, id_psych: int):
 
 
 async def add_availability(
-    db: DBSession,
-    availability: PsychologistAvaliabilite,
-    psych: Psychologist
+    db: DBSession, availability: PsychologistAvaliabilite, psych: Psychologist
 ):
 
     disposition = Avaliabilite(
         day_of_the_week=availability.day_of_the_week,
         start_time=availability.start_time,
         end_time=availability.end_time,
-        psychologist=psych
+        psychologist=psych,
     )
 
     db.add(disposition)

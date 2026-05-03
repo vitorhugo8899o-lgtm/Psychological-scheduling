@@ -15,12 +15,12 @@ psych_router = APIRouter()
 @psych_router.post(
     '/psych/me/availability',
     status_code=HTTPStatus.OK,
-    response_model=AvaliabiliteResponse
+    response_model=AvaliabiliteResponse,
 )
 async def create_appointment(
     db: DBSession,
     r: rediscon,
     user: CurrentUser,
-    availability: PsychologistAvaliabilite
+    availability: PsychologistAvaliabilite,
 ):
     return await psych_service.create_avaliabilite(db, r, user, availability)

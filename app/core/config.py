@@ -11,3 +11,4 @@ class Settings(BaseSettings):
     ACESSES_TOKEN_EXPIRE_MINUTES: int
     ALGORITHM: str
     REDIS_URL: str
+    API_KEY_MERCADO_PAGO: str
