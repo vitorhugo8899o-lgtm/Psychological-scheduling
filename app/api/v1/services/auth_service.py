@@ -36,7 +36,7 @@ async def login(
             status_code=401,
             detail=(
                 'Email ou senha incorretos!, verifique se digitou corretamente'
-            )
+            ),
         )
 
     if not user or not auth_repo.verify_password(

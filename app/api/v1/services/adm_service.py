@@ -8,13 +8,12 @@ from app.schemas.psychologist_schema import PsychologistCreate
 
 
 async def create_psychologist_service(
-    db: DBSession, user: CurrentUser,
-    psych: PsychologistCreate
+    db: DBSession, user: CurrentUser, psych: PsychologistCreate
 ) -> Psychologist:
     if user.role != 'adm':
         raise HTTPException(
             status_code=403,
-            detail='Usuário não possui permissão para realizar essa ação'
+            detail='Usuário não possui permissão para realizar essa ação',
         )
 
     exists = await user_repo.get_user_by_email(db, psych.email)
@@ -23,13 +22,13 @@ async def create_psychologist_service(
         raise HTTPException(
             status_code=404,
             detail=(
-                "Usuário não encontrado,"
-                "verifique se digitou corretamente o email"
-            )
+                'Usuário não encontrado,'
+                'verifique se digitou corretamente o email'
+            ),
         )
 
     if exists.psychologist_profile:
-        raise HTTPException(status_code=400, detail="Usuário já é psicólogo")
+        raise HTTPException(status_code=400, detail='Usuário já é psicólogo')
 
     exists.role = UserRole.psychologist
 
