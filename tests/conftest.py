@@ -1,6 +1,7 @@
 import asyncio
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, patch
 
+import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import (
@@ -22,6 +23,13 @@ test_engine = create_async_engine(TEST_DATABASE_URL, echo=False)
 TestingSessionLocal = async_sessionmaker(
     bind=test_engine, class_=AsyncSession, expire_on_commit=False
 )
+
+
+@pytest.fixture(autouse=True)
+def bypass_lifespan_db_check():
+    with patch('app.main.check_database_connection') as mock_check:
+        mock_check.return_value = None
+        yield mock_check
 
 
 @pytest_asyncio.fixture(scope='function')

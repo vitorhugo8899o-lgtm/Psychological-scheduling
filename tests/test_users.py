@@ -145,4 +145,7 @@ async def test_user_not_adm_tries_to_get_users(token_client):
     status = 403
 
     assert req.status_code == status
-    assert req.json()['detail'] == 'Usuário não tem permissão para realizar essa ação.' #noqa
+    assert (
+        req.json()['detail']
+        == 'Usuário não tem permissão para realizar essa ação.'
+    )  # noqa
