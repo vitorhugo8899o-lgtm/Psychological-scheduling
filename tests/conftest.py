@@ -150,10 +150,7 @@ async def user_psych(db_session):
     await db_session.commit()
     await db_session.refresh(user)
 
-    psych = models.Psychologist(
-        user=user,
-        crp='CRP 01/5596'
-    )
+    psych = models.Psychologist(user=user, crp='CRP 01/5596')
 
     db_session.add(psych)
     await db_session.commit()

@@ -13,7 +13,7 @@ class Service(Base):
     __tablename__ = 'services'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    name: Mapped[str] = mapped_column(String(200), nullable=False, unique=True)
     description: Mapped[str] = mapped_column(String(2000), nullable=False)
     price: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
     duration_minutes: Mapped[int] = mapped_column(Integer, nullable=False)

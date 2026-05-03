@@ -68,7 +68,9 @@ class PsychologistPublic(BaseModel):
 
 
 class PsychologistAvaliabilite(BaseModel):
-    day_of_the_week: int = Field(ge=0, le=6, description="0 para Segunda, 6 para Domingo") #noqa
+    day_of_the_week: int = Field(
+        ge=0, le=6, description='0 para Segunda, 6 para Domingo'
+    )  # noqa
     start_time: time
     end_time: time
 

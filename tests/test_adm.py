@@ -40,11 +40,16 @@ async def test_user_not_adm_tries_to_create_psych(token_client):
     status = 403
 
     assert req.status_code == status
-    assert req.json()['detail'] == 'Usuário não possui permissão para realizar essa ação' #noqa
+    assert (
+        req.json()['detail']
+        == 'Usuário não possui permissão para realizar essa ação'
+    )  # noqa
 
 
 @pytest.mark.asyncio
-async def test_trying_to_create_a_psych_that_does_not_exist(token_adm,user_psych): #noqa
+async def test_trying_to_create_a_psych_that_does_not_exist(
+    token_adm, user_psych
+):  # noqa
     payload = {
         'email': f'{user_psych.email}',
         'region': '1',
@@ -72,4 +77,7 @@ async def test_creating_psych_but_user_does_not_exist(token_adm):
     status = 404
 
     assert req.status_code == status
-    assert req.json()['detail'] == 'Usuário não encontrado,verifique se digitou corretamente o email' #noqa
+    assert (
+        req.json()['detail']
+        == 'Usuário não encontrado,verifique se digitou corretamente o email'
+    )  # noqa
