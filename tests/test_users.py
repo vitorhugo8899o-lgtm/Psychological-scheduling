@@ -149,3 +149,13 @@ async def test_user_not_adm_tries_to_get_users(token_client):
         req.json()['detail']
         == 'Usuário não tem permissão para realizar essa ação.'
     )  # noqa
+
+
+@pytest.mark.asyncio
+async def test_user_logout(token_client):
+    req = await token_client.post('/api/v1/logout')
+
+    status = 200
+
+    assert req.status_code == status
+    assert req.json() == 'Usuário deslogado.'
