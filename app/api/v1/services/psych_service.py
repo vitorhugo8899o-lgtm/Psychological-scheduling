@@ -1,5 +1,4 @@
 from fastapi import HTTPException
-
 from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
 from app.api.v1.repositories import psych_repo
 from app.schemas.psychologist_schema import PsychologistAvaliabiliteCreate
@@ -42,7 +41,7 @@ async def create_avaliabilite(
             if has_conflict:
                 raise HTTPException(
                     status_code=400,
-                    detail=f'Conflito de horário detectado!, confira seus horários.'
+                    detail=f'Conflito de horário detectado entre {block.start_time.strftime("%H:%M")} e {block.end_time.strftime("%H:%M")}, confira seus horários.'
                 )
             
             nova_disponibilidade = Avaliabilite(
