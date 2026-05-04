@@ -30,30 +30,29 @@ async def create_avaliabilite(
 
     for block in payload.availabilities:
         for day in block.days_of_the_week:
-
             has_conflict = await psych_repo.check_overlapping_availability(
                 db=db,
                 id_psychologist=psych.id,
                 day=day,
                 new_start=block.start_time,
-                new_end=block.end_time
+                new_end=block.end_time,
             )
 
             if has_conflict:
                 raise HTTPException(
                     status_code=400,
-                    detail=f'Conflito de horário detectado entre {block.start_time.strftime("%H:%M")} e {block.end_time.strftime("%H:%M")}, confira seus horários.' #noqa
+                    detail=f'Conflito de horário detectado entre {block.start_time.strftime("%H:%M")} e {block.end_time.strftime("%H:%M")}, confira seus horários.',  # noqa
                 )
 
             nova_disponibilidade = Avaliabilite(
                 day_of_the_week=day,
                 start_time=block.start_time,
                 end_time=block.end_time,
-                id_psychologist=psych.id
+                id_psychologist=psych.id,
             )
             availability_to_save.append(nova_disponibilidade)
 
     db.add_all(availability_to_save)
     await db.commit()
 
-    return {"message": "Disponibilidades adicionadas com sucesso!"}
+    return {'message': 'Disponibilidades adicionadas com sucesso!'}
