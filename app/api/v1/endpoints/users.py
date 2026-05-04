@@ -9,6 +9,8 @@ from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
 from app.api.v1.services import auth_service, user_service
 from app.schemas.custom_schema import LoginSuccess
 from app.schemas.user_schema import UserCreate, UserPublic, UserUpdate
+from app.schemas.service_schema import ServiceResponse
+
 
 user_route = APIRouter()
 Form_data = Annotated[OAuth2PasswordRequestForm, Depends()]
@@ -82,3 +84,8 @@ async def delete_user(
 ):
     await user_service.delete_user(db, user, r)
     response.delete_cookie('Login_info')
+
+
+@user_route.get('/services', status_code=HTTPStatus.OK, response_model=List[ServiceResponse])
+async def get_services(db:DBSession):
+    return await user_service.get_services(db)

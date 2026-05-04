@@ -76,3 +76,7 @@ async def update_user_data(
 async def delete_user(db: DBSession, user: CurrentUser, r: rediscon):
     await user_repo.delete_user(db, r, user)
     await user_repo.cache_delete(r, user.id)
+
+
+async def get_services(db:DBSession):
+    return await user_repo.get_services(db)

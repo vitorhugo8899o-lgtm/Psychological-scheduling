@@ -10,6 +10,7 @@ from sqlalchemy.exc import (
 
 from app.api.v1.repositories import auth_repo
 from app.models.users_models import User
+from app.models.service_models import Service
 from app.schemas.user_schema import UserCreate, UserPublic, UserUpdate
 
 if TYPE_CHECKING:
@@ -119,3 +120,11 @@ async def cache_delete(r: rediscon, id_user: int) -> str | None:
     await r.delete(cache_key)
 
     return 'Cache deletado!'
+
+
+async def get_services(db:DBSession):
+    stmt = select(Service).limit(100).order_by(Service.id)
+
+    result = await db.execute(stmt)
+
+    return  result.scalars().all()
