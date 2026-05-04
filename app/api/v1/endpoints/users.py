@@ -1,7 +1,7 @@
 from http import HTTPStatus
 from typing import Annotated, List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from fastapi.responses import Response
 from fastapi.security import OAuth2PasswordRequestForm
 
@@ -9,6 +9,8 @@ from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
 from app.api.v1.services import auth_service, user_service
 from app.schemas.custom_schema import LoginSuccess
 from app.schemas.user_schema import UserCreate, UserPublic, UserUpdate
+from app.schemas.service_schema import ServiceResponse
+
 
 user_route = APIRouter()
 Form_data = Annotated[OAuth2PasswordRequestForm, Depends()]

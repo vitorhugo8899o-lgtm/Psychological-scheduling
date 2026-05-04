@@ -34,3 +34,5 @@ class ServiceResponse(BaseModel):
     description: str
     price: float
     duration_minutes: int
+
+    model_config = ConfigDict(from_attributes=True)
