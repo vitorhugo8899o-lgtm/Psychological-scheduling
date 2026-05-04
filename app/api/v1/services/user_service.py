@@ -8,6 +8,7 @@ from app.api.v1.repositories import user_repo
 from app.models.users_models import User
 from app.api.v1.repositories import service_repo
 from app.schemas.user_schema import UserCreate, UserPublic, UserUpdate
+from app.schemas.service_schema import ServiceQuery
 
 
 async def create_user_service(db: DBSession, user_data: UserCreate) -> User:
@@ -89,6 +90,18 @@ async def get_service(db:DBSession, r:rediscon ,service_id: int):
         raise HTTPException(
             status_code=404,
             detail="Seriviço não encontrado."
+        )
+    
+    return service
+
+
+async def get_service_customized(db:DBSession,filter: ServiceQuery):
+    service = await service_repo.filter_services(db,filter)
+
+    if not service:
+        raise HTTPException(
+            status_code=404,
+            detail="Nenhum serviço encontrado!"
         )
     
     return service
