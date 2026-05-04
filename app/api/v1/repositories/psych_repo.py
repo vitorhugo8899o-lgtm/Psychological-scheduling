@@ -1,5 +1,6 @@
-from sqlalchemy import select, and_
 from datetime import time
+
+from sqlalchemy import and_, select
 
 from app.api.v1.dependencies import DBSession
 from app.models.avaliabilites_models import Avaliabilite
@@ -15,13 +16,13 @@ async def get_psych(db: DBSession, id_psych: int):
 
 
 async def check_overlapping_availability(
-    db: DBSession, 
-    id_psychologist: int, 
-    day: int, 
-    new_start: time, 
+    db: DBSession,
+    id_psychologist: int,
+    day: int,
+    new_start: time,
     new_end: time
 ) -> bool:
-    
+
     stmt = select(Avaliabilite).where(
         and_(
             Avaliabilite.id_psychologist == id_psychologist,
@@ -33,4 +34,3 @@ async def check_overlapping_availability(
     result = await db.execute(stmt)
 
     return result.first() is not None
-
