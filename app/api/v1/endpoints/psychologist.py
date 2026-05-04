@@ -4,10 +4,7 @@ from fastapi import APIRouter
 
 from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
 from app.api.v1.services import psych_service
-from app.schemas.psychologist_schema import (
-    AvaliabiliteResponse,
-    PsychologistAvaliabiliteCreate,
-)
+from app.schemas.psychologist_schema import PsychologistAvaliabiliteCreate
 
 psych_router = APIRouter()
 
