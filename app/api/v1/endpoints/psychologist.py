@@ -6,7 +6,7 @@ from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
 from app.api.v1.services import psych_service
 from app.schemas.psychologist_schema import (
     AvaliabiliteResponse,
-    PsychologistAvaliabilite,
+    PsychologistAvaliabiliteCreate,
 )
 
 psych_router = APIRouter()
@@ -15,12 +15,11 @@ psych_router = APIRouter()
 @psych_router.post(
     '/psych/me/availability',
     status_code=HTTPStatus.OK,
-    response_model=AvaliabiliteResponse,
 )
 async def create_appointment(
     db: DBSession,
     r: rediscon,
     user: CurrentUser,
-    availability: PsychologistAvaliabilite,
+    availability: PsychologistAvaliabiliteCreate,
 ):
     return await psych_service.create_avaliabilite(db, r, user, availability)
