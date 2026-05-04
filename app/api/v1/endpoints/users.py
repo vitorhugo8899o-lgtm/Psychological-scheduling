@@ -89,3 +89,8 @@ async def delete_user(
 @user_route.get('/services', status_code=HTTPStatus.OK, response_model=List[ServiceResponse])
 async def get_services(db:DBSession):
     return await user_service.get_services(db)
+
+
+@user_route.get('/service/{service_id}', status_code=HTTPStatus.OK, response_model=ServiceResponse)
+async def get_service(db:DBSession,r:rediscon ,service_id:int):
+    return await user_service.get_service(db,r,service_id)
