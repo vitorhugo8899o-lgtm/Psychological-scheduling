@@ -1,4 +1,5 @@
 import asyncio
+from datetime import time
 from unittest.mock import AsyncMock, patch
 
 import pytest
@@ -159,6 +160,24 @@ async def user_psych(db_session):
 
 
 @pytest_asyncio.fixture(scope='function')
+async def fake_psych(db_session):
+    raw_password = 'Senha12@#'
+
+    user = models.User(
+        fullname='Full Name',
+        email='userfakepsych@example.com',
+        password=auth_repo.hash_password(raw_password),
+        role='psychologist',
+    )
+
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+
+    return user
+
+
+@pytest_asyncio.fixture(scope='function')
 async def token_client(client, user_client):
     data = {'username': 'user@example.com', 'password': 'Senha12@#'}
 
@@ -182,3 +201,47 @@ async def token_adm(client, user_adm):
     assert response.status_code == status
 
     return client
+
+
+@pytest_asyncio.fixture(scope='function')
+async def token_psych(client, user_psych):
+    data = {'username': 'userpsych@example.com', 'password': 'Senha12@#'}
+
+    response = await client.post('/api/v1/login', data=data)
+
+    status = 200
+
+    assert response.status_code == status
+
+    return client
+
+
+@pytest_asyncio.fixture(scope='function')
+async def token_fakepsych(client, fake_psych):
+    data = {'username': 'userfakepsych@example.com', 'password': 'Senha12@#'}
+
+    response = await client.post('/api/v1/login', data=data)
+
+    status = 200
+
+    assert response.status_code == status
+
+    return client
+
+
+@pytest_asyncio.fixture(scope='function')
+async def availability(db_session, user_psych):
+    days = [0, 1, 2, 3, 4, 5, 6]
+    availability_save = []
+    for d in days:
+        new_availability = models.Avaliabilite(
+            id_psychologist=1,
+            day_of_the_week=d,
+            start_time=time(8, 30),
+            end_time=time(10, 30)
+        )
+
+        availability_save.append(new_availability)
+
+    db_session.add_all(availability_save)
+    await db_session.commit()

@@ -1,8 +1,8 @@
 from datetime import time
-from typing import ClassVar, Set
+from typing import ClassVar, List, Set
 
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
-from typing import List
+
 from app.schemas.user_schema import UserPublic
 
 
@@ -68,7 +68,7 @@ class PsychologistPublic(BaseModel):
 
 
 class PsychologistAvaliabiliteBlock(BaseModel):
-    days_of_the_week: List[int] = Field(description='0 para segunda e 6 para domingo') 
+    days_of_the_week: List[int] = Field(description='0 para segunda e 6 para domingo') #noqa
     start_time: time
     end_time: time
 
@@ -76,8 +76,10 @@ class PsychologistAvaliabiliteBlock(BaseModel):
     @classmethod
     def validate_days_range(cls, values: List[int]) -> List[int]:
         for day in values:
-            if day < 0 or day > 6:
-                raise ValueError('O dia da semana deve estar entre 0 (Segunda) e 6 (Domingo)')
+            monday = 0
+            sunday = 6
+            if day < monday or day > sunday:
+                raise ValueError('O dia da semana deve estar entre 0 (Segunda) e 6 (Domingo)') #noqa
         return values
 
     class Config:

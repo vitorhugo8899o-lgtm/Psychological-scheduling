@@ -11,7 +11,7 @@ psych_router = APIRouter()
 
 @psych_router.post(
     '/psych/me/availability',
-    status_code=HTTPStatus.OK,
+    status_code=HTTPStatus.CREATED,
 )
 async def create_appointment(
     db: DBSession,

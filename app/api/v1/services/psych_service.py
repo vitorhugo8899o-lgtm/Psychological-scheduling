@@ -1,8 +1,9 @@
 from fastapi import HTTPException
+
 from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
 from app.api.v1.repositories import psych_repo
-from app.schemas.psychologist_schema import PsychologistAvaliabiliteCreate
 from app.models.avaliabilites_models import Avaliabilite
+from app.schemas.psychologist_schema import PsychologistAvaliabiliteCreate
 
 
 async def create_avaliabilite(
@@ -29,7 +30,7 @@ async def create_avaliabilite(
 
     for block in payload.availabilities:
         for day in block.days_of_the_week:
-            
+
             has_conflict = await psych_repo.check_overlapping_availability(
                 db=db,
                 id_psychologist=psych.id,
@@ -37,18 +38,18 @@ async def create_avaliabilite(
                 new_start=block.start_time,
                 new_end=block.end_time
             )
-            
+
             if has_conflict:
                 raise HTTPException(
                     status_code=400,
-                    detail=f'Conflito de horário detectado entre {block.start_time.strftime("%H:%M")} e {block.end_time.strftime("%H:%M")}, confira seus horários.'
+                    detail=f'Conflito de horário detectado entre {block.start_time.strftime("%H:%M")} e {block.end_time.strftime("%H:%M")}, confira seus horários.' #noqa
                 )
-            
+
             nova_disponibilidade = Avaliabilite(
                 day_of_the_week=day,
                 start_time=block.start_time,
                 end_time=block.end_time,
-                id_psychologist=psych.id 
+                id_psychologist=psych.id
             )
             availability_to_save.append(nova_disponibilidade)
 
