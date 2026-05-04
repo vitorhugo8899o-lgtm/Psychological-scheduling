@@ -6,7 +6,7 @@ from sqlalchemy import select
 from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
 from app.api.v1.repositories import user_repo
 from app.models.users_models import User
-from app.models.service_models import Service
+from app.api.v1.repositories import service_repo
 from app.schemas.user_schema import UserCreate, UserPublic, UserUpdate
 
 
@@ -80,11 +80,11 @@ async def delete_user(db: DBSession, user: CurrentUser, r: rediscon):
 
 
 async def get_services(db:DBSession):
-    return await user_repo.get_services(db)
+    return await service_repo.get_services(db)
 
 
 async def get_service(db:DBSession, r:rediscon ,service_id: int):
-    service = await user_repo.cache_service(db,r,service_id)
+    service = await service_repo.cache_service(db,r,service_id)
     if not service:
         raise HTTPException(
             status_code=404,

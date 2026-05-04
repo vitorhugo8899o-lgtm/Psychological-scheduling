@@ -1,7 +1,7 @@
 from http import HTTPStatus
 from typing import Annotated, List
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from fastapi.responses import Response
 from fastapi.security import OAuth2PasswordRequestForm
 
@@ -84,13 +84,3 @@ async def delete_user(
 ):
     await user_service.delete_user(db, user, r)
     response.delete_cookie('Login_info')
-
-
-@user_route.get('/services', status_code=HTTPStatus.OK, response_model=List[ServiceResponse])
-async def get_services(db:DBSession):
-    return await user_service.get_services(db)
-
-
-@user_route.get('/service/{service_id}', status_code=HTTPStatus.OK, response_model=ServiceResponse)
-async def get_service(db:DBSession,r:rediscon ,service_id:int):
-    return await user_service.get_service(db,r,service_id)
