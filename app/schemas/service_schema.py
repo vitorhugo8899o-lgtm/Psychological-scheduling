@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
 class ServiceSchema(BaseModel):
@@ -36,3 +36,11 @@ class ServiceResponse(BaseModel):
     duration_minutes: int
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ServiceQuery(BaseModel):
+    offset: int = Field(ge=0, default=0)
+    limit: int = Field(ge=0, default=5)
+    name: str | None = Field(default=None)
+    price: float | None = Field(ge=50, default=None)
+    duration_minutes: int | None = Field(ge=30, default=None)

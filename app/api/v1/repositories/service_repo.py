@@ -1,5 +1,5 @@
 from sqlalchemy import select
-from app.schemas.service_schema import ServiceResponse
+from app.schemas.service_schema import ServiceResponse, ServiceQuery
 from app.api.v1.dependencies import DBSession, rediscon
 from app.models.service_models import Service
 
@@ -37,3 +37,28 @@ async def cache_service(db:DBSession,r:rediscon, service_id:int):
         return service_schema
 
     return None
+
+
+async def filter_services(db: DBSession, filter_query: ServiceQuery):
+    q = select(Service)
+
+    filter_data = filter_query.model_dump(
+        exclude={'limit', 'offset'}, 
+        exclude_none=True
+    )
+
+    for field, value in filter_data.items():
+        if field == 'name':
+            q = q.filter(Service.name.ilike(f"%{value}%"))
+        
+        elif hasattr(Service, field):
+            db_attribute = getattr(Service, field)
+            q = q.filter(db_attribute == value)
+
+    if filter_query.limit > 0:
+        q = q.limit(filter_query.limit)
+    
+    q = q.offset(filter_query.offset)
+
+    result = await db.scalars(q)
+    return result.all()
