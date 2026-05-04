@@ -68,7 +68,9 @@ class PsychologistPublic(BaseModel):
 
 
 class PsychologistAvaliabiliteBlock(BaseModel):
-    days_of_the_week: List[int] = Field(description='0 para segunda e 6 para domingo') #noqa
+    days_of_the_week: List[int] = Field(
+        description='0 para segunda e 6 para domingo'
+    )  # noqa
     start_time: time
     end_time: time
 
@@ -79,7 +81,9 @@ class PsychologistAvaliabiliteBlock(BaseModel):
             monday = 0
             sunday = 6
             if day < monday or day > sunday:
-                raise ValueError('O dia da semana deve estar entre 0 (Segunda) e 6 (Domingo)') #noqa
+                raise ValueError(
+                    'O dia da semana deve estar entre 0 (Segunda) e 6 (Domingo)' # noqa
+                )
         return values
 
     class Config:

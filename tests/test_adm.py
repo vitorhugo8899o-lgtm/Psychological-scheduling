@@ -81,3 +81,64 @@ async def test_creating_psych_but_user_does_not_exist(token_adm):
         req.json()['detail']
         == 'Usuário não encontrado,verifique se digitou corretamente o email'
     )  # noqa
+
+
+@pytest.mark.asyncio
+async def test_creating_service(token_adm):
+    payload = {
+        'name': 'Terapia de casal',
+        'description': 'Terapia realizada com um casal',
+        'price': '90.00',
+        'duration_minutes': '50',
+    }
+
+    req = await token_adm.post('/api/v1/services', json=payload)
+
+    response = req.json()
+
+    status = 201
+
+    price = 90.00
+
+    minutes = 50
+
+    assert req.status_code == status
+    assert response['id'] == 1
+    assert response['name'] == 'Terapia de casal'
+    assert response['description'] == 'Terapia realizada com um casal'
+    assert response['price'] == price
+    assert response['duration_minutes'] == minutes
+
+
+@pytest.mark.asyncio
+async def test_creating_service_as_user(token_client):
+    payload = {
+        'name': 'Terapia de casal',
+        'description': 'Terapia realizada com um casal',
+        'price': '90.00',
+        'duration_minutes': '50',
+    }
+
+    req = await token_client.post('/api/v1/services', json=payload)
+
+    status = 403
+
+    assert req.status_code == status
+    assert req.json()['detail'] == 'Usuário não tem permissão para realizar essa ação' #noqa
+
+
+@pytest.mark.asyncio
+async def test_service_already_exists(token_adm, service):
+    payload = {
+        'name': 'Terapia de casal',
+        'description': 'Terapia realizada com um casal',
+        'price': '90.00',
+        'duration_minutes': '50',
+    }
+
+    req = await token_adm.post('/api/v1/services', json=payload)
+
+    status = 409
+
+    assert req.status_code == status
+    assert req.json()['detail'] == 'Esse serviço já está registrado no banco!'
