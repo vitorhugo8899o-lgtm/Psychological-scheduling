@@ -97,7 +97,7 @@ async def test_availability_has_conflicts_same_time(token_psych, availability):
     assert response.status_code == status
     assert (
         response.json()['detail']
-        == 'Conflito de horário detectado entre 08:30 e 10:30, confira seus horários.' # noqa
+        == 'Conflito de horário detectado entre 08:30 e 10:30, confira seus horários.'  # noqa
     )
 
 
@@ -124,7 +124,7 @@ async def test_availability_has_conflicts_existing_schedule_has_not_ended(
     assert response.status_code == status
     assert (
         response.json()['detail']
-        == 'Conflito de horário detectado entre 09:30 e 15:30, confira seus horários.' # noqa
+        == 'Conflito de horário detectado entre 09:30 e 15:30, confira seus horários.'  # noqa
     )
 
 
@@ -149,5 +149,5 @@ async def test_availability_has_conflicts_end_time(token_psych, availability):  
     assert response.status_code == status
     assert (
         response.json()['detail']
-        == 'Conflito de horário detectado entre 07:30 e 09:30, confira seus horários.' # noqa
+        == 'Conflito de horário detectado entre 07:30 e 09:30, confira seus horários.'  # noqa
     )
