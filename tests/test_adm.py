@@ -124,7 +124,10 @@ async def test_creating_service_as_user(token_client):
     status = 403
 
     assert req.status_code == status
-    assert req.json()['detail'] == 'Usuário não tem permissão para realizar essa ação' #noqa
+    assert (
+        req.json()['detail']
+        == 'Usuário não tem permissão para realizar essa ação'
+    )  # noqa
 
 
 @pytest.mark.asyncio

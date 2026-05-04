@@ -82,7 +82,7 @@ class PsychologistAvaliabiliteBlock(BaseModel):
             sunday = 6
             if day < monday or day > sunday:
                 raise ValueError(
-                    'O dia da semana deve estar entre 0 (Segunda) e 6 (Domingo)' # noqa
+                    'O dia da semana deve estar entre 0 (Segunda) e 6 (Domingo)'  # noqa
                 )
         return values
 

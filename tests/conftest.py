@@ -253,7 +253,23 @@ async def service(db_session):
         name='Terapia de casal',
         description='Terapia realizada com um casal',
         price=90.00,
-        duration_minutes=50
+        duration_minutes=50,
+    )
+
+    db_session.add(new_service)
+    await db_session.commit()
+    await db_session.refresh(new_service)
+
+    return new_service
+
+
+@pytest_asyncio.fixture(scope='function')
+async def service2(db_session):
+    new_service = models.Service(
+        name='Terapia Parecida',
+        description='Nome parecido para ser pego no filtro',
+        price=90.00,
+        duration_minutes=50,
     )
 
     db_session.add(new_service)
