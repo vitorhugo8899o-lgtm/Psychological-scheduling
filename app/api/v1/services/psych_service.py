@@ -56,3 +56,23 @@ async def create_avaliabilite(
     await db.commit()
 
     return {'message': 'Disponibilidades adicionadas com sucesso!'}
+
+
+async def get_avaliabilites(db: DBSession, r: rediscon, psych: CurrentUser):
+    if not psych.psychologist_profile:
+        raise HTTPException(
+            status_code=403,
+            detail="O Usuário não tem permissão para realizar essa ação."
+        )
+
+    psych_id = await psych_repo.get_psych(db, psych.id)
+
+    schedule = await psych_repo.cache_avaliabilites(db, r, psych_id.id)
+
+    if not schedule:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Nenhum horário encontrado.:{schedule} and {psych.id}"
+        )
+
+    return schedule
