@@ -180,3 +180,37 @@ async def test_update_field_not_special_character(token_client):
         req.json()['detail'][0]['msg']
         == 'Value error, Sua senha deve conter um caracter especial do tipo: @#$%!&?'  # noqa
     )
+
+
+@pytest.mark.asyncio
+async def test_service_schema_with_blank_space_in_title(token_adm):
+    payload = {
+        'name': '          ',
+        'description': 'descrição ',
+        'price': 50.00,
+        'duration_minutes': 50
+    }
+
+    req = await token_adm.post("/api/v1/services", json=payload)
+
+    status = 422
+
+    assert req.status_code == status
+    assert req.json()['detail'][0]['msg'] == 'Value error, O título possui apenas espeços vazios, preencha um título valído.'  #noqa
+
+
+@pytest.mark.asyncio
+async def test_service_schema_with_blank_space_in_description(token_adm):
+    payload = {
+        'name': 'Terapia de casal',
+        'description': '            ',
+        'price': 50.00,
+        'duration_minutes': 50
+    }
+
+    req = await token_adm.post("/api/v1/services", json=payload)
+
+    status = 422
+
+    assert req.status_code == status
+    assert req.json()['detail'][0]['msg'] == 'Value error, Descrição possui apenas espaços vazios, preencha uma descrição valída!'  #noqa
