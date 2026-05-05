@@ -1,7 +1,8 @@
 import asyncio
-from datetime import time
+from datetime import datetime, time, timedelta, timezone
 from unittest.mock import AsyncMock, patch
 
+import jwt
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
@@ -14,10 +15,13 @@ from sqlalchemy.ext.asyncio import (
 from app import models
 from app.api.v1.dependencies import get_db, get_redis
 from app.api.v1.repositories import auth_repo
+from app.core.config import Settings
 from app.db.base import Base
 from app.main import app
 
 TEST_DATABASE_URL = 'sqlite+aiosqlite:///:memory:'
+
+settings = Settings()
 
 
 test_engine = create_async_engine(TEST_DATABASE_URL, echo=False)
@@ -274,3 +278,39 @@ async def service2(db_session):
 
     db_session.add(new_service)
     await db_session.commit()
+
+
+@pytest_asyncio.fixture(scope='function')
+async def fake_token(client):
+    token = auth_repo.create_token(data={'not_sub': 'invalid'})
+
+    client.cookies.set('Login_info', token)
+
+    return client
+
+
+@pytest_asyncio.fixture(scope='function')
+async def expired_token_client(client):
+    expired_payload = {
+        "sub": "user@example.com",
+        "exp": datetime.now(timezone.utc) - timedelta(minutes=1),
+    }
+
+    token = jwt.encode(
+        expired_payload,
+        settings.SECRET_KEY,
+        algorithm=settings.ALGORITHM,
+    )
+
+    client.cookies.set("Login_info", token)
+
+    return client
+
+
+@pytest_asyncio.fixture(scope='function')
+async def not_token(client):
+    token = "not token"
+
+    client.cookies.set('Login_info', token)
+
+    return client

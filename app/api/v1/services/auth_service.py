@@ -86,7 +86,8 @@ def decode_token(token: str) -> str:
 
         return user_email
 
-    except (jwt.PyJWTError, ValueError) as e:
-        raise HTTPException(
-            status_code=401, detail=f'Token inválido ou expirado {e}'
-        )
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail='Token expirado')
+
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=401, detail='Token inválido')

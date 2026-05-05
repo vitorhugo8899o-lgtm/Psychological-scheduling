@@ -188,15 +188,18 @@ async def test_service_schema_with_blank_space_in_title(token_adm):
         'name': '          ',
         'description': 'descrição ',
         'price': 50.00,
-        'duration_minutes': 50
+        'duration_minutes': 50,
     }
 
-    req = await token_adm.post("/api/v1/services", json=payload)
+    req = await token_adm.post('/api/v1/services', json=payload)
 
     status = 422
 
     assert req.status_code == status
-    assert req.json()['detail'][0]['msg'] == 'Value error, O título possui apenas espeços vazios, preencha um título valído.'  #noqa
+    assert (
+        req.json()['detail'][0]['msg']
+        == 'Value error, O título possui apenas espeços vazios, preencha um título valído.'  # noqa
+    )
 
 
 @pytest.mark.asyncio
@@ -205,15 +208,18 @@ async def test_service_schema_with_blank_space_in_description(token_adm):
         'name': 'Terapia de casal',
         'description': '            ',
         'price': 50.00,
-        'duration_minutes': 50
+        'duration_minutes': 50,
     }
 
-    req = await token_adm.post("/api/v1/services", json=payload)
+    req = await token_adm.post('/api/v1/services', json=payload)
 
     status = 422
 
     assert req.status_code == status
-    assert req.json()['detail'][0]['msg'] == 'Value error, Descrição possui apenas espaços vazios, preencha uma descrição valída!'  #noqa
+    assert (
+        req.json()['detail'][0]['msg']
+        == 'Value error, Descrição possui apenas espaços vazios, preencha uma descrição valída!'  # noqa
+    )
 
 
 @pytest.mark.asyncio
@@ -221,15 +227,17 @@ async def test_schema_psychologistcreate_invalid_region(token_adm, user_psych):
     payload = {
         'email': f'{user_psych.email}',
         'region': '51',
-        'number': '1564'
+        'number': '1564',
     }
 
-    req = await token_adm.post("/api/v1/psychologist", json=payload)
+    req = await token_adm.post('/api/v1/psychologist', json=payload)
 
     status = 422
 
     assert req.status_code == status
-    assert req.json()['detail'][0]['msg'] == 'Value error, Região do CRP inválida'  #noqa
+    assert (
+        req.json()['detail'][0]['msg'] == 'Value error, Região do CRP inválida'
+    )  # noqa
 
 
 @pytest.mark.asyncio
@@ -237,15 +245,18 @@ async def test_schema_psychologistcreate_invalid_number(token_adm, user_psych):
     payload = {
         'email': f'{user_psych.email}',
         'region': '10',
-        'number': '1564000'
+        'number': '1564000',
     }
 
-    req = await token_adm.post("/api/v1/psychologist", json=payload)
+    req = await token_adm.post('/api/v1/psychologist', json=payload)
 
     status = 422
 
     assert req.status_code == status
-    assert req.json()['detail'][0]['msg'] == 'Value error, Número do CRP deve ter entre 1 e 6 dígitos'  #noqa
+    assert (
+        req.json()['detail'][0]['msg']
+        == 'Value error, Número do CRP deve ter entre 1 e 6 dígitos'
+    )  # noqa
 
 
 @pytest.mark.asyncio
@@ -260,9 +271,12 @@ async def test_schema_psychologistavaliabilite_invalid_day(token_psych):
         ]
     }
 
-    req = await token_psych.post("/api/v1/psych/me/availability", json=payload)
+    req = await token_psych.post('/api/v1/psych/me/availability', json=payload)
 
     status = 422
 
     assert req.status_code == status
-    assert req.json()['detail'][0]['msg'] == 'Value error, O dia da semana deve estar entre 0 (Segunda) e 6 (Domingo)'  #noqa
+    assert (
+        req.json()['detail'][0]['msg']
+        == 'Value error, O dia da semana deve estar entre 0 (Segunda) e 6 (Domingo)'  # noqa
+    )
