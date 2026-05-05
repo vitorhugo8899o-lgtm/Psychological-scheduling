@@ -85,3 +85,19 @@ async def test_filter_ilike_in_name(token_client, service, service2):
     assert isinstance(response.json(), list)
     assert len(response.json()) == services
     assert response.json()[1]['name'] == 'Terapia Parecida'
+
+
+@pytest.mark.asyncio
+async def test_filter_or(token_client, service, service2):
+    response = await token_client.get(
+        '/api/v1/services/filter?option=or&offset=0&limit=2&name=Terapia'
+    )  # noqa
+
+    status = 200
+
+    services = 2
+
+    response.status_code == status
+    assert isinstance(response.json(), list)
+    assert len(response.json()) == services
+    assert response.json()[1]['description'] == 'Nome parecido para ser pego no filtro'  #noqa
