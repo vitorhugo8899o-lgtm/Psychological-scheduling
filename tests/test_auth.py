@@ -101,3 +101,13 @@ async def test_error_decode_token(not_token):
 
     assert req.status_code == status
     assert req.json()['detail'] == 'Token inválido'
+
+
+@pytest.mark.asyncio
+async def test_token_non_existent_username(not_exists_user_token):
+    req = await not_exists_user_token.get('/api/v1/services')
+
+    status = 409
+
+    assert req.status_code == status
+    assert req.json()['detail'] == 'Usuário não encontrado!'

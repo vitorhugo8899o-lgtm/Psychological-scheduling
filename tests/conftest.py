@@ -314,3 +314,18 @@ async def not_token(client):
     client.cookies.set('Login_info', token)
 
     return client
+
+
+@pytest_asyncio.fixture(scope='function')
+async def not_exists_user_token(client):
+    payload = {'sub': 'user@example.com'}
+
+    token = jwt.encode(
+        payload,
+        settings.SECRET_KEY,
+        algorithm=settings.ALGORITHM,
+    )
+
+    client.cookies.set("Login_info", token)
+
+    return client
