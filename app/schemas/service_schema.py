@@ -14,7 +14,9 @@ class ServiceSchema(BaseModel):
     def validate_name(cls, value: str):
         space = value.replace(' ', '')
         if not space:
-            raise ValueError('O título possui apenas espeços vazios, preencha um título valído.')  #noqa
+            raise ValueError(
+                'O título possui apenas espeços vazios, preencha um título valído.'  # noqa
+            )
 
         return value
 
@@ -23,7 +25,9 @@ class ServiceSchema(BaseModel):
     def validate_description(cls, value: str):
         space = value.replace(' ', '')
         if not space:
-            raise ValueError('Descrição possui apenas espaços vazios, preencha uma descrição valída!')  #noqa
+            raise ValueError(
+                'Descrição possui apenas espaços vazios, preencha uma descrição valída!'  # noqa
+            )
 
         return value
 
