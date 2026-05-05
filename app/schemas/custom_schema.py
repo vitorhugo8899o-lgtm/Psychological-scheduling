@@ -35,3 +35,8 @@ class UserLoginResponse(BaseModel):
 class LoginSuccess(BaseModel):
     status: str = 'success'
     user: UserLoginResponse
+
+
+class ServiceOption(str, Enum):
+    AND = 'and'
+    OR = 'or'
