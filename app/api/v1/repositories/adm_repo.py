@@ -6,9 +6,7 @@ from app.models.service_models import Service
 from app.schemas.service_schema import ServiceSchema
 
 
-async def create_psych(
-    db: DBSession, id_psych: int, crp_psych: str
-) -> Psychologist:
+async def create_psych(db: DBSession, id_psych: int, crp_psych: str) -> Psychologist:
     new_psych = Psychologist(user_id=id_psych, crp=crp_psych)
 
     db.add(new_psych)

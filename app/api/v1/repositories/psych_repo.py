@@ -1,12 +1,12 @@
-from datetime import time
+from datetime import datetime, time, timedelta
+from zoneinfo import ZoneInfo
 
-from sqlalchemy import and_, select, exists
-from datetime import datetime
+from sqlalchemy import and_, exists, select
 
 from app.api.v1.dependencies import DBSession
 from app.models.avaliabilites_models import Avaliabilite
 from app.models.psychologist_models import Psychologist
-from zoneinfo import ZoneInfo
+
 
 async def get_psych(db: DBSession, id_psych: int):
     stmt = select(Psychologist).where(Psychologist.user_id == id_psych)
@@ -41,14 +41,25 @@ async def check_overlapping_availability(
     return result.first() is not None
 
 
-async def avaliabilite_exists(db:DBSession, id_psych: int, date: datetime):
-    date_convert = date.astimezone(ZoneInfo("America/Sao_Paulo"))
-    day_of_week = date_convert.weekday()
+async def avaliabilite_exists(
+    db: DBSession, id_psych: int, date: datetime, service_minutes: int
+):
+    duration = timedelta(minutes=service_minutes)
+
+    end_time = date + duration
+
+    end_time_db = end_time.astimezone(ZoneInfo('America/Sao_Paulo')).time()
+
+    day_of_week = date.weekday()
+
+    start_time_db = date.time()
 
     stmt = select(
         exists().where(
             Avaliabilite.id_psychologist == id_psych,
             Avaliabilite.day_of_the_week == day_of_week,
+            Avaliabilite.start_time <= start_time_db,
+            Avaliabilite.end_time >= end_time_db,
         )
     )
 

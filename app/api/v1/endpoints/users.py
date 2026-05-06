@@ -14,16 +14,12 @@ user_route = APIRouter()
 Form_data = Annotated[OAuth2PasswordRequestForm, Depends()]
 
 
-@user_route.post(
-    '/users', status_code=HTTPStatus.CREATED, response_model=UserPublic
-)
+@user_route.post('/users', status_code=HTTPStatus.CREATED, response_model=UserPublic)
 async def user_create(db: DBSession, user_data: UserCreate):
     return await user_service.create_user_service(db, user_data)
 
 
-@user_route.post(
-    '/login', status_code=HTTPStatus.OK, response_model=LoginSuccess
-)
+@user_route.post('/login', status_code=HTTPStatus.OK, response_model=LoginSuccess)
 async def login_user(db: DBSession, user: Form_data, response: Response):
     token, user_info = await auth_service.login(db, user)
 
@@ -47,9 +43,7 @@ async def user_logout(user: CurrentUser, response: Response):
     return 'Usuário deslogado.'
 
 
-@user_route.get(
-    '/users', status_code=HTTPStatus.OK, response_model=List[UserPublic]
-)
+@user_route.get('/users', status_code=HTTPStatus.OK, response_model=List[UserPublic])
 async def users(db: DBSession, user: CurrentUser):
     return await user_service.get_users(db, user)
 

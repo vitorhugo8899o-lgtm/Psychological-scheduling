@@ -24,9 +24,7 @@ async def get_services(db: DBSession, user: CurrentUser):
     status_code=HTTPStatus.OK,
     response_model=ServiceResponse,
 )
-async def get_service(
-    db: DBSession, user: CurrentUser, r: rediscon, service_id: int
-):
+async def get_service(db: DBSession, user: CurrentUser, r: rediscon, service_id: int):
     return await user_service.get_service(db, r, service_id)
 
 

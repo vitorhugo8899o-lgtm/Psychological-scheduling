@@ -14,8 +14,7 @@ class UserCreate(BaseModel):
         clean_name = v.replace(' ', '')
         if clean_name == v:
             raise ValueError(
-                'O nome completo deve ter ao menos um espaço,'
-                ' EX: mariajose sobrenome'
+                'O nome completo deve ter ao menos um espaço, EX: mariajose sobrenome'
             )
 
         return v
@@ -27,14 +26,10 @@ class UserCreate(BaseModel):
             raise ValueError('Senha deve ter no mínimo 8 caracteres')
 
         if not re.search(r'[a-z]', v):
-            raise ValueError(
-                'Sua senha deve conter pelo menos uma letra minúscula'
-            )
+            raise ValueError('Sua senha deve conter pelo menos uma letra minúscula')
 
         if not re.search(r'[A-Z]', v):
-            raise ValueError(
-                'Sua senha deve conter pelo menos uma letra maiúscula'
-            )
+            raise ValueError('Sua senha deve conter pelo menos uma letra maiúscula')
 
         if not re.search(r'\d', v):
             raise ValueError('Sua senha deve conter um número')
@@ -68,14 +63,10 @@ class UserUpdate(BaseModel):
             raise ValueError('Senha deve ter no mínimo 8 caracteres')
 
         if not re.search(r'[a-z]', v):
-            raise ValueError(
-                'Sua senha deve conter pelo menos uma letra minúscula'
-            )
+            raise ValueError('Sua senha deve conter pelo menos uma letra minúscula')
 
         if not re.search(r'[A-Z]', v):
-            raise ValueError(
-                'Sua senha deve conter pelo menos uma letra maiúscula'
-            )
+            raise ValueError('Sua senha deve conter pelo menos uma letra maiúscula')
 
         if not re.search(r'\d', v):
             raise ValueError('Sua senha deve conter um número')

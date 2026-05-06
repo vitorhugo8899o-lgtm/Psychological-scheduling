@@ -27,7 +27,5 @@ async def create_psychologist(
 @adm_router.post(
     '/services', status_code=HTTPStatus.CREATED, response_model=ServiceResponse
 )
-async def create_service(
-    db: DBSession, user: CurrentUser, service: ServiceSchema
-):
+async def create_service(db: DBSession, user: CurrentUser, service: ServiceSchema):
     return await adm_service.create_service(db, user.role, service)
