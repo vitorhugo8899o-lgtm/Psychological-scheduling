@@ -20,3 +20,10 @@ def format_conflit(utc_time: str):
     hour_format = dt.strftime('%H:%M')
 
     return hour_format
+
+
+def time_is_passad(time: datetime) -> bool:
+    if time <= datetime.now(time.tzinfo):
+        return True
+    else:
+        return False

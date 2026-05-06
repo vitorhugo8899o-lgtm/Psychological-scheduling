@@ -100,4 +100,7 @@ async def test_filter_or(token_client, service, service2):
     response.status_code == status
     assert isinstance(response.json(), list)
     assert len(response.json()) == services
-    assert response.json()[1]['description'] == 'Nome parecido para ser pego no filtro'  #noqa
+    assert (
+        response.json()[1]['description']
+        == 'Nome parecido para ser pego no filtro'
+    )  # noqa
