@@ -13,17 +13,12 @@ async def test_psych_creating_availability(token_psych):
         ]
     }
 
-    response = await token_psych.post(
-        '/api/v1/psych/me/availability', json=payload
-    )  # noqa
+    response = await token_psych.post('/api/v1/psych/me/availability', json=payload)  # noqa
 
     status = 201
 
     assert response.status_code == status
-    assert (
-        response.json()['message']
-        == 'Disponibilidades adicionadas com sucesso!'
-    )  # noqa
+    assert response.json()['message'] == 'Disponibilidades adicionadas com sucesso!'  # noqa
 
 
 @pytest.mark.asyncio
@@ -38,9 +33,7 @@ async def test_user_not_psych_trying_to_create_an_availability(token_client):
         ]
     }
 
-    response = await token_client.post(
-        '/api/v1/psych/me/availability', json=payload
-    )  # noqa
+    response = await token_client.post('/api/v1/psych/me/availability', json=payload)  # noqa
 
     status = 403
 
@@ -63,9 +56,7 @@ async def test_psych_not_found(token_fakepsych):
         ]
     }
 
-    response = await token_fakepsych.post(
-        '/api/v1/psych/me/availability', json=payload
-    )  # noqa
+    response = await token_fakepsych.post('/api/v1/psych/me/availability', json=payload)  # noqa
 
     status = 409
 
@@ -88,9 +79,7 @@ async def test_availability_has_conflicts_same_time(token_psych, availability):
         ]
     }
 
-    response = await token_psych.post(
-        '/api/v1/psych/me/availability', json=payload
-    )  # noqa
+    response = await token_psych.post('/api/v1/psych/me/availability', json=payload)  # noqa
 
     status = 400
 
@@ -115,9 +104,7 @@ async def test_availability_has_conflicts_existing_schedule_has_not_ended(
         ]
     }
 
-    response = await token_psych.post(
-        '/api/v1/psych/me/availability', json=payload
-    )  # noqa
+    response = await token_psych.post('/api/v1/psych/me/availability', json=payload)  # noqa
 
     status = 400
 
@@ -140,9 +127,7 @@ async def test_availability_has_conflicts_end_time(token_psych, availability):  
         ]
     }
 
-    response = await token_psych.post(
-        '/api/v1/psych/me/availability', json=payload
-    )  # noqa
+    response = await token_psych.post('/api/v1/psych/me/availability', json=payload)  # noqa
 
     status = 400
 

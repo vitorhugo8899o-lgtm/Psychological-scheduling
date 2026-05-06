@@ -242,13 +242,15 @@ async def availability(db_session, user_psych):
             id_psychologist=1,
             day_of_the_week=d,
             start_time=time(8, 30),
-            end_time=time(10, 30),
+            end_time=time(20, 30),
         )
 
         availability_save.append(new_availability)
 
     db_session.add_all(availability_save)
     await db_session.commit()
+
+    return user_psych
 
 
 @pytest_asyncio.fixture(scope='function')
@@ -332,10 +334,21 @@ async def not_exists_user_token(client):
 
 
 @pytest_asyncio.fixture(scope='function')
-async def schedule(db_session,service,availability, user_client,):
+async def schedule(
+    db_session,
+    service,
+    availability,
+    user_client,
+):
     appointment = models.Appointment(
         id_client=user_client.id,
         id_psychologist=1,
         id_service=service.id,
-        date_time='asdasd'
+        date_time=datetime(2026, 5, 7, 9, 30, tzinfo=timezone.utc),
     )
+
+    db_session.add(appointment)
+    await db_session.commit()
+    await db_session.refresh(appointment)
+
+    return appointment

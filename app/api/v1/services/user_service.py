@@ -49,7 +49,7 @@ async def get_user(
     if not user_cache:
         raise HTTPException(
             status_code=404,
-            detail='Usuário não encontrado. Verifique se digitou o id correto!'
+            detail='Usuário não encontrado. Verifique se digitou o id correto!',
         )
 
     return user_cache
@@ -100,8 +100,6 @@ async def get_service_customized(db: DBSession, filter: ServiceQuery):
     service = await service_repo.filter_services(db, filter)
 
     if not service:
-        raise HTTPException(
-            status_code=404, detail='Nenhum serviço encontrado!'
-        )
+        raise HTTPException(status_code=404, detail='Nenhum serviço encontrado!')
 
     return service

@@ -34,19 +34,13 @@ async def login(
     if not user:
         raise HTTPException(
             status_code=401,
-            detail=(
-                'Email ou senha incorretos!, verifique se digitou corretamente'
-            ),
+            detail=('Email ou senha incorretos!, verifique se digitou corretamente'),
         )
 
-    if not user or not auth_repo.verify_password(
-        user_data.password, user.password
-    ):
+    if not user or not auth_repo.verify_password(user_data.password, user.password):
         raise HTTPException(
             status_code=401,
-            detail=(
-                'Email ou senha incorretos!, verifique se digitou corretamente'
-            ),
+            detail=('Email ou senha incorretos!, verifique se digitou corretamente'),
         )
 
     access_token = auth_repo.create_token(data={'sub': f'{user.email}'})

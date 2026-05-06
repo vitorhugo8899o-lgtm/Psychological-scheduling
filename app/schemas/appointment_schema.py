@@ -1,9 +1,10 @@
 from datetime import datetime, timezone
 from zoneinfo import ZoneInfo
 
-from pydantic import BaseModel, ConfigDict, field_validator, computed_field
+from pydantic import BaseModel, ConfigDict, computed_field, field_validator
 
 from app.schemas.custom_schema import AppointmentStatus
+
 
 class AppointmentCreate(BaseModel):
     id_psychologist: int
@@ -12,10 +13,18 @@ class AppointmentCreate(BaseModel):
 
     @field_validator('date_time')
     @classmethod
-    def validade_time_is_passad(cls, value: datetime):
-        now = datetime.now(timezone.utc)
-        if value < now:
-            raise ValueError('O horário não pode estar no passado')
+    def validate_time_is_past(cls, value: datetime):
+        br_tz = ZoneInfo('America/Sao_Paulo')
+
+        requested_time_br = value.astimezone(br_tz)
+
+        now_br = datetime.now(br_tz)
+
+        if requested_time_br < now_br:
+            raise ValueError(
+                f'O horário não pode estar no passado. Horário {requested_time_br}'
+            )
+
         return value
 
     @field_validator('id_psychologist')
@@ -46,12 +55,14 @@ class ApppointmentResponse(BaseModel):
     @computed_field
     @property
     def datetime_format(self) -> str:
-        consult = self.date_time.astimezone(
-            ZoneInfo("America/Sao_Paulo")
-        ).replace(
+        dt = self.date_time
+
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+
+        consult = dt.astimezone(ZoneInfo('America/Sao_Paulo')).replace(
             second=0, microsecond=0
         )
-
-        return consult.strftime("%d/%m/%Y %H:%M")
+        return consult.strftime('%d/%m/%Y %H:%M')
 
     model_config = ConfigDict(from_attributes=True)

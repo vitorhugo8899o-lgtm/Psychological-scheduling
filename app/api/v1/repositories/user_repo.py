@@ -1,5 +1,5 @@
-from typing import TYPE_CHECKING
 from datetime import timedelta
+from typing import TYPE_CHECKING
 
 from fastapi import HTTPException
 from sqlalchemy import select
@@ -10,11 +10,11 @@ from sqlalchemy.exc import (
 )
 
 from app.api.v1.repositories import auth_repo
-from app.models.users_models import User
 from app.models.appointments_models import Appointment
-from app.schemas.user_schema import UserCreate, UserPublic, UserUpdate
+from app.models.users_models import User
 from app.schemas.appointment_schema import AppointmentCreate
 from app.schemas.custom_schema import AppointmentStatus
+from app.schemas.user_schema import UserCreate, UserPublic, UserUpdate
 
 if TYPE_CHECKING:
     from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
@@ -53,9 +53,7 @@ async def get_user_by_id(db: DBSession, id_user: int) -> User | None:
     return exist.scalar_one_or_none()
 
 
-async def update_data(
-    db: DBSession, user: CurrentUser, update: UserUpdate
-) -> User:
+async def update_data(db: DBSession, user: CurrentUser, update: UserUpdate) -> User:
 
     try:
         user.email = update.email
@@ -91,9 +89,7 @@ async def delete_user(db: DBSession, r: rediscon, user: CurrentUser):
         raise HTTPException(status_code=409, detail=f'{e}')
 
 
-async def cache_user(
-    db: DBSession, r: rediscon, id_user: int
-) -> UserPublic | None:
+async def cache_user(db: DBSession, r: rediscon, id_user: int) -> UserPublic | None:
 
     cache_key = f'user:{id_user}'
     user_cached = await r.get(cache_key)
@@ -126,7 +122,7 @@ async def cache_delete(r: rediscon, id_user: int) -> str | None:
 
 
 async def check_conflit_appointment_user(
-    db:DBSession, user_id:int, payload: AppointmentCreate, time_service: int
+    db: DBSession, user_id: int, payload: AppointmentCreate, time_service: int
 ):
     duration = timedelta(minutes=time_service)
     start_time = payload.date_time

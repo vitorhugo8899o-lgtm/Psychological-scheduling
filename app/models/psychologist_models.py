@@ -15,9 +15,7 @@ class Psychologist(Base):
     __tablename__ = 'psychologists'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    user_id: Mapped[int] = mapped_column(
-        ForeignKey('users.id'), nullable=False
-    )
+    user_id: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=False)
     crp: Mapped[int] = mapped_column(Text, nullable=False, unique=True)
 
     user: Mapped['User'] = relationship(

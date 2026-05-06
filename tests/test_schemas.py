@@ -235,9 +235,7 @@ async def test_schema_psychologistcreate_invalid_region(token_adm, user_psych):
     status = 422
 
     assert req.status_code == status
-    assert (
-        req.json()['detail'][0]['msg'] == 'Value error, Região do CRP inválida'
-    )  # noqa
+    assert req.json()['detail'][0]['msg'] == 'Value error, Região do CRP inválida'  # noqa
 
 
 @pytest.mark.asyncio

@@ -41,6 +41,4 @@ DBSession = Annotated[AsyncSession, Depends(get_db)]
 rediscon = Annotated[aioredis.Redis, Depends(get_redis)]
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
-oauth2_scheme = OAuth2PasswordBearer(
-    tokenUrl='/api/v1/login', auto_error=False
-)
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl='/api/v1/login', auto_error=False)

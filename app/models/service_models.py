@@ -18,6 +18,4 @@ class Service(Base):
     price: Mapped[float] = mapped_column(Numeric(10, 2), nullable=False)
     duration_minutes: Mapped[int] = mapped_column(Integer, nullable=False)
 
-    appointments: Mapped[List['Appointment']] = relationship(
-        back_populates='service'
-    )
+    appointments: Mapped[List['Appointment']] = relationship(back_populates='service')

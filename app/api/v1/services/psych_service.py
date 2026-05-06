@@ -23,7 +23,7 @@ async def create_avaliabilite(
     if not psych:
         raise HTTPException(
             status_code=409,
-            detail='Psicólogo não encontrado! Tente realizar o login novamente'
+            detail='Psicólogo não encontrado! Tente realizar o login novamente',
         )
 
     availability_to_save = []
