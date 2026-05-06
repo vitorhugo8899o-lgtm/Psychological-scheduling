@@ -292,8 +292,8 @@ async def fake_token(client):
 @pytest_asyncio.fixture(scope='function')
 async def expired_token_client(client):
     expired_payload = {
-        "sub": "user@example.com",
-        "exp": datetime.now(timezone.utc) - timedelta(minutes=1),
+        'sub': 'user@example.com',
+        'exp': datetime.now(timezone.utc) - timedelta(minutes=1),
     }
 
     token = jwt.encode(
@@ -302,14 +302,14 @@ async def expired_token_client(client):
         algorithm=settings.ALGORITHM,
     )
 
-    client.cookies.set("Login_info", token)
+    client.cookies.set('Login_info', token)
 
     return client
 
 
 @pytest_asyncio.fixture(scope='function')
 async def not_token(client):
-    token = "not token"
+    token = 'not token'
 
     client.cookies.set('Login_info', token)
 
@@ -326,6 +326,6 @@ async def not_exists_user_token(client):
         algorithm=settings.ALGORITHM,
     )
 
-    client.cookies.set("Login_info", token)
+    client.cookies.set('Login_info', token)
 
     return client

@@ -1,4 +1,4 @@
-from sqlalchemy import select, or_
+from sqlalchemy import or_, select
 
 from app.api.v1.dependencies import DBSession, rediscon
 from app.models.service_models import Service
@@ -42,7 +42,7 @@ async def cache_service(db: DBSession, r: rediscon, service_id: int):
 
 async def filter_services(db: DBSession, filter_query: ServiceQuery):
     q = select(Service)
-    
+
     filter_data = filter_query.model_dump(
         exclude={'limit', 'offset', 'option'}, exclude_none=True
     )
@@ -64,7 +64,7 @@ async def filter_services(db: DBSession, filter_query: ServiceQuery):
 
     if filter_query.limit > 0:
         q = q.limit(filter_query.limit)
-    
+
     q = q.offset(filter_query.offset)
 
     result = await db.scalars(q)

@@ -49,7 +49,7 @@ async def test_service_not_found(token_client):
 @pytest.mark.asyncio
 async def test_service_query(token_client, service):
     response = await token_client.get(
-        f'/api/v1/services/filter?offset=0&limit=1&name={service.name}&description={service.description}&price={service.price}&duration_minutes={service.duration_minutes}'
+        f'/api/v1/services/filter?option=and&offset=0&limit=1&name={service.name}&description={service.description}&price={service.price}&duration_minutes={service.duration_minutes}'
     )  # noqa
 
     status = 200
@@ -62,7 +62,7 @@ async def test_service_query(token_client, service):
 @pytest.mark.asyncio
 async def test_service_query_not_found(token_client):
     response = await token_client.get(
-        '/api/v1/services/filter?offset=0&limit=1&name=terapia'
+        '/api/v1/services/filter?option=and&offset=0&limit=1&name=terapia'
     )  # noqa
 
     status = 404
@@ -74,7 +74,7 @@ async def test_service_query_not_found(token_client):
 @pytest.mark.asyncio
 async def test_filter_ilike_in_name(token_client, service, service2):
     response = await token_client.get(
-        '/api/v1/services/filter?offset=0&limit=2&name=Terapia'
+        '/api/v1/services/filter?option=and&offset=0&limit=2&name=Terapia'
     )  # noqa
 
     status = 200
@@ -85,3 +85,22 @@ async def test_filter_ilike_in_name(token_client, service, service2):
     assert isinstance(response.json(), list)
     assert len(response.json()) == services
     assert response.json()[1]['name'] == 'Terapia Parecida'
+
+
+@pytest.mark.asyncio
+async def test_filter_or(token_client, service, service2):
+    response = await token_client.get(
+        '/api/v1/services/filter?option=or&offset=0&limit=2&name=Terapia'
+    )  # noqa
+
+    status = 200
+
+    services = 2
+
+    response.status_code == status
+    assert isinstance(response.json(), list)
+    assert len(response.json()) == services
+    assert (
+        response.json()[1]['description']
+        == 'Nome parecido para ser pego no filtro'
+    )  # noqa

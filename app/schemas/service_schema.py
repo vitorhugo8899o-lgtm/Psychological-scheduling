@@ -1,5 +1,7 @@
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+
 from app.schemas.custom_schema import ServiceOption
+
 
 class ServiceSchema(BaseModel):
     name: str = Field(min_length=7)
