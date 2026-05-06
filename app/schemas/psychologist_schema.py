@@ -55,7 +55,7 @@ class PsychologistCreate(BaseModel):
         return value
 
     @property
-    def crp_formatado(self) -> str:
+    def crp_format(self) -> str:
         return f'CRP {self.region:02d}/{self.number}'
 
     model_config = ConfigDict(from_attributes=True)

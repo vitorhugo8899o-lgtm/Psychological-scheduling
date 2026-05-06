@@ -1,7 +1,9 @@
 from datetime import datetime, timezone
+from zoneinfo import ZoneInfo
 
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict, field_validator, computed_field
 
+from app.schemas.custom_schema import AppointmentStatus
 
 class AppointmentCreate(BaseModel):
     id_psychologist: int
@@ -29,5 +31,27 @@ class AppointmentCreate(BaseModel):
         if value <= 0:
             raise ValueError('O id do serviço não pode ser 0 ou negativo.')
         return value
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class ApppointmentResponse(BaseModel):
+    id: int
+    id_client: int
+    id_psychologist: int
+    id_service: int
+    date_time: datetime
+    status: AppointmentStatus
+
+    @computed_field
+    @property
+    def datetime_format(self) -> str:
+        consult = self.date_time.astimezone(
+            ZoneInfo("America/Sao_Paulo")
+        ).replace(
+            second=0, microsecond=0
+        )
+
+        return consult.strftime("%d/%m/%Y %H:%M")
 
     model_config = ConfigDict(from_attributes=True)
