@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING
+from datetime import timedelta
 
 from fastapi import HTTPException
 from sqlalchemy import select
@@ -10,7 +11,10 @@ from sqlalchemy.exc import (
 
 from app.api.v1.repositories import auth_repo
 from app.models.users_models import User
+from app.models.appointments_models import Appointment
 from app.schemas.user_schema import UserCreate, UserPublic, UserUpdate
+from app.schemas.appointment_schema import AppointmentCreate
+from app.schemas.custom_schema import AppointmentStatus
 
 if TYPE_CHECKING:
     from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
@@ -119,3 +123,22 @@ async def cache_delete(r: rediscon, id_user: int) -> str | None:
     await r.delete(cache_key)
 
     return 'Cache deletado!'
+
+
+async def check_conflit_appointment_user(
+    db:DBSession, user_id:int, payload: AppointmentCreate, time_service: int
+):
+    duration = timedelta(minutes=time_service)
+    start_time = payload.date_time
+    end_time = start_time + duration
+
+    stmt = select(Appointment).where(
+        Appointment.id_client == user_id,
+        Appointment.status != AppointmentStatus.canceled,
+        Appointment.date_time < end_time,
+        (Appointment.date_time + duration) > start_time,
+    )
+
+    result = await db.execute(stmt)
+
+    return result.scalar_one_or_none()

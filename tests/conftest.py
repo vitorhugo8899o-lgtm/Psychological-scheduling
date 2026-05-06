@@ -329,3 +329,13 @@ async def not_exists_user_token(client):
     client.cookies.set('Login_info', token)
 
     return client
+
+
+@pytest_asyncio.fixture(scope='function')
+async def schedule(db_session,service,availability, user_client,):
+    appointment = models.Appointment(
+        id_client=user_client.id,
+        id_psychologist=1,
+        id_service=service.id,
+        date_time='asdasd'
+    )

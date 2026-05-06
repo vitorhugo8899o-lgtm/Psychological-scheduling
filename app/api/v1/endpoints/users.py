@@ -82,8 +82,3 @@ async def delete_user(
 ):
     await user_service.delete_user(db, user, r)
     response.delete_cookie('Login_info')
-
-
-@user_route.post('/appointment', status_code=HTTPStatus.CREATED)
-async def schedule_an_appointment(db: DBSession, user: CurrentUser):
-    pass
