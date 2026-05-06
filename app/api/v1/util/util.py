@@ -27,3 +27,7 @@ def time_is_passad(time: datetime) -> bool:
         return True
     else:
         return False
+
+
+def convert_datehour_to_date(date: datetime) -> datetime:
+    return date.replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=None)
