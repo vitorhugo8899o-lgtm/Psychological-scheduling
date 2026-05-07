@@ -5,6 +5,7 @@ from unittest.mock import AsyncMock, patch
 import jwt
 import pytest
 import pytest_asyncio
+from freezegun import freeze_time
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import (
     AsyncSession,
@@ -352,3 +353,9 @@ async def schedule(
     await db_session.refresh(appointment)
 
     return appointment
+
+
+@pytest.fixture(autouse=True)
+def frozen_time():
+    with freeze_time("2026-05-11"):
+        yield

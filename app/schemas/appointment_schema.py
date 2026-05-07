@@ -25,16 +25,16 @@ class AppointmentCreate(BaseModel):
 
         if requested_time_br < now_br:
             raise ValueError(
-                f'O horário não pode estar no passado. Horário {requested_time_br.strftime("%d/%m/%Y %H:%M")}'  #noqa
+                f'O horário não pode estar no passado. Horário {requested_time_br.strftime("%d/%m/%Y %H:%M")}'  # noqa
             )
 
         if requested_time_br < now_br:
             raise ValueError(
-                f'A data fornecida não pode estar no passado. Data: {requested_time_br.strftime("%d/%m/%Y %H:%M")}'  #noqa
+                f'A data fornecida não pode estar no passado. Data: {requested_time_br.strftime("%d/%m/%Y %H:%M")}'  # noqa
             )
         if value > day_max_br:
             raise ValueError(
-                f'A data forncedia ultrapassa a data limite permidita. Data: {requested_time_br.strftime("%d/%m/%Y %H:%M")}'  #noqa
+                f'A data forncedia ultrapassa a data limite permidita. Data: {requested_time_br.strftime("%d/%m/%Y %H:%M")}'  # noqa
             )
 
         return value
