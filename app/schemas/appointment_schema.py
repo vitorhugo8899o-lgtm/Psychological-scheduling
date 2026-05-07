@@ -16,8 +16,10 @@ class AppointmentCreate(BaseModel):
     def validate_time_is_past(cls, value: datetime):
         br_tz = ZoneInfo('America/Sao_Paulo')
 
-        requested_time_br = value.astimezone(br_tz)
+        if value.tzinfo is None:
+            raise ValueError("O datetime precisa conter timezone.")
 
+        requested_time_br = value.astimezone(br_tz)
         now_br = datetime.now(br_tz)
 
         day_limit = 30
@@ -25,19 +27,15 @@ class AppointmentCreate(BaseModel):
 
         if requested_time_br < now_br:
             raise ValueError(
-                f'O horário não pode estar no passado. Horário {requested_time_br.strftime("%d/%m/%Y %H:%M")}'  # noqa
+                f'O horário não pode estar no passado. Horário {requested_time_br.strftime("%d/%m/%Y %H:%M")}'  #noqa
             )
 
-        if requested_time_br < now_br:
+        if requested_time_br > day_max_br:
             raise ValueError(
-                f'A data fornecida não pode estar no passado. Data: {requested_time_br.strftime("%d/%m/%Y %H:%M")}'  # noqa
-            )
-        if value > day_max_br:
-            raise ValueError(
-                f'A data forncedia ultrapassa a data limite permidita. Data: {requested_time_br.strftime("%d/%m/%Y %H:%M")}'  # noqa
+                f'A data fornecida ultrapassa a data limite permitida. Data: {requested_time_br.strftime("%d/%m/%Y %H:%M")}'  #noqa
             )
 
-        return value
+        return value.astimezone(timezone.utc)
 
     @field_validator('id_psychologist')
     @classmethod
