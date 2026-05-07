@@ -3,6 +3,7 @@ from datetime import timedelta
 from sqlalchemy import select
 
 from app.api.v1.dependencies import CurrentUser, DBSession
+from app.api.v1.util.util import ensure_utc
 from app.models.appointments_models import Appointment
 from app.schemas.appointment_schema import AppointmentCreate
 from app.schemas.custom_schema import AppointmentStatus
@@ -16,7 +17,7 @@ async def check_appointment_conflict(
     id_psychologist: int | None = None,
     id_client: int | None = None,
 ):
-    new_start = payload.date_time
+    new_start = ensure_utc(payload.date_time)
     new_end = new_start + timedelta(minutes=time_service)
 
     stmt = select(Appointment).where(
@@ -24,14 +25,10 @@ async def check_appointment_conflict(
     )
 
     if id_psychologist:
-        stmt = stmt.where(
-            Appointment.id_psychologist == id_psychologist
-        )
+        stmt = stmt.where(Appointment.id_psychologist == id_psychologist)
 
     if id_client:
-        stmt = stmt.where(
-            Appointment.id_client == id_client
-        )
+        stmt = stmt.where(Appointment.id_client == id_client)
 
     result = await db.scalars(stmt)
 
@@ -40,17 +37,11 @@ async def check_appointment_conflict(
     for appointment in appointments:
         service = appointment.service
 
-        existing_start = appointment.date_time
+        existing_start = ensure_utc(appointment.date_time)
 
-        existing_end = (
-            existing_start +
-            timedelta(minutes=service.duration_minutes)
-        )
+        existing_end = existing_start + timedelta(minutes=service.duration_minutes)
 
-        has_conflict = (
-            existing_start < new_end
-            and existing_end > new_start
-        )
+        has_conflict = existing_start < new_end and existing_end > new_start
 
         if has_conflict:
             return appointment

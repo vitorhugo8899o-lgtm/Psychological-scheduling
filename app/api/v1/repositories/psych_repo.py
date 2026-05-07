@@ -6,8 +6,6 @@ from sqlalchemy import and_, exists, select
 from app.api.v1.dependencies import DBSession
 from app.models.avaliabilites_models import Avaliabilite
 from app.models.psychologist_models import Psychologist
-from app.models.appointments_models import Appointment
-from app.schemas.custom_schema import AppointmentStatus
 
 
 async def get_psych(db: DBSession, id_psych: int):
@@ -49,9 +47,7 @@ async def avaliabilite_exists(
     date: datetime,
     service_minutes: int,
 ):
-    date_br = date.astimezone(
-        ZoneInfo('America/Sao_Paulo')
-    )
+    date_br = date.astimezone(ZoneInfo('America/Sao_Paulo'))
 
     duration = timedelta(minutes=service_minutes)
 
