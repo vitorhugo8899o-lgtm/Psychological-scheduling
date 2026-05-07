@@ -1,5 +1,3 @@
-from zoneinfo import ZoneInfo
-
 from fastapi import HTTPException
 
 from app.api.v1.dependencies import CurrentUser, DBSession
@@ -59,9 +57,7 @@ async def check_for_conflict(
     )
 
     if psych_appointment:
-        date = psych_appointment.date_time.astimezone(
-            ZoneInfo('America/Sao_Paulo')
-        ).replace(tzinfo=None, second=0, microsecond=0)
+        date = format_hour_br(psych_appointment.date_time)
         raise HTTPException(
             status_code=409,
             detail=(

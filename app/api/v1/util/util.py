@@ -48,4 +48,4 @@ def format_hour_br(date: datetime):
 
     date_format = date.astimezone(br_tmz)
 
-    return date_format.strftime("%d/%m/%Y às %H:%M")
+    return date_format.strftime('%d/%m/%Y às %H:%M')

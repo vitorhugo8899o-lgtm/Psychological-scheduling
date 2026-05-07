@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
     create_async_engine,
 )
+from sqlalchemy.pool import NullPool
 
 from app import models
 from app.api.v1.dependencies import get_db, get_redis
@@ -20,12 +21,12 @@ from app.core.config import Settings
 from app.db.base import Base
 from app.main import app
 
-TEST_DATABASE_URL = 'sqlite+aiosqlite:///:memory:'
+TEST_DATABASE_URL = 'postgresql+asyncpg://postgres:postgres@localhost:5433/test_db'
 
 settings = Settings()
 
 
-test_engine = create_async_engine(TEST_DATABASE_URL, echo=False)
+test_engine = create_async_engine(TEST_DATABASE_URL, poolclass=NullPool)
 TestingSessionLocal = async_sessionmaker(
     bind=test_engine, class_=AsyncSession, expire_on_commit=False
 )
@@ -50,9 +51,17 @@ async def init_test_db():
 
 
 @pytest_asyncio.fixture(scope='function')
-async def db_session(init_test_db):
+async def db_session():
+
+    async with test_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
+        await conn.run_sync(Base.metadata.create_all)
+
     async with TestingSessionLocal() as session:
         yield session
+
+    async with test_engine.begin() as conn:
+        await conn.run_sync(Base.metadata.drop_all)
 
 
 @pytest_asyncio.fixture(scope='session')
@@ -240,10 +249,10 @@ async def availability(db_session, user_psych):
     availability_save = []
     for d in days:
         new_availability = models.Avaliabilite(
-            id_psychologist=1,
+            id_psychologist=user_psych.id,
             day_of_the_week=d,
-            start_time=time(8, 30),
-            end_time=time(20, 30),
+            start_time=time(8, 10),
+            end_time=time(12, 30),
         )
 
         availability_save.append(new_availability)
@@ -345,7 +354,28 @@ async def schedule(
         id_client=user_client.id,
         id_psychologist=availability.id,
         id_service=service.id,
-        date_time=datetime(2026, 5, 11, 9, 30, tzinfo=timezone.utc),
+        date_time=datetime(2026, 5, 11, 12, 30, tzinfo=timezone.utc),
+    )
+
+    db_session.add(appointment)
+    await db_session.commit()
+    await db_session.refresh(appointment)
+
+    return appointment
+
+
+@pytest_asyncio.fixture(scope='function')
+async def schedule_psych(
+    db_session,
+    service,
+    availability,
+    user_client2,
+):
+    appointment = models.Appointment(
+        id_client=user_client2.id,
+        id_psychologist=availability.id,
+        id_service=service.id,
+        date_time=datetime(2026, 5, 11, 12, 30, tzinfo=timezone.utc),
     )
 
     db_session.add(appointment)
