@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
 from pydantic import BaseModel, ConfigDict, computed_field, field_validator
@@ -20,9 +20,21 @@ class AppointmentCreate(BaseModel):
 
         now_br = datetime.now(br_tz)
 
+        day_limit = 30
+        day_max_br = now_br + timedelta(days=day_limit)
+
         if requested_time_br < now_br:
             raise ValueError(
-                f'O horário não pode estar no passado. Horário {requested_time_br}'
+                f'O horário não pode estar no passado. Horário {requested_time_br.strftime("%d/%m/%Y %H:%M")}'  #noqa
+            )
+
+        if requested_time_br < now_br:
+            raise ValueError(
+                f'A data fornecida não pode estar no passado. Data: {requested_time_br.strftime("%d/%m/%Y %H:%M")}'  #noqa
+            )
+        if value > day_max_br:
+            raise ValueError(
+                f'A data forncedia ultrapassa a data limite permidita. Data: {requested_time_br.strftime("%d/%m/%Y %H:%M")}'  #noqa
             )
 
         return value
