@@ -9,6 +9,7 @@ from app.api.v1.repositories.appointment_repo import (
 )
 from app.api.v1.repositories.psych_repo import avaliabilite_exists, get_psych
 from app.api.v1.repositories.service_repo import get_service_by_id
+from app.api.v1.util.util import format_hour_br
 from app.schemas.appointment_schema import AppointmentCreate
 
 
@@ -25,16 +26,11 @@ async def check_for_conflict(
         )
 
     user_appointment = await check_appointment_conflict(
-        db,
-        payload,
-        service.duration_minutes,
-        id_client=user.id
+        db, payload, service.duration_minutes, id_client=user.id
     )
 
     if user_appointment:
-        date = user_appointment.date_time.astimezone(
-            ZoneInfo('America/Sao_Paulo')
-        ).replace(tzinfo=None, second=0, microsecond=0)
+        date = format_hour_br(user_appointment.date_time)
         raise HTTPException(
             status_code=409,
             detail=f'Você já possui uma consulta marcada neste período. Consulta:{date}'
@@ -59,16 +55,13 @@ async def check_for_conflict(
         )
 
     psych_appointment = await check_appointment_conflict(
-        db,
-        payload,
-        service.duration_minutes,
-        id_psychologist=psych.id 
+        db, payload, service.duration_minutes, id_psychologist=psych.id
     )
 
     if psych_appointment:
-        date = psych_appointment.date_time.astimezone(ZoneInfo('America/Sao_Paulo')).replace(
-            tzinfo=None, second=0, microsecond=0
-        )
+        date = psych_appointment.date_time.astimezone(
+            ZoneInfo('America/Sao_Paulo')
+        ).replace(tzinfo=None, second=0, microsecond=0)
         raise HTTPException(
             status_code=409,
             detail=(

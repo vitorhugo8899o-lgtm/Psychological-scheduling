@@ -1,4 +1,3 @@
-from datetime import timedelta
 from typing import TYPE_CHECKING
 
 from fastapi import HTTPException
@@ -10,10 +9,7 @@ from sqlalchemy.exc import (
 )
 
 from app.api.v1.repositories import auth_repo
-from app.models.appointments_models import Appointment
 from app.models.users_models import User
-from app.schemas.appointment_schema import AppointmentCreate
-from app.schemas.custom_schema import AppointmentStatus
 from app.schemas.user_schema import UserCreate, UserPublic, UserUpdate
 
 if TYPE_CHECKING:

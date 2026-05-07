@@ -17,7 +17,7 @@ class AppointmentCreate(BaseModel):
         br_tz = ZoneInfo('America/Sao_Paulo')
 
         if value.tzinfo is None:
-            raise ValueError("O datetime precisa conter timezone.")
+            raise ValueError('O datetime precisa conter timezone.')
 
         requested_time_br = value.astimezone(br_tz)
         now_br = datetime.now(br_tz)
@@ -27,12 +27,12 @@ class AppointmentCreate(BaseModel):
 
         if requested_time_br < now_br:
             raise ValueError(
-                f'O horário não pode estar no passado. Horário {requested_time_br.strftime("%d/%m/%Y %H:%M")}'  #noqa
+                f'O horário não pode estar no passado. Horário {requested_time_br.strftime("%d/%m/%Y %H:%M")}'  # noqa
             )
 
         if requested_time_br > day_max_br:
             raise ValueError(
-                f'A data fornecida ultrapassa a data limite permitida. Data: {requested_time_br.strftime("%d/%m/%Y %H:%M")}'  #noqa
+                f'A data fornecida ultrapassa a data limite permitida. Data: {requested_time_br.strftime("%d/%m/%Y %H:%M")}'  # noqa
             )
 
         return value.astimezone(timezone.utc)
