@@ -8,23 +8,54 @@ from app.schemas.appointment_schema import AppointmentCreate
 from app.schemas.custom_schema import AppointmentStatus
 
 
-async def check_if_psych_has_appointment(
-    db: DBSession, payload: AppointmentCreate, id_psych: int, time_service: int
+async def check_appointment_conflict(
+    db: DBSession,
+    payload: AppointmentCreate,
+    time_service: int,
+    *,
+    id_psychologist: int | None = None,
+    id_client: int | None = None,
 ):
-    duration = timedelta(minutes=time_service)
-    start_time = payload.date_time
-    end_time = start_time + duration
+    new_start = payload.date_time
+    new_end = new_start + timedelta(minutes=time_service)
 
     stmt = select(Appointment).where(
-        Appointment.id_psychologist == id_psych,
         Appointment.status != AppointmentStatus.canceled,
-        Appointment.date_time < end_time,
-        (Appointment.date_time + duration) > start_time,
     )
 
-    existing_appointment = await db.scalar(stmt)
+    if id_psychologist:
+        stmt = stmt.where(
+            Appointment.id_psychologist == id_psychologist
+        )
 
-    return existing_appointment
+    if id_client:
+        stmt = stmt.where(
+            Appointment.id_client == id_client
+        )
+
+    result = await db.scalars(stmt)
+
+    appointments = result.all()
+
+    for appointment in appointments:
+        service = appointment.service
+
+        existing_start = appointment.date_time
+
+        existing_end = (
+            existing_start +
+            timedelta(minutes=service.duration_minutes)
+        )
+
+        has_conflict = (
+            existing_start < new_end
+            and existing_end > new_start
+        )
+
+        if has_conflict:
+            return appointment
+
+    return None
 
 
 async def create_appointment(

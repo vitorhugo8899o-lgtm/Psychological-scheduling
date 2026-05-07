@@ -13,7 +13,7 @@ psych_router = APIRouter()
     '/psych/me/availability',
     status_code=HTTPStatus.CREATED,
 )
-async def create_appointment(
+async def create_avaliabilite(
     db: DBSession,
     r: rediscon,
     user: CurrentUser,
