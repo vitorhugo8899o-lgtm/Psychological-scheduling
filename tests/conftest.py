@@ -343,9 +343,9 @@ async def schedule(
 ):
     appointment = models.Appointment(
         id_client=user_client.id,
-        id_psychologist=1,
+        id_psychologist=availability.id,
         id_service=service.id,
-        date_time=datetime(2026, 5, 7, 9, 30, tzinfo=timezone.utc),
+        date_time=datetime(2026, 5, 11, 9, 30, tzinfo=timezone.utc),
     )
 
     db_session.add(appointment)
@@ -357,5 +357,5 @@ async def schedule(
 
 @pytest.fixture(autouse=True)
 def frozen_time():
-    with freeze_time("2026-05-11"):
+    with freeze_time('2026-05-11'):
         yield
