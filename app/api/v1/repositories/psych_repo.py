@@ -6,6 +6,8 @@ from sqlalchemy import and_, exists, select
 from app.api.v1.dependencies import DBSession
 from app.models.avaliabilites_models import Avaliabilite
 from app.models.psychologist_models import Psychologist
+from app.models.appointments_models import Appointment
+from app.schemas.custom_schema import AppointmentStatus
 
 
 async def get_psych(db: DBSession, id_psych: int):
@@ -42,24 +44,25 @@ async def check_overlapping_availability(
 
 
 async def avaliabilite_exists(
-    db: DBSession, id_psych: int, date: datetime, service_minutes: int
+    db: DBSession,
+    id_psych: int,
+    date: datetime,
+    service_minutes: int,
 ):
+    date_br = date.astimezone(
+        ZoneInfo('America/Sao_Paulo')
+    )
+
     duration = timedelta(minutes=service_minutes)
 
-    end_time = date + duration
-
-    end_time_db = end_time.astimezone(ZoneInfo('America/Sao_Paulo')).time()
-
-    day_of_week = date.weekday()
-
-    start_time_db = date.time()
+    end_time = date_br + duration
 
     stmt = select(
         exists().where(
             Avaliabilite.id_psychologist == id_psych,
-            Avaliabilite.day_of_the_week == day_of_week,
-            Avaliabilite.start_time <= start_time_db,
-            Avaliabilite.end_time >= end_time_db,
+            Avaliabilite.day_of_the_week == date_br.weekday(),
+            Avaliabilite.start_time <= date_br.time(),
+            Avaliabilite.end_time >= end_time.time(),
         )
     )
 

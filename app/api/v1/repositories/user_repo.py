@@ -119,22 +119,3 @@ async def cache_delete(r: rediscon, id_user: int) -> str | None:
     await r.delete(cache_key)
 
     return 'Cache deletado!'
-
-
-async def check_conflit_appointment_user(
-    db: DBSession, user_id: int, payload: AppointmentCreate, time_service: int
-):
-    duration = timedelta(minutes=time_service)
-    start_time = payload.date_time
-    end_time = start_time + duration
-
-    stmt = select(Appointment).where(
-        Appointment.id_client == user_id,
-        Appointment.status != AppointmentStatus.canceled,
-        Appointment.date_time < end_time,
-        (Appointment.date_time + duration) > start_time,
-    )
-
-    result = await db.execute(stmt)
-
-    return result.scalar_one_or_none()
