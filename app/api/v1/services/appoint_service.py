@@ -4,12 +4,11 @@ from fastapi import HTTPException
 
 from app.api.v1.dependencies import CurrentUser, DBSession
 from app.api.v1.repositories.appointment_repo import (
-    check_if_psych_has_appointment,
+    check_appointment_conflict,
     create_appointment,
 )
 from app.api.v1.repositories.psych_repo import avaliabilite_exists, get_psych
 from app.api.v1.repositories.service_repo import get_service_by_id
-from app.api.v1.repositories.user_repo import check_conflit_appointment_user
 from app.schemas.appointment_schema import AppointmentCreate
 
 
@@ -25,8 +24,11 @@ async def check_for_conflict(
             detail='Serviço não encontrado, verifique se digitou corretamente.',
         )
 
-    user_appointment = await check_conflit_appointment_user(
-        db, user.id, payload, service.duration_minutes
+    user_appointment = await check_appointment_conflict(
+        db,
+        payload,
+        service.duration_minutes,
+        id_client=user.id
     )
 
     if user_appointment:
@@ -56,12 +58,15 @@ async def check_for_conflict(
             detail='O psicólogo solcitado não atende na data informada.',
         )
 
-    check = await check_if_psych_has_appointment(
-        db, payload, psych.id, service.duration_minutes
+    psych_appointment = await check_appointment_conflict(
+        db,
+        payload,
+        service.duration_minutes,
+        id_psychologist=psych.id 
     )
 
-    if check:
-        date = check.date_time.astimezone(ZoneInfo('America/Sao_Paulo')).replace(
+    if psych_appointment:
+        date = psych_appointment.date_time.astimezone(ZoneInfo('America/Sao_Paulo')).replace(
             tzinfo=None, second=0, microsecond=0
         )
         raise HTTPException(
