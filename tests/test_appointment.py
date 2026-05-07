@@ -69,10 +69,7 @@ async def test_user_has_appointment(availability, token_client, schedule, servic
 
 @pytest.mark.asyncio
 async def test_user_has_appointment_during_that_period_of_time(
-    availability,
-    token_client,
-    schedule,
-    service
+    availability, token_client, schedule, service
 ):
     payload = {
         'id_psychologist': f'{availability.id}',
@@ -92,10 +89,7 @@ async def test_user_has_appointment_during_that_period_of_time(
 
 
 @pytest.mark.asyncio
-async def test_scheduling_has_a_non_existent_id_psychologist(
-    token_client,
-    service
-):
+async def test_scheduling_has_a_non_existent_id_psychologist(token_client, service):
     payload = {
         'id_psychologist': 12,
         'service_id': f'{service.id}',
@@ -107,14 +101,15 @@ async def test_scheduling_has_a_non_existent_id_psychologist(
     status = 409
 
     assert req.status_code == status
-    assert req.json()['detail'] == 'O Psicólogo não encontrado, verifique se o id digitado é válido'  #noqa
+    assert (
+        req.json()['detail']
+        == 'O Psicólogo não encontrado, verifique se o id digitado é válido'
+    )  # noqa
 
 
 @pytest.mark.asyncio
 async def test_psychologist_will_not_be_available_on_the_requested_date(
-    availability,
-    token_client,
-    service
+    availability, token_client, service
 ):
     payload = {
         'id_psychologist': f'{availability.id}',
@@ -132,10 +127,7 @@ async def test_psychologist_will_not_be_available_on_the_requested_date(
 
 @pytest.mark.asyncio
 async def test_psychologist_already_has_an_appointment_scheduled_during_this_period(
-    availability,
-    token_client,
-    service,
-    schedule_psych
+    availability, token_client, service, schedule_psych
 ):
     payload = {
         'id_psychologist': f'{availability.id}',
@@ -148,15 +140,14 @@ async def test_psychologist_already_has_an_appointment_scheduled_during_this_per
     status = 409
 
     assert req.status_code == status
-    assert req.json()['detail'] == 'O psicólogo já possui uma consulta marcada neste horário. Consulta: 11/05/2026 às 09:30'  #noqa
+    assert (
+        req.json()['detail']
+        == 'O psicólogo já possui uma consulta marcada neste horário. Consulta: 11/05/2026 às 09:30'  # noqa
+    )
 
 
 @pytest.mark.asyncio
-async def test_appointment_outside_working_hours(
-    availability,
-    token_client,
-    service
-):
+async def test_appointment_outside_working_hours(availability, token_client, service):
     payload = {
         'id_psychologist': f'{availability.id}',
         'service_id': f'{service.id}',

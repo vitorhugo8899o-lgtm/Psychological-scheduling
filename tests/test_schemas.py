@@ -281,11 +281,7 @@ async def test_psychologistavaliabilite_invalid_day(token_psych):
 
 
 @pytest.mark.asyncio
-async def test_appointmentcreate_date_no_timezone(
-    availability,
-    token_client,
-    service
-):
+async def test_appointmentcreate_date_no_timezone(availability, token_client, service):
     payload = {
         'id_psychologist': f'{availability.id}',
         'service_id': f'{service.id}',
@@ -297,15 +293,13 @@ async def test_appointmentcreate_date_no_timezone(
     status = 422
 
     assert req.status_code == status
-    assert req.json()['detail'][0]['msg'] == 'Value error, A data precisa conter timezone.'  #noqa
+    assert (
+        req.json()['detail'][0]['msg'] == 'Value error, A data precisa conter timezone.'
+    )  # noqa
 
 
 @pytest.mark.asyncio
-async def test_appointmentcreate_date_in_the_past(
-    availability,
-    token_client,
-    service
-):
+async def test_appointmentcreate_date_in_the_past(availability, token_client, service):
     payload = {
         'id_psychologist': f'{availability.id}',
         'service_id': f'{service.id}',
@@ -317,14 +311,15 @@ async def test_appointmentcreate_date_in_the_past(
     status = 422
 
     assert req.status_code == status
-    assert req.json()['detail'][0]['msg'] == 'Value error, O horário não pode estar no passado. Horário 01/05/2024 08:10'  #noqa
+    assert (
+        req.json()['detail'][0]['msg']
+        == 'Value error, O horário não pode estar no passado. Horário 01/05/2024 08:10'
+    )  # noqa
 
 
 @pytest.mark.asyncio
 async def test_date_older_than_30_days_will_generate_an_error(
-    availability,
-    token_client,
-    service
+    availability, token_client, service
 ):
     payload = {
         'id_psychologist': f'{availability.id}',
@@ -337,13 +332,15 @@ async def test_date_older_than_30_days_will_generate_an_error(
     status = 422
 
     assert req.status_code == status
-    assert req.json()['detail'][0]['msg'] == 'Value error, A data fornecida ultrapassa a data limite permitida. Data: 10/06/2026 08:10'  #noqa
+    assert (
+        req.json()['detail'][0]['msg']
+        == 'Value error, A data fornecida ultrapassa a data limite permitida. Data: 10/06/2026 08:10'  # noqa
+    )
 
 
 @pytest.mark.asyncio
 async def test_schedule_cannot_receive_a_negative_id_from_the_psychologist(
-    token_client,
-    service
+    token_client, service
 ):
     payload = {
         'id_psychologist': -12,
@@ -356,13 +353,15 @@ async def test_schedule_cannot_receive_a_negative_id_from_the_psychologist(
     status = 422
 
     assert req.status_code == status
-    assert req.json()['detail'][0]['msg'] == 'Value error, O id do psicólogo não pode ser 0 ou negativo.'  #noqa
+    assert (
+        req.json()['detail'][0]['msg']
+        == 'Value error, O id do psicólogo não pode ser 0 ou negativo.'
+    )  # noqa
 
 
 @pytest.mark.asyncio
 async def test_schedule_cannot_receive_a_negative_id_from_the_service(
-    token_client,
-    service
+    token_client, service
 ):
     payload = {
         'id_psychologist': 12,
@@ -375,4 +374,7 @@ async def test_schedule_cannot_receive_a_negative_id_from_the_service(
     status = 422
 
     assert req.status_code == status
-    assert req.json()['detail'][0]['msg'] == 'Value error, O id do serviço não pode ser 0 ou negativo.'  #noqa
+    assert (
+        req.json()['detail'][0]['msg']
+        == 'Value error, O id do serviço não pode ser 0 ou negativo.'
+    )  # noqa

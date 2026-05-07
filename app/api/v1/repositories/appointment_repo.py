@@ -64,3 +64,13 @@ async def create_appointment(
     await db.refresh(new_appointment)
 
     return new_appointment
+
+
+async def get_all_user_appointment(db: DBSession, user: CurrentUser):
+    stmt = select(Appointment).where(
+        Appointment.id_client == user.id,
+    )
+
+    result = await db.execute(stmt)
+
+    return result.scalars().all()
