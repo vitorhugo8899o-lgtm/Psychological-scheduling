@@ -17,7 +17,7 @@ class AppointmentCreate(BaseModel):
         br_tz = ZoneInfo('America/Sao_Paulo')
 
         if value.tzinfo is None:
-            raise ValueError('O datetime precisa conter timezone.')
+            raise ValueError('A data precisa conter timezone.')
 
         requested_time_br = value.astimezone(br_tz)
         now_br = datetime.now(br_tz)

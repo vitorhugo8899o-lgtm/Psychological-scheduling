@@ -223,7 +223,7 @@ async def test_service_schema_with_blank_space_in_description(token_adm):
 
 
 @pytest.mark.asyncio
-async def test_schema_psychologistcreate_invalid_region(token_adm, user_psych):
+async def test_psychologistcreate_invalid_region(token_adm, user_psych):
     payload = {
         'email': f'{user_psych.email}',
         'region': '51',
@@ -239,7 +239,7 @@ async def test_schema_psychologistcreate_invalid_region(token_adm, user_psych):
 
 
 @pytest.mark.asyncio
-async def test_schema_psychologistcreate_invalid_number(token_adm, user_psych):
+async def test_psychologistcreate_invalid_number(token_adm, user_psych):
     payload = {
         'email': f'{user_psych.email}',
         'region': '10',
@@ -258,7 +258,7 @@ async def test_schema_psychologistcreate_invalid_number(token_adm, user_psych):
 
 
 @pytest.mark.asyncio
-async def test_schema_psychologistavaliabilite_invalid_day(token_psych):
+async def test_psychologistavaliabilite_invalid_day(token_psych):
     payload = {
         'availabilities': [
             {
@@ -278,3 +278,101 @@ async def test_schema_psychologistavaliabilite_invalid_day(token_psych):
         req.json()['detail'][0]['msg']
         == 'Value error, O dia da semana deve estar entre 0 (Segunda) e 6 (Domingo)'  # noqa
     )
+
+
+@pytest.mark.asyncio
+async def test_appointmentcreate_date_no_timezone(
+    availability,
+    token_client,
+    service
+):
+    payload = {
+        'id_psychologist': f'{availability.id}',
+        'service_id': f'{service.id}',
+        'date_time': '2026-05-11T11:10:00',
+    }
+
+    req = await token_client.post('/api/v1/appointments', json=payload)
+
+    status = 422
+
+    assert req.status_code == status
+    assert req.json()['detail'][0]['msg'] == 'Value error, A data precisa conter timezone.'  #noqa
+
+
+@pytest.mark.asyncio
+async def test_appointmentcreate_date_in_the_past(
+    availability,
+    token_client,
+    service
+):
+    payload = {
+        'id_psychologist': f'{availability.id}',
+        'service_id': f'{service.id}',
+        'date_time': '2024-05-01T11:10:00Z',
+    }
+
+    req = await token_client.post('/api/v1/appointments', json=payload)
+
+    status = 422
+
+    assert req.status_code == status
+    assert req.json()['detail'][0]['msg'] == 'Value error, O horário não pode estar no passado. Horário 01/05/2024 08:10'  #noqa
+
+
+@pytest.mark.asyncio
+async def test_date_older_than_30_days_will_generate_an_error(
+    availability,
+    token_client,
+    service
+):
+    payload = {
+        'id_psychologist': f'{availability.id}',
+        'service_id': f'{service.id}',
+        'date_time': '2026-06-10T11:10:00Z',
+    }
+
+    req = await token_client.post('/api/v1/appointments', json=payload)
+
+    status = 422
+
+    assert req.status_code == status
+    assert req.json()['detail'][0]['msg'] == 'Value error, A data fornecida ultrapassa a data limite permitida. Data: 10/06/2026 08:10'  #noqa
+
+
+@pytest.mark.asyncio
+async def test_schedule_cannot_receive_a_negative_id_from_the_psychologist(
+    token_client,
+    service
+):
+    payload = {
+        'id_psychologist': -12,
+        'service_id': f'{service.id}',
+        'date_time': '2026-05-11T11:10:00Z',
+    }
+
+    req = await token_client.post('/api/v1/appointments', json=payload)
+
+    status = 422
+
+    assert req.status_code == status
+    assert req.json()['detail'][0]['msg'] == 'Value error, O id do psicólogo não pode ser 0 ou negativo.'  #noqa
+
+
+@pytest.mark.asyncio
+async def test_schedule_cannot_receive_a_negative_id_from_the_service(
+    token_client,
+    service
+):
+    payload = {
+        'id_psychologist': 12,
+        'service_id': -45,
+        'date_time': '2026-05-11T11:10:00Z',
+    }
+
+    req = await token_client.post('/api/v1/appointments', json=payload)
+
+    status = 422
+
+    assert req.status_code == status
+    assert req.json()['detail'][0]['msg'] == 'Value error, O id do serviço não pode ser 0 ou negativo.'  #noqa
