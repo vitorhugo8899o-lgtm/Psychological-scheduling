@@ -84,8 +84,7 @@ async def get_user_appointment(db: DBSession, user: CurrentUser):
 async def get_psych_appointment(db: DBSession, user: CurrentUser):
     if not user.psychologist_profile:
         raise HTTPException(
-            status_code=403,
-            detail="Somente psicólogos podem acessar essa função."
+            status_code=403, detail='Somente psicólogos podem acessar essa função.'
         )
 
     appointments = await get_all_psych_appointment(db, user)
@@ -94,4 +93,3 @@ async def get_psych_appointment(db: DBSession, user: CurrentUser):
         raise HTTPException(status_code=404, detail='Nenhuma consulta encontrada.')
 
     return appointments
-    

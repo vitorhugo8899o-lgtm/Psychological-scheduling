@@ -1,9 +1,8 @@
 from datetime import timedelta
 
 from fastapi import HTTPException
-
-from sqlalchemy import case, select, delete
-from sqlalchemy.exc import OperationalError, IntegrityError
+from sqlalchemy import case, delete, select
+from sqlalchemy.exc import IntegrityError, OperationalError
 
 from app.api.v1.dependencies import CurrentUser, DBSession
 from app.api.v1.util.util import ensure_utc
@@ -70,13 +69,17 @@ async def create_appointment(
 
 
 async def get_all_user_appointment(db: DBSession, user: CurrentUser):
-    stmt = select(Appointment).where(
-        Appointment.id_client == user.id,
-    ).order_by(
-        case(
-            (Appointment.status == AppointmentStatus.pending, 0),
-            (Appointment.status == AppointmentStatus.confirmed, 1),
-            else_=2
+    stmt = (
+        select(Appointment)
+        .where(
+            Appointment.id_client == user.id,
+        )
+        .order_by(
+            case(
+                (Appointment.status == AppointmentStatus.pending, 0),
+                (Appointment.status == AppointmentStatus.confirmed, 1),
+                else_=2,
+            )
         )
     )
 
@@ -86,13 +89,17 @@ async def get_all_user_appointment(db: DBSession, user: CurrentUser):
 
 
 async def get_all_psych_appointment(db: DBSession, user: CurrentUser):
-    stmt = select(Appointment).where(
-        Appointment.psychologist == user.psychologist_profile,
-    ).order_by(
-        case(
-            (Appointment.status == AppointmentStatus.pending, 0),
-            (Appointment.status == AppointmentStatus.confirmed, 1),
-            else_=2
+    stmt = (
+        select(Appointment)
+        .where(
+            Appointment.psychologist == user.psychologist_profile,
+        )
+        .order_by(
+            case(
+                (Appointment.status == AppointmentStatus.pending, 0),
+                (Appointment.status == AppointmentStatus.confirmed, 1),
+                else_=2,
+            )
         )
     )
 
@@ -101,14 +108,12 @@ async def get_all_psych_appointment(db: DBSession, user: CurrentUser):
     return result.scalars().all()
 
 
-async def delete_appointment_user(db:DBSession, user: CurrentUser):
-    stmt = delete(Appointment).where(
-        Appointment.id_client == user.id
-    )
+async def delete_appointment_user(db: DBSession, user: CurrentUser):
+    stmt = delete(Appointment).where(Appointment.id_client == user.id)
 
     try:
         await db.execute(stmt)
-    
+
         await db.commit()
     except OperationalError as e:
         await db.rollback()

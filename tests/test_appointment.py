@@ -164,11 +164,7 @@ async def test_appointment_outside_working_hours(availability, token_client, ser
 
 @pytest.mark.asyncio
 async def test_get_appointment_user(
-    availability,
-    token_client,
-    service,
-    schedule,
-    schedule2
+    availability, token_client, service, schedule, schedule2
 ):
     req = await token_client.get('/api/v1/users/me/appointments')
 
@@ -196,11 +192,7 @@ async def test_user_has_no_appointment(token_client):
 
 @pytest.mark.asyncio
 async def test_get_appointment_psych(
-    availability,
-    token_psych,
-    service,
-    schedule,
-    schedule2
+    availability, token_psych, service, schedule, schedule2
 ):
     req = await token_psych.get('/api/v1/psych/me/appointments')
 

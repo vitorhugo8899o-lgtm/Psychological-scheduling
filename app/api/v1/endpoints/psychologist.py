@@ -27,7 +27,7 @@ async def create_avaliabilite(
 @psych_router.get(
     '/psych/me/appointments',
     status_code=HTTPStatus.OK,
-    response_model=List[AppointmentUserResponse]
+    response_model=List[AppointmentUserResponse],
 )
 async def get_appiontment(db: DBSession, user: CurrentUser):
     return await appoint_service.get_psych_appointment(db, user)
