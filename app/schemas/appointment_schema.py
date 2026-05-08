@@ -54,7 +54,7 @@ class AppointmentCreate(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class ApppointmentResponse(BaseModel):
+class AppointmentResponse(BaseModel):
     id: int
     id_client: int
     id_psychologist: int

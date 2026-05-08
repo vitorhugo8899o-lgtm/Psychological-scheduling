@@ -5,6 +5,7 @@ from app.api.v1.repositories.appointment_repo import (
     check_appointment_conflict,
     create_appointment,
     get_all_user_appointment,
+    get_all_psych_appointment
 )
 from app.api.v1.repositories.psych_repo import avaliabilite_exists, get_psych
 from app.api.v1.repositories.service_repo import get_service_by_id
@@ -73,6 +74,21 @@ async def check_for_conflict(
 
 async def get_user_appointment(db: DBSession, user: CurrentUser):
     appointments = await get_all_user_appointment(db, user)
+
+    if not appointments:
+        raise HTTPException(status_code=404, detail='Nenhuma consulta encontrada.')
+
+    return appointments
+
+
+async def get_psych_appointment(db: DBSession, user: CurrentUser):
+    if not user.psychologist_profile:
+        raise HTTPException(
+            status_code=403,
+            detail="Somente psicólogos podem acessar essa função."
+        )
+    
+    appointments = await get_all_psych_appointment(db, user)
 
     if not appointments:
         raise HTTPException(status_code=404, detail='Nenhuma consulta encontrada.')
