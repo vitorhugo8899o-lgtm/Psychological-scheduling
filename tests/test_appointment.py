@@ -192,3 +192,45 @@ async def test_user_has_no_appointment(token_client):
 
     assert req.status_code == status
     assert req.json()['detail'] == 'Nenhuma consulta encontrada.'
+
+
+@pytest.mark.asyncio
+async def test_get_appointment_psych(
+    availability,
+    token_psych,
+    service,
+    schedule,
+    schedule2
+):
+    req = await token_psych.get('/api/v1/psych/me/appointments')
+
+    status = 200
+
+    response = req.json()
+
+    appointments = 2
+
+    assert req.status_code == status
+    assert isinstance(response, list)
+    assert len(response) == appointments
+    assert response[0]['status'] == 'pending'
+
+
+@pytest.mark.asyncio
+async def test_get_appointment_psych_by_a_user_who_is_not(token_client):
+    req = await token_client.get('/api/v1/psych/me/appointments')
+
+    status = 403
+
+    assert req.status_code == status
+    assert req.json()['detail'] == 'Somente psicólogos podem acessar essa função.'
+
+
+@pytest.mark.asyncio
+async def test_psych_has_no_appointments(token_psych):
+    req = await token_psych.get('/api/v1/psych/me/appointments')
+
+    status = 404
+
+    assert req.status_code == status
+    assert req.json()['detail'] == 'Nenhuma consulta encontrada.'
