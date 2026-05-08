@@ -79,7 +79,7 @@ async def delete_user(
     response.delete_cookie('Login_info')
 
 
-@user_route.post(
+@user_route.get(
     '/users/me/appointments',
     status_code=HTTPStatus.OK,
     response_model=List[AppointmentUserResponse],

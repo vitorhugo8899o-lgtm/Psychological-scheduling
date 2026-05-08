@@ -20,6 +20,7 @@ from app.api.v1.repositories import auth_repo
 from app.core.config import Settings
 from app.db.base import Base
 from app.main import app
+from app.schemas.custom_schema import AppointmentStatus
 
 TEST_DATABASE_URL = 'postgresql+asyncpg://postgres:postgres@localhost:5433/test_db'
 
@@ -355,6 +356,28 @@ async def schedule(
         id_psychologist=availability.id,
         id_service=service.id,
         date_time=datetime(2026, 5, 11, 12, 30, tzinfo=timezone.utc),
+    )
+
+    db_session.add(appointment)
+    await db_session.commit()
+    await db_session.refresh(appointment)
+
+    return appointment
+
+
+@pytest_asyncio.fixture(scope='function')
+async def schedule2(
+    db_session,
+    service,
+    availability,
+    user_client,
+):
+    appointment = models.Appointment(
+        id_client=user_client.id,
+        id_psychologist=availability.id,
+        id_service=service.id,
+        status=AppointmentStatus.confirmed,
+        date_time=datetime(2026, 5, 11, 14, 30, tzinfo=timezone.utc),
     )
 
     db_session.add(appointment)

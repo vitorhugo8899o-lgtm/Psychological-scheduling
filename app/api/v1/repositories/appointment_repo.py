@@ -1,6 +1,6 @@
 from datetime import timedelta
 
-from sqlalchemy import select, case
+from sqlalchemy import case, select
 
 from app.api.v1.dependencies import CurrentUser, DBSession
 from app.api.v1.util.util import ensure_utc
@@ -82,7 +82,7 @@ async def get_all_user_appointment(db: DBSession, user: CurrentUser):
     return result.scalars().all()
 
 
-async def get_all_psych_appointment(db:DBSession, user: CurrentUser):
+async def get_all_psych_appointment(db: DBSession, user: CurrentUser):
     stmt = select(Appointment).where(
         Appointment.psychologist == user.psychologist_profile,
     ).order_by(
@@ -92,7 +92,7 @@ async def get_all_psych_appointment(db:DBSession, user: CurrentUser):
             else_=2
         )
     )
-    
+
     result = await db.execute(stmt)
 
     return result.scalars().all()

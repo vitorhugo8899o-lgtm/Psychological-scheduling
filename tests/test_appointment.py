@@ -160,3 +160,35 @@ async def test_appointment_outside_working_hours(availability, token_client, ser
 
     assert req.status_code == status
     assert req.json()['detail'] == 'O psicólogo solcitado não atende na data informada.'
+
+
+@pytest.mark.asyncio
+async def test_get_appointment_user(
+    availability,
+    token_client,
+    service,
+    schedule,
+    schedule2
+):
+    req = await token_client.get('/api/v1/users/me/appointments')
+
+    status = 200
+
+    response = req.json()
+
+    appointments = 2
+
+    assert req.status_code == status
+    assert isinstance(response, list)
+    assert len(response) == appointments
+    assert response[0]['status'] == 'pending'
+
+
+@pytest.mark.asyncio
+async def test_user_has_no_appointment(token_client):
+    req = await token_client.get('/api/v1/users/me/appointments')
+
+    status = 404
+
+    assert req.status_code == status
+    assert req.json()['detail'] == 'Nenhuma consulta encontrada.'
