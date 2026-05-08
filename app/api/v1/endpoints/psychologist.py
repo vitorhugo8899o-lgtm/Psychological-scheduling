@@ -4,9 +4,9 @@ from typing import List
 from fastapi import APIRouter
 
 from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
-from app.api.v1.services import psych_service, appoint_service
-from app.schemas.psychologist_schema import PsychologistAvaliabiliteCreate
+from app.api.v1.services import appoint_service, psych_service
 from app.schemas.appointment_schema import AppointmentUserResponse
+from app.schemas.psychologist_schema import PsychologistAvaliabiliteCreate
 
 psych_router = APIRouter()
 
