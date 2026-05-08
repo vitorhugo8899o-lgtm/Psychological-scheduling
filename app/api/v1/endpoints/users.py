@@ -6,7 +6,8 @@ from fastapi.responses import Response
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
-from app.api.v1.services import auth_service, user_service
+from app.api.v1.services import appoint_service, auth_service, user_service
+from app.schemas.appointment_schema import AppointmentUserResponse
 from app.schemas.custom_schema import LoginSuccess
 from app.schemas.user_schema import UserCreate, UserPublic, UserUpdate
 
@@ -76,3 +77,12 @@ async def delete_user(
 ):
     await user_service.delete_user(db, user, r)
     response.delete_cookie('Login_info')
+
+
+@user_route.post(
+    '/users/me/appointments',
+    status_code=HTTPStatus.OK,
+    response_model=List[AppointmentUserResponse],
+)
+async def get_all_appointments(db: DBSession, user: CurrentUser):
+    return await appoint_service.get_user_appointment(db, user)

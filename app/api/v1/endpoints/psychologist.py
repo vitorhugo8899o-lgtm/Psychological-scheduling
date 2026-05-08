@@ -1,10 +1,12 @@
 from http import HTTPStatus
+from typing import List
 
 from fastapi import APIRouter
 
 from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
-from app.api.v1.services import psych_service
+from app.api.v1.services import psych_service, appoint_service
 from app.schemas.psychologist_schema import PsychologistAvaliabiliteCreate
+from app.schemas.appointment_schema import AppointmentUserResponse
 
 psych_router = APIRouter()
 
@@ -20,3 +22,12 @@ async def create_avaliabilite(
     availability: PsychologistAvaliabiliteCreate,
 ):
     return await psych_service.create_avaliabilite(db, r, user, availability)
+
+
+@psych_router.get(
+    '/psych/me/appointments',
+    status_code=HTTPStatus.OK,
+    response_model=List[AppointmentUserResponse]
+)
+async def get_appiontment(db: DBSession, user: CurrentUser):
+    return await appoint_service.get_psych_appointment(db, user)

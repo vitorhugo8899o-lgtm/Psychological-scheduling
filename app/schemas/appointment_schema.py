@@ -54,11 +54,32 @@ class AppointmentCreate(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
-class ApppointmentResponse(BaseModel):
+class AppointmentResponse(BaseModel):
     id: int
     id_client: int
     id_psychologist: int
     id_service: int
+    date_time: datetime
+    status: AppointmentStatus
+
+    @computed_field
+    @property
+    def datetime_format(self) -> str:
+        dt = self.date_time
+
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+
+        consult = dt.astimezone(ZoneInfo('America/Sao_Paulo')).replace(
+            second=0, microsecond=0
+        )
+        return consult.strftime('%d/%m/%Y %H:%M')
+
+    model_config = ConfigDict(from_attributes=True)
+
+
+class AppointmentUserResponse(BaseModel):
+    id: int
     date_time: datetime
     status: AppointmentStatus
 
