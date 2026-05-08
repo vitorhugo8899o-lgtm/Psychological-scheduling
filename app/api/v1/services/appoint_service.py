@@ -94,3 +94,4 @@ async def get_psych_appointment(db: DBSession, user: CurrentUser):
         raise HTTPException(status_code=404, detail='Nenhuma consulta encontrada.')
 
     return appointments
+    
