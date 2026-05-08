@@ -1,6 +1,9 @@
 from datetime import timedelta
 
-from sqlalchemy import case, select
+from fastapi import HTTPException
+
+from sqlalchemy import case, select, delete
+from sqlalchemy.exc import OperationalError, IntegrityError
 
 from app.api.v1.dependencies import CurrentUser, DBSession
 from app.api.v1.util.util import ensure_utc
@@ -96,3 +99,20 @@ async def get_all_psych_appointment(db: DBSession, user: CurrentUser):
     result = await db.execute(stmt)
 
     return result.scalars().all()
+
+
+async def delete_appointment_user(db:DBSession, user: CurrentUser):
+    stmt = delete(Appointment).where(
+        Appointment.id_client == user.id
+    )
+
+    try:
+        await db.execute(stmt)
+    
+        await db.commit()
+    except OperationalError as e:
+        await db.rollback()
+        raise HTTPException(status_code=409, detail=f'{e}')
+    except IntegrityError as e:
+        await db.rollback()
+        raise HTTPException(status_code=409, detail=f'{e}')
