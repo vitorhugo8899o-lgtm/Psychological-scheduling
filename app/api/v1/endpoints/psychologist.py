@@ -40,16 +40,14 @@ async def get_appiontment(db: DBSession, user: CurrentUser):
 @psych_router.get(
     '/psych/me/availability',
     status_code=HTTPStatus.OK,
-    response_model=List[AvailabilityCacheSchema]
+    response_model=List[AvailabilityCacheSchema],
 )
 async def get_schedule(db: DBSession, r: rediscon, user: CurrentUser):
     return await psych_service.get_avaliabilites(db, r, user)
 
 
 @psych_router.delete(
-    '//psych/me/availability',
-    status_code=HTTPStatus.OK,
-    response_model=dict
+    '/psych/me/availability', status_code=HTTPStatus.OK, response_model=dict
 )
 async def delete_availbily(
     db: DBSession, user: CurrentUser, availability: DeleteAvailabilySchema

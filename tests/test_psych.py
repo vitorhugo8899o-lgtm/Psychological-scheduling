@@ -142,8 +142,6 @@ async def test_availability_has_conflicts_end_time(token_psych, availability):  
 async def test_get_availability_psych(token_psych, availability):
     response = await token_psych.get('/api/v1/psych/me/availability')
 
-    print(response.json())
-
     status = 200
 
     days_of_week = 7
@@ -155,3 +153,62 @@ async def test_get_availability_psych(token_psych, availability):
     assert 'start_time' in response.json()[0]
     assert 'end_time' in response.json()[0]
     assert 'day_name' in response.json()[0]
+
+
+@pytest.mark.asyncio
+async def test_delete_avalability_psych(token_psych, availability):
+    payload = {
+        'days_of_the_week': 0,
+        'start_time': '08:10:29.441Z',
+        'end_time': '12:30:29.441Z',
+    }
+
+    response = await token_psych.request(
+        'DELETE', '/api/v1/psych/me/availability', json=payload
+    )
+
+    status = 200
+
+    assert response.status_code == status
+    assert response.json()['message'] == 'Disponibilidade deletada'
+
+
+@pytest.mark.asyncio
+async def test_trying_to_delete_an_availability_without_having(token_psych):
+    payload = {
+        'days_of_the_week': 5,
+        'start_time': '14:10:29.441Z',
+        'end_time': '15:30:29.441Z',
+    }
+
+    response = await token_psych.request(
+        'DELETE', '/api/v1/psych/me/availability', json=payload
+    )
+
+    print(response.json())
+
+    status = 404
+
+    assert response.status_code == status
+    assert response.json()['detail'] == 'Nenhuma disponibilidade encontrada.'
+
+
+@pytest.mark.asyncio
+async def test_trying_to_delete_an_availability_without_usin_psych(token_client):
+    payload = {
+        'days_of_the_week': 0,
+        'start_time': '08:10:29.441Z',
+        'end_time': '12:30:29.441Z',
+    }
+
+    response = await token_client.request(
+        'DELETE', '/api/v1/psych/me/availability', json=payload
+    )
+
+    status = 403
+
+    assert response.status_code == status
+    assert (
+        response.json()['detail']
+        == 'Usuário não tem permissão para realizar essa função'
+    )  # noqa

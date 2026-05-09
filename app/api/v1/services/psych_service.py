@@ -65,7 +65,7 @@ async def get_avaliabilites(db: DBSession, r: rediscon, psych: CurrentUser):
     if not psych.psychologist_profile:
         raise HTTPException(
             status_code=403,
-            detail="O Usuário não tem permissão para realizar essa ação."
+            detail='O Usuário não tem permissão para realizar essa ação.',
         )
 
     psych_id = await psych_repo.get_psych(db, psych.id)
@@ -75,7 +75,7 @@ async def get_avaliabilites(db: DBSession, r: rediscon, psych: CurrentUser):
     if not schedule:
         raise HTTPException(
             status_code=404,
-            detail=f"Nenhum horário encontrado.:{schedule} and {psych.id}"
+            detail=f'Nenhum horário encontrado.:{schedule} and {psych.id}',
         )
 
     return schedule
@@ -87,15 +87,14 @@ async def delete_availbility_psych(
     if not user.psychologist_profile:
         raise HTTPException(
             status_code=403,
-            detail="Usuário não tem permissão para realizar essa função"
+            detail='Usuário não tem permissão para realizar essa função',
         )
 
     result = await psych_repo.delete_availbilty(db, user, availabily)
 
     if not result:
         raise HTTPException(
-            status=404,
-            detail="Nenhuma disponibilidade encontrada."
+            status_code=404, detail='Nenhuma disponibilidade encontrada.'
         )
 
     return result

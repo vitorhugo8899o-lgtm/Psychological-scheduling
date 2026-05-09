@@ -107,22 +107,22 @@ class AvailabilityCacheSchema(BaseModel):
     end_time: time
 
     DAYS_MAP: ClassVar[dict] = {
-        0: "Segunda-feira",
-        1: "Terça-feira",
-        2: "Quarta-feira",
-        3: "Quinta-feira",
-        4: "Sexta-feira",
-        5: "Sábado",
-        6: "Domingo"
+        0: 'Segunda-feira',
+        1: 'Terça-feira',
+        2: 'Quarta-feira',
+        3: 'Quinta-feira',
+        4: 'Sexta-feira',
+        5: 'Sábado',
+        6: 'Domingo',
     }
 
     @computed_field
     @property
     def day_name(self) -> str:
-        return self.DAYS_MAP.get(self.day_of_the_week, "Desconhecido")
+        return self.DAYS_MAP.get(self.day_of_the_week, 'Desconhecido')
 
     @field_serializer('start_time', 'end_time')
-    def format_to_user(self, dt_time: time):  #noqa
+    def format_to_user(self, dt_time: time):  # noqa
 
         return dt_time.strftime('%H:%M')
 
@@ -151,7 +151,7 @@ class DeleteAvailabilySchema(BaseModel):
     @classmethod
     def parse_time(cls, v):
         if isinstance(v, str):
-            return datetime.strptime(v[:5], "%H:%M").time()
+            return datetime.strptime(v[:5], '%H:%M').time()
         return v
 
     class Config:

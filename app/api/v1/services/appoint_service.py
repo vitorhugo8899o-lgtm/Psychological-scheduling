@@ -24,7 +24,7 @@ async def check_for_conflict(
     if user.role != 'cliente':
         raise HTTPException(
             status_code=403,
-            detail="É proibido marcar consultas em contas administrativas da clinica, se desejar marcar uma consulta entre com uma conta normal."  #noqa
+            detail='É proibido marcar consultas em contas administrativas da clinica, se desejar marcar uma consulta entre com uma conta normal.',  # noqa
         )
 
     service = await get_service_by_id(db, payload.service_id)
@@ -94,8 +94,7 @@ async def get_user_appointment(db: DBSession, user: CurrentUser) -> List[Appoint
 async def get_psych_appointment(db: DBSession, user: CurrentUser) -> List[Appointment]:
     if not user.psychologist_profile:
         raise HTTPException(
-            status_code=403,
-            detail="Somente psicólogos podem acessar essa função."
+            status_code=403, detail='Somente psicólogos podem acessar essa função.'
         )
 
     appointments = await get_all_psych_appointment(db, user)
@@ -107,15 +106,12 @@ async def get_psych_appointment(db: DBSession, user: CurrentUser) -> List[Appoin
 
 
 async def simulation_available_psychologists(
-        db: DBSession, simulation: AppointmentSimulation
+    db: DBSession, simulation: AppointmentSimulation
 ) -> list:
     service_time = await get_service_by_id(db, simulation.service_id)
 
     if not service_time:
-        raise HTTPException(
-            status_code=404,
-            detail="Serviço não encontrado."
-        )
+        raise HTTPException(status_code=404, detail='Serviço não encontrado.')
 
     search = await search_available_psychologists(
         db, simulation.date_time, service_time.duration_minutes
@@ -124,8 +120,7 @@ async def simulation_available_psychologists(
     if not search:
         date = format_hour_br(simulation.date_time)
         raise HTTPException(
-            status_code=404,
-            detail=f"Nehuma disponibilidade para a data: {date}"
+            status_code=404, detail=f'Nehuma disponibilidade para a data: {date}'
         )
 
     return search
