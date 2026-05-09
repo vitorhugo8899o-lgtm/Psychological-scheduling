@@ -73,16 +73,18 @@ async def avaliabilite_exists(
 
 
 async def cache_avaliabilites(db: DBSession, r: rediscon, psych_id: int):
-    cache_key = f"psychologist:{psych_id}:full_schedule"
+    cache_key = f'psychologist:{psych_id}:full_schedule'
 
     avaliabilite_cache = await r.get(cache_key)
 
     if avaliabilite_cache:
         return availability_list_adapter.validate_json(avaliabilite_cache)
 
-    stmt = select(Avaliabilite).where(
-        Avaliabilite.id_psychologist == psych_id
-    ).order_by(Avaliabilite.day_of_the_week)
+    stmt = (
+        select(Avaliabilite)
+        .where(Avaliabilite.id_psychologist == psych_id)
+        .order_by(Avaliabilite.day_of_the_week)
+    )
 
     result = await db.execute(stmt)
     db_availabilities = result.scalars().all()
@@ -96,18 +98,14 @@ async def cache_avaliabilites(db: DBSession, r: rediscon, psych_id: int):
 
     schedule_json = availability_list_adapter.dump_json(pydantic_availabilities)
 
-    await r.set(
-        cache_key,
-        schedule_json,
-        40400
-    )
+    await r.set(cache_key, schedule_json, 40400)
 
     return pydantic_availabilities
 
 
 async def delete_availbilty(
-        db: DBSession, user: CurrentUser, day: DeleteAvailabilySchema
-) -> dict:
+    db: DBSession, user: CurrentUser, day: DeleteAvailabilySchema
+) -> dict | None:
     start_v = day.start_time.replace(second=0, microsecond=0, tzinfo=None)
     end_v = day.end_time.replace(second=0, microsecond=0, tzinfo=None)
 
@@ -115,17 +113,20 @@ async def delete_availbilty(
         Avaliabilite.psychologist == user.psychologist_profile,
         Avaliabilite.day_of_the_week == day.days_of_the_week,
         func.date_trunc('minute', Avaliabilite.start_time) == start_v,
-        func.date_trunc('minute', Avaliabilite.end_time) == end_v
+        func.date_trunc('minute', Avaliabilite.end_time) == end_v,
     )
-    try:
-        await db.execute(stmt)
-        await db.commit()
 
+    try:
+        result = await db.execute(stmt)
+        if result.rowcount == 0:
+            return None
+
+        await db.commit()
         return {'message': 'Disponibilidade deletada'}
 
     except IntegrityError as e:
         await db.rollback()
-        raise f"Erro de integridade {e}"
+        raise f'Erro de integridade {e}'
     except OperationalError as e:
         await db.rollback()
         raise f'Erro de operação: {e}'

@@ -42,7 +42,10 @@ async def test_clinic_accountscannot_schedule_an_appointment(token_psych):
     status = 403
 
     assert req.status_code == status
-    assert req.json()['detail'] == 'É proibido marcar consultas em contas administrativas da clinica, se desejar marcar uma consulta entre com uma conta normal.'  #noqa
+    assert (
+        req.json()['detail']
+        == 'É proibido marcar consultas em contas administrativas da clinica, se desejar marcar uma consulta entre com uma conta normal.'  # noqa
+    )
 
 
 @pytest.mark.asyncio
