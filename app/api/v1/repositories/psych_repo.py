@@ -3,10 +3,9 @@ from zoneinfo import ZoneInfo
 
 from sqlalchemy import and_, exists, select
 
-from app.api.v1.dependencies import DBSession, rediscon
+from app.api.v1.dependencies import DBSession
 from app.models.avaliabilites_models import Avaliabilite
 from app.models.psychologist_models import Psychologist
-from app.schemas.psychologist_schema import availability_list_adapter
 
 
 async def get_psych(db: DBSession, id_psych: int) -> Psychologist | None:
@@ -40,3 +39,29 @@ async def check_overlapping_availability(
     result = await db.execute(stmt)
 
     return result.first() is not None
+
+
+async def avaliabilite_exists(
+    db: DBSession,
+    id_psych: int,
+    date: datetime,
+    service_minutes: int,
+) -> bool:
+    date_br = date.astimezone(ZoneInfo('America/Sao_Paulo'))
+
+    duration = timedelta(minutes=service_minutes)
+
+    end_time = date_br + duration
+
+    stmt = select(
+        exists().where(
+            Avaliabilite.id_psychologist == id_psych,
+            Avaliabilite.day_of_the_week == date_br.weekday(),
+            Avaliabilite.start_time <= date_br.time(),
+            Avaliabilite.end_time >= end_time.time(),
+        )
+    )
+
+    result = await db.execute(stmt)
+
+    return result.scalar()
