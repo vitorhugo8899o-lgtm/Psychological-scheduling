@@ -30,6 +30,22 @@ async def test_appointment_create(availability, token_client, service):
 
 
 @pytest.mark.asyncio
+async def test_clinic_accountscannot_schedule_an_appointment(token_psych):
+    payload = {
+        'id_psychologist': '12',
+        'service_id': '1',
+        'date_time': '2026-05-11T12:00:00.000Z',
+    }
+
+    req = await token_psych.post('/api/v1/appointments', json=payload)
+
+    status = 403
+
+    assert req.status_code == status
+    assert req.json()['detail'] == 'É proibido marcar consultas em contas administrativas da clinica, se desejar marcar uma consulta entre com uma conta normal.'  #noqa
+
+
+@pytest.mark.asyncio
 async def test_service_not_found_in_appointment(availability, token_client):
     payload = {
         'id_psychologist': f'{availability.id}',

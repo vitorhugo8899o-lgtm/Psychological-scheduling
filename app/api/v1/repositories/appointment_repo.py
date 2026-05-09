@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from typing import List
 from zoneinfo import ZoneInfo
 
 from fastapi import HTTPException
@@ -22,7 +23,7 @@ async def check_appointment_conflict(
     *,
     id_psychologist: int | None = None,
     id_client: int | None = None,
-):
+) -> Appointment | None:
     new_start = ensure_utc(payload.date_time)
     new_end = new_start + timedelta(minutes=time_service)
 
@@ -57,7 +58,7 @@ async def check_appointment_conflict(
 
 async def create_appointment(
     db: DBSession, payload: AppointmentCreate, user: CurrentUser, id_psych: int
-):
+) -> Appointment:
     new_appointment = Appointment(
         id_client=user.id,
         id_psychologist=id_psych,
@@ -72,7 +73,9 @@ async def create_appointment(
     return new_appointment
 
 
-async def get_all_user_appointment(db: DBSession, user: CurrentUser):
+async def get_all_user_appointment(
+    db: DBSession, user: CurrentUser
+) -> List[Appointment] | None:
     stmt = (
         select(Appointment)
         .where(
@@ -92,7 +95,9 @@ async def get_all_user_appointment(db: DBSession, user: CurrentUser):
     return result.scalars().all()
 
 
-async def get_all_psych_appointment(db: DBSession, user: CurrentUser):
+async def get_all_psych_appointment(
+    db: DBSession, user: CurrentUser
+) -> List[Appointment] | None:
     stmt = (
         select(Appointment)
         .where(
@@ -129,7 +134,7 @@ async def delete_appointment_user(db: DBSession, user: CurrentUser):
 
 async def search_available_psychologists(
     db: DBSession, search_date: datetime, service_time: int
-):
+) -> list:
 
     tz_br = ZoneInfo('America/Sao_Paulo')
 

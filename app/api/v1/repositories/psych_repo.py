@@ -8,7 +8,7 @@ from app.models.avaliabilites_models import Avaliabilite
 from app.models.psychologist_models import Psychologist
 
 
-async def get_psych(db: DBSession, id_psych: int):
+async def get_psych(db: DBSession, id_psych: int) -> Psychologist | None:
     stmt = select(Psychologist).where(Psychologist.user_id == id_psych)
 
     result = await db.execute(stmt)
@@ -46,7 +46,7 @@ async def avaliabilite_exists(
     id_psych: int,
     date: datetime,
     service_minutes: int,
-):
+) -> bool:
     date_br = date.astimezone(ZoneInfo('America/Sao_Paulo'))
 
     duration = timedelta(minutes=service_minutes)
