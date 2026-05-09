@@ -1,3 +1,5 @@
+from typing import List
+
 from fastapi import HTTPException
 
 from app.api.v1.dependencies import CurrentUser, DBSession
@@ -11,12 +13,19 @@ from app.api.v1.repositories.appointment_repo import (
 from app.api.v1.repositories.psych_repo import avaliabilite_exists, get_psych
 from app.api.v1.repositories.service_repo import get_service_by_id
 from app.api.v1.util.util import format_hour_br
+from app.models.appointments_models import Appointment
 from app.schemas.appointment_schema import AppointmentCreate, AppointmentSimulation
 
 
 async def check_for_conflict(
     db: DBSession, payload: AppointmentCreate, user: CurrentUser
-):
+) -> Appointment:
+
+    if user.role != 'cliente':
+        raise HTTPException(
+            status_code=403,
+            detail="É proibido marcar consultas em contas administrativas da clinica, se desejar marcar uma consulta entre com uma conta normal."  #noqa
+        )
 
     service = await get_service_by_id(db, payload.service_id)
 
@@ -73,7 +82,7 @@ async def check_for_conflict(
     return appointment
 
 
-async def get_user_appointment(db: DBSession, user: CurrentUser):
+async def get_user_appointment(db: DBSession, user: CurrentUser) -> List[Appointment]:
     appointments = await get_all_user_appointment(db, user)
 
     if not appointments:
@@ -82,7 +91,7 @@ async def get_user_appointment(db: DBSession, user: CurrentUser):
     return appointments
 
 
-async def get_psych_appointment(db: DBSession, user: CurrentUser):
+async def get_psych_appointment(db: DBSession, user: CurrentUser) -> List[Appointment]:
     if not user.psychologist_profile:
         raise HTTPException(
             status_code=403,
@@ -97,7 +106,9 @@ async def get_psych_appointment(db: DBSession, user: CurrentUser):
     return appointments
 
 
-async def simulation_available_psychologists(db: DBSession, simulation: AppointmentSimulation):
+async def simulation_available_psychologists(
+        db: DBSession, simulation: AppointmentSimulation
+) -> list:
     service_time = await get_service_by_id(db, simulation.service_id)
 
     if not service_time:
@@ -106,7 +117,9 @@ async def simulation_available_psychologists(db: DBSession, simulation: Appointm
             detail="Serviço não encontrado."
         )
 
-    search = await search_available_psychologists(db, simulation.date_time, service_time.duration_minutes)
+    search = await search_available_psychologists(
+        db, simulation.date_time, service_time.duration_minutes
+    )
 
     if not search:
         date = format_hour_br(simulation.date_time)
