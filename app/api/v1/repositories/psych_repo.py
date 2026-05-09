@@ -1,12 +1,16 @@
 from datetime import datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import and_, exists, select
+from sqlalchemy import and_, delete, exists, func, select
+from sqlalchemy.exc import IntegrityError, OperationalError
 
-from app.api.v1.dependencies import DBSession, rediscon
+from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
 from app.models.avaliabilites_models import Avaliabilite
 from app.models.psychologist_models import Psychologist
-from app.schemas.psychologist_schema import availability_list_adapter
+from app.schemas.psychologist_schema import (
+    DeleteAvailabilySchema,
+    availability_list_adapter,
+)
 
 
 async def get_psych(db: DBSession, id_psych: int) -> Psychologist | None:
@@ -99,3 +103,32 @@ async def cache_avaliabilites(db: DBSession, r: rediscon, psych_id: int):
     )
 
     return pydantic_availabilities
+
+
+async def delete_availbilty(
+        db: DBSession, user: CurrentUser, day: DeleteAvailabilySchema
+) -> dict:
+    start_v = day.start_time.replace(second=0, microsecond=0, tzinfo=None)
+    end_v = day.end_time.replace(second=0, microsecond=0, tzinfo=None)
+
+    stmt = delete(Avaliabilite).where(
+        Avaliabilite.psychologist == user.psychologist_profile,
+        Avaliabilite.day_of_the_week == day.days_of_the_week,
+        func.date_trunc('minute', Avaliabilite.start_time) == start_v,
+        func.date_trunc('minute', Avaliabilite.end_time) == end_v
+    )
+    try:
+        await db.execute(stmt)
+        await db.commit()
+
+        return {'message': 'Disponibilidade deletada'}
+
+    except IntegrityError as e:
+        await db.rollback()
+        raise f"Erro de integridade {e}"
+    except OperationalError as e:
+        await db.rollback()
+        raise f'Erro de operação: {e}'
+    except Exception as e:
+        await db.rollback()
+        raise f'Um erro inesperado ocorreu: {e}'

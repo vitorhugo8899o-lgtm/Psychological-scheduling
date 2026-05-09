@@ -3,7 +3,10 @@ from fastapi import HTTPException
 from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
 from app.api.v1.repositories import psych_repo
 from app.models.avaliabilites_models import Avaliabilite
-from app.schemas.psychologist_schema import PsychologistAvaliabiliteCreate
+from app.schemas.psychologist_schema import (
+    DeleteAvailabilySchema,
+    PsychologistAvaliabiliteCreate,
+)
 
 
 async def create_avaliabilite(
@@ -76,3 +79,23 @@ async def get_avaliabilites(db: DBSession, r: rediscon, psych: CurrentUser):
         )
 
     return schedule
+
+
+async def delete_availbility_psych(
+    db: DBSession, user: CurrentUser, availabily: DeleteAvailabilySchema
+):
+    if not user.psychologist_profile:
+        raise HTTPException(
+            status_code=403,
+            detail="Usuário não tem permissão para realizar essa função"
+        )
+
+    result = await psych_repo.delete_availbilty(db, user, availabily)
+
+    if not result:
+        raise HTTPException(
+            status=404,
+            detail="Nenhuma disponibilidade encontrada."
+        )
+
+    return result

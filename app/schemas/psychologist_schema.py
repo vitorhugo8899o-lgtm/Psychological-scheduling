@@ -1,4 +1,4 @@
-from datetime import time
+from datetime import datetime, time
 from typing import ClassVar, List, Set
 
 from pydantic import (
@@ -131,3 +131,28 @@ class AvailabilityCacheSchema(BaseModel):
 
 
 availability_list_adapter = TypeAdapter(List[AvailabilityCacheSchema])
+
+
+class DeleteAvailabilySchema(BaseModel):
+    days_of_the_week: int
+    start_time: time
+    end_time: time
+
+    @field_validator('days_of_the_week')
+    @classmethod
+    def validate_weekday(cls, v):
+        monday = 0
+        sunday = 6
+        if v < monday or v > sunday:
+            return ValueError('Digite um dia valido da semana.')
+        return v
+
+    @field_validator('start_time', 'end_time', mode='before')
+    @classmethod
+    def parse_time(cls, v):
+        if isinstance(v, str):
+            return datetime.strptime(v[:5], "%H:%M").time()
+        return v
+
+    class Config:
+        from_attributes = True
