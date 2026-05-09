@@ -1,7 +1,16 @@
 from datetime import time
 from typing import ClassVar, List, Set
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    EmailStr,
+    Field,
+    TypeAdapter,
+    computed_field,
+    field_serializer,
+    field_validator,
+)
 
 from app.schemas.user_schema import UserPublic
 
@@ -90,3 +99,35 @@ class PsychologistAvaliabiliteBlock(BaseModel):
 
 class PsychologistAvaliabiliteCreate(BaseModel):
     availabilities: List[PsychologistAvaliabiliteBlock]
+
+
+class AvailabilityCacheSchema(BaseModel):
+    day_of_the_week: int
+    start_time: time
+    end_time: time
+
+    DAYS_MAP: ClassVar[dict] = {
+        0: "Segunda-feira",
+        1: "Terça-feira",
+        2: "Quarta-feira",
+        3: "Quinta-feira",
+        4: "Sexta-feira",
+        5: "Sábado",
+        6: "Domingo"
+    }
+
+    @computed_field
+    @property
+    def day_name(self) -> str:
+        return self.DAYS_MAP.get(self.day_of_the_week, "Desconhecido")
+
+    @field_serializer('start_time', 'end_time')
+    def format_to_user(self, dt_time: time):  #noqa
+
+        return dt_time.strftime('%H:%M')
+
+    class Config:
+        from_attributes = True
+
+
+availability_list_adapter = TypeAdapter(List[AvailabilityCacheSchema])
