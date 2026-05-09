@@ -136,3 +136,22 @@ async def test_availability_has_conflicts_end_time(token_psych, availability):  
         response.json()['detail']
         == 'Conflito de horário detectado entre 07:30 e 09:30, confira seus horários.'  # noqa
     )
+
+
+@pytest.mark.asyncio
+async def test_get_availability_psych(token_psych, availability):
+    response = await token_psych.get('/api/v1/psych/me/availability')
+
+    print(response.json())
+
+    status = 200
+
+    days_of_week = 7
+
+    assert response.status_code == status
+    assert isinstance(response.json(), list)
+    assert len(response.json()) == days_of_week
+    assert 'day_of_the_week' in response.json()[0]
+    assert 'start_time' in response.json()[0]
+    assert 'end_time' in response.json()[0]
+    assert 'day_name' in response.json()[0]

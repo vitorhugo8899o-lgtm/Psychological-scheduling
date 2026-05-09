@@ -40,3 +40,62 @@ async def check_overlapping_availability(
     result = await db.execute(stmt)
 
     return result.first() is not None
+
+
+async def avaliabilite_exists(
+    db: DBSession,
+    id_psych: int,
+    date: datetime,
+    service_minutes: int,
+) -> bool:
+    date_br = date.astimezone(ZoneInfo('America/Sao_Paulo'))
+
+    duration = timedelta(minutes=service_minutes)
+
+    end_time = date_br + duration
+
+    stmt = select(
+        exists().where(
+            Avaliabilite.id_psychologist == id_psych,
+            Avaliabilite.day_of_the_week == date_br.weekday(),
+            Avaliabilite.start_time <= date_br.time(),
+            Avaliabilite.end_time >= end_time.time(),
+        )
+    )
+
+    result = await db.execute(stmt)
+
+    return result.scalar()
+
+
+async def cache_avaliabilites(db: DBSession, r: rediscon, psych_id: int):
+    cache_key = f"psychologist:{psych_id}:full_schedule"
+
+    avaliabilite_cache = await r.get(cache_key)
+
+    if avaliabilite_cache:
+        return availability_list_adapter.validate_json(avaliabilite_cache)
+
+    stmt = select(Avaliabilite).where(
+        Avaliabilite.id_psychologist == psych_id
+    ).order_by(Avaliabilite.day_of_the_week)
+
+    result = await db.execute(stmt)
+    db_availabilities = result.scalars().all()
+
+    if not db_availabilities:
+        return []
+
+    pydantic_availabilities = availability_list_adapter.validate_python(
+        db_availabilities
+    )
+
+    schedule_json = availability_list_adapter.dump_json(pydantic_availabilities)
+
+    await r.set(
+        cache_key,
+        schedule_json,
+        40400
+    )
+
+    return pydantic_availabilities
