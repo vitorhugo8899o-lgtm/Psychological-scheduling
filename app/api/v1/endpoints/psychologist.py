@@ -6,7 +6,10 @@ from fastapi import APIRouter
 from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
 from app.api.v1.services import appoint_service, psych_service
 from app.schemas.appointment_schema import AppointmentUserResponse
-from app.schemas.psychologist_schema import PsychologistAvaliabiliteCreate
+from app.schemas.psychologist_schema import (
+    AvailabilityCacheSchema,
+    PsychologistAvaliabiliteCreate,
+)
 
 psych_router = APIRouter()
 
@@ -31,3 +34,12 @@ async def create_avaliabilite(
 )
 async def get_appiontment(db: DBSession, user: CurrentUser):
     return await appoint_service.get_psych_appointment(db, user)
+
+
+@psych_router.get(
+    '/psych/me/availability',
+    status_code=HTTPStatus.OK,
+    response_model=List[AvailabilityCacheSchema]
+)
+async def get_schedule(db: DBSession, r: rediscon, user: CurrentUser):
+    return await psych_service.get_avaliabilites(db, r, user)
