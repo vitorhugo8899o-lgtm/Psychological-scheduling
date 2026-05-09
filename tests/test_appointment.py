@@ -226,3 +226,63 @@ async def test_psych_has_no_appointments(token_psych):
 
     assert req.status_code == status
     assert req.json()['detail'] == 'Nenhuma consulta encontrada.'
+
+
+@pytest.mark.asyncio
+async def test_simulation_appointment(availability, service, token_client):
+    payload = {'date_time': '2026-05-12T11:10:00Z', 'service_id': f'{service.id}'}
+
+    req = await token_client.post('/api/v1/appointments/simulation', json=payload)
+
+    status = 200
+
+    assert req.status_code == status
+    assert isinstance(req.json(), list)
+    assert len(req.json()) == 1
+    assert req.json()[0]['id'] == 1
+    assert req.json()[0]['fullname'] == 'Full Name'
+    assert req.json()[0]['crp'] == 'CRP 01/5596'
+
+
+@pytest.mark.asyncio
+async def test_simulation_appointment_it_should_not_overlap(
+    availability, availability2, token_client, service
+):
+    payload = {'date_time': '2026-05-12T13:10:00Z', 'service_id': f'{service.id}'}
+
+    req = await token_client.post('/api/v1/appointments/simulation', json=payload)
+
+    status = 200
+
+    assert req.status_code == status
+    assert isinstance(req.json(), list)
+    assert len(req.json()) == 1
+
+
+@pytest.mark.asyncio
+async def test_simulation_appointment_service_id_nnot_found(token_client):
+    payload = {'date_time': '2026-05-12T13:10:00Z', 'service_id': 78}
+
+    req = await token_client.post('/api/v1/appointments/simulation', json=payload)
+
+    status = 404
+
+    assert req.status_code == status
+    assert req.json()['detail'] == 'Serviço não encontrado.'
+
+
+@pytest.mark.asyncio
+async def test_no_psychologists_available_on_that_date(
+    availability, token_client, service
+):
+    payload = {'date_time': '2026-05-12T18:10:00Z', 'service_id': f'{service.id}'}
+
+    req = await token_client.post('/api/v1/appointments/simulation', json=payload)
+
+    status = 404
+
+    assert req.status_code == status
+    assert (
+        req.json()['detail']
+        == 'Nehuma disponibilidade para a data: 12/05/2026 às 15:10'
+    )  # noqa

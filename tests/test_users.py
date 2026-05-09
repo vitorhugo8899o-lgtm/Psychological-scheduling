@@ -80,10 +80,7 @@ async def test_delete_user(token_client):
 
 @pytest.mark.asyncio
 async def test_delete_user_with_appointment(
-    availability,
-    token_client,
-    service,
-    schedule
+    availability, token_client, service, schedule
 ):
     req = await token_client.delete('/api/v1/users')
 
