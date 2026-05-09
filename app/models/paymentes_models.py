@@ -16,9 +16,7 @@ class Payment(Base):
     __tablename__ = 'payments'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    id_mercado_pago: Mapped[str] = mapped_column(
-        String, unique=True, nullable=False
-    )
+    id_mercado_pago: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     id_appointment: Mapped[int] = mapped_column(
         ForeignKey('appointments.id'), nullable=False
     )

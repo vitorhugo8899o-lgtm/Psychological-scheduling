@@ -1,5 +1,7 @@
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
+from app.schemas.custom_schema import ServiceOption
+
 
 class ServiceSchema(BaseModel):
     name: str = Field(min_length=7)
@@ -14,7 +16,9 @@ class ServiceSchema(BaseModel):
     def validate_name(cls, value: str):
         space = value.replace(' ', '')
         if not space:
-            raise ValueError('Preencha um título valído!')
+            raise ValueError(
+                'O título possui apenas espeços vazios, preencha um título valído.'  # noqa
+            )
 
         return value
 
@@ -23,7 +27,9 @@ class ServiceSchema(BaseModel):
     def validate_description(cls, value: str):
         space = value.replace(' ', '')
         if not space:
-            raise ValueError('Preencha uma descrição valído!')
+            raise ValueError(
+                'Descrição possui apenas espaços vazios, preencha uma descrição valída!'  # noqa
+            )
 
         return value
 
@@ -39,6 +45,7 @@ class ServiceResponse(BaseModel):
 
 
 class ServiceQuery(BaseModel):
+    option: ServiceOption = Field(default=ServiceOption.AND)
     offset: int = Field(ge=0, default=0)
     limit: int = Field(ge=0, default=5)
     name: str | None = Field(default=None)

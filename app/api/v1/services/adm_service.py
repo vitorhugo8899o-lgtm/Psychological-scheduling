@@ -23,10 +23,7 @@ async def create_psychologist_service(
     if not exists:
         raise HTTPException(
             status_code=404,
-            detail=(
-                'Usuário não encontrado,'
-                'verifique se digitou corretamente o email'
-            ),
+            detail=('Usuário não encontrado,verifique se digitou corretamente o email'),
         )
 
     if exists.psychologist_profile:
@@ -34,7 +31,7 @@ async def create_psychologist_service(
 
     exists.role = UserRole.psychologist
 
-    new_psych = await adm_repo.create_psych(db, exists.id, psych.crp_formatado)
+    new_psych = await adm_repo.create_psych(db, exists.id, psych.crp_format)
 
     await db.refresh(exists)
 

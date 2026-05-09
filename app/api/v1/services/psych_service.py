@@ -11,7 +11,7 @@ async def create_avaliabilite(
     r: rediscon,
     user: CurrentUser,
     payload: PsychologistAvaliabiliteCreate,
-):
+) -> dict:
     if user.role != 'psychologist':
         raise HTTPException(
             status_code=403,
@@ -23,7 +23,7 @@ async def create_avaliabilite(
     if not psych:
         raise HTTPException(
             status_code=409,
-            detail='Psicólogo não encontrado! Tente realizar o login novamente'
+            detail='Psicólogo não encontrado! Tente realizar o login novamente',
         )
 
     availability_to_save = []

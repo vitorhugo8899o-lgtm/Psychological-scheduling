@@ -64,7 +64,7 @@ class PsychologistCreate(BaseModel):
         return value
 
     @property
-    def crp_formatado(self) -> str:
+    def crp_format(self) -> str:
         return f'CRP {self.region:02d}/{self.number}'
 
     model_config = ConfigDict(from_attributes=True)
@@ -77,9 +77,7 @@ class PsychologistPublic(BaseModel):
 
 
 class PsychologistAvaliabiliteBlock(BaseModel):
-    days_of_the_week: List[int] = Field(
-        description='0 para segunda e 6 para domingo'
-    )  # noqa
+    days_of_the_week: List[int] = Field(description='0 para segunda e 6 para domingo')  # noqa
     start_time: time
     end_time: time
 

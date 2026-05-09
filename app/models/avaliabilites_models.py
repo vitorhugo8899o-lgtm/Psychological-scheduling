@@ -18,11 +18,7 @@ class Avaliabilite(Base):
         ForeignKey('psychologists.id'), nullable=False
     )
     day_of_the_week: Mapped[int] = mapped_column(Integer, nullable=False)
-    start_time: Mapped[time] = mapped_column(
-        Time(timezone=True), nullable=False
-    )
-    end_time: Mapped[time] = mapped_column(Time(timezone=True), nullable=False)
+    start_time: Mapped[time] = mapped_column(Time(timezone=False), nullable=False)
+    end_time: Mapped[time] = mapped_column(Time(timezone=False), nullable=False)
 
-    psychologist: Mapped['Psychologist'] = relationship(
-        back_populates='availabilities'
-    )
+    psychologist: Mapped['Psychologist'] = relationship(back_populates='availabilities')

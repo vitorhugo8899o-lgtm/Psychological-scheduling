@@ -6,7 +6,8 @@ from fastapi.responses import Response
 from fastapi.security import OAuth2PasswordRequestForm
 
 from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
-from app.api.v1.services import auth_service, user_service
+from app.api.v1.services import appoint_service, auth_service, user_service
+from app.schemas.appointment_schema import AppointmentUserResponse
 from app.schemas.custom_schema import LoginSuccess
 from app.schemas.user_schema import UserCreate, UserPublic, UserUpdate
 
@@ -14,16 +15,12 @@ user_route = APIRouter()
 Form_data = Annotated[OAuth2PasswordRequestForm, Depends()]
 
 
-@user_route.post(
-    '/users', status_code=HTTPStatus.CREATED, response_model=UserPublic
-)
+@user_route.post('/users', status_code=HTTPStatus.CREATED, response_model=UserPublic)
 async def user_create(db: DBSession, user_data: UserCreate):
     return await user_service.create_user_service(db, user_data)
 
 
-@user_route.post(
-    '/login', status_code=HTTPStatus.OK, response_model=LoginSuccess
-)
+@user_route.post('/login', status_code=HTTPStatus.OK, response_model=LoginSuccess)
 async def login_user(db: DBSession, user: Form_data, response: Response):
     token, user_info = await auth_service.login(db, user)
 
@@ -47,9 +44,7 @@ async def user_logout(user: CurrentUser, response: Response):
     return 'Usuário deslogado.'
 
 
-@user_route.get(
-    '/users', status_code=HTTPStatus.OK, response_model=List[UserPublic]
-)
+@user_route.get('/users', status_code=HTTPStatus.OK, response_model=List[UserPublic])
 async def users(db: DBSession, user: CurrentUser):
     return await user_service.get_users(db, user)
 
@@ -82,3 +77,12 @@ async def delete_user(
 ):
     await user_service.delete_user(db, user, r)
     response.delete_cookie('Login_info')
+
+
+@user_route.get(
+    '/users/me/appointments',
+    status_code=HTTPStatus.OK,
+    response_model=List[AppointmentUserResponse],
+)
+async def get_all_appointments(db: DBSession, user: CurrentUser):
+    return await appoint_service.get_user_appointment(db, user)

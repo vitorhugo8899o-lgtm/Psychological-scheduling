@@ -4,9 +4,10 @@ from fastapi import HTTPException
 from sqlalchemy import select
 
 from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
-from app.api.v1.repositories import service_repo, user_repo
+from app.api.v1.repositories import appointment_repo, service_repo, user_repo
+from app.models.service_models import Service
 from app.models.users_models import User
-from app.schemas.service_schema import ServiceQuery
+from app.schemas.service_schema import ServiceQuery, ServiceResponse
 from app.schemas.user_schema import UserCreate, UserPublic, UserUpdate
 
 
@@ -49,7 +50,7 @@ async def get_user(
     if not user_cache:
         raise HTTPException(
             status_code=404,
-            detail='Usuário não encontrado. Verifique se digitou o id correto!'
+            detail='Usuário não encontrado. Verifique se digitou o id correto!',
         )
 
     return user_cache
@@ -57,7 +58,7 @@ async def get_user(
 
 async def update_user_data(
     db: DBSession, r: rediscon, user: CurrentUser, uptade: UserUpdate
-):
+) -> UserPublic | None:
     email_exist = await user_repo.get_user_by_email(db, uptade.email)
 
     if email_exist and email_exist.id != user.id:
@@ -75,11 +76,18 @@ async def update_user_data(
 
 
 async def delete_user(db: DBSession, user: CurrentUser, r: rediscon):
+    if user.role != 'cliente':
+        raise HTTPException(
+            status_code=403, detail='Somente clientes podem utilizar essa função.'
+        )
+
+    await appointment_repo.delete_appointment_user(db, user)
+
     await user_repo.delete_user(db, r, user)
     await user_repo.cache_delete(r, user.id)
 
 
-async def get_services(db: DBSession):
+async def get_services(db: DBSession) -> List[Service]:
     services = await service_repo.get_services(db)
 
     if not services:
@@ -88,7 +96,7 @@ async def get_services(db: DBSession):
     return services
 
 
-async def get_service(db: DBSession, r: rediscon, service_id: int):
+async def get_service(db: DBSession, r: rediscon, service_id: int) -> ServiceResponse:
     service = await service_repo.cache_service(db, r, service_id)
     if not service:
         raise HTTPException(status_code=404, detail='Serviço não encontrado.')
@@ -96,12 +104,10 @@ async def get_service(db: DBSession, r: rediscon, service_id: int):
     return service
 
 
-async def get_service_customized(db: DBSession, filter: ServiceQuery):
+async def get_service_customized(db: DBSession, filter: ServiceQuery) -> List[Service]:
     service = await service_repo.filter_services(db, filter)
 
     if not service:
-        raise HTTPException(
-            status_code=404, detail='Nenhum serviço encontrado!'
-        )
+        raise HTTPException(status_code=404, detail='Nenhum serviço encontrado!')
 
     return service

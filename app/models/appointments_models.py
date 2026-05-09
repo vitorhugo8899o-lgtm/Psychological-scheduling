@@ -19,18 +19,12 @@ class Appointment(Base):
     __tablename__ = 'appointments'
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    id_client: Mapped[int] = mapped_column(
-        ForeignKey('users.id'), nullable=False
-    )
+    id_client: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=False)
     id_psychologist: Mapped[int] = mapped_column(
         ForeignKey('psychologists.id'), nullable=False
     )
-    id_service: Mapped[int] = mapped_column(
-        ForeignKey('services.id'), nullable=False
-    )
-    date_time: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False
-    )
+    id_service: Mapped[int] = mapped_column(ForeignKey('services.id'), nullable=False)
+    date_time: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
     status: Mapped[AppointmentStatus] = mapped_column(
         SAEnum(AppointmentStatus, name='appointment_enum_status'),
         default=AppointmentStatus.pending,
@@ -41,9 +35,7 @@ class Appointment(Base):
         back_populates='appointments_as_client', foreign_keys=[id_client]
     )
 
-    psychologist: Mapped['Psychologist'] = relationship(
-        back_populates='appointments'
-    )
+    psychologist: Mapped['Psychologist'] = relationship(back_populates='appointments')
 
     service: Mapped['Service'] = relationship(back_populates='appointments')
 

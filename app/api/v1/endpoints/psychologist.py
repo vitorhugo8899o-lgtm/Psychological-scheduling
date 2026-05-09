@@ -9,6 +9,9 @@ from app.schemas.psychologist_schema import (
     AvailabilityCacheSchema,
     PsychologistAvaliabiliteCreate,
 )
+from app.api.v1.services import appoint_service, psych_service
+from app.schemas.appointment_schema import AppointmentUserResponse
+from app.schemas.psychologist_schema import PsychologistAvaliabiliteCreate
 
 psych_router = APIRouter()
 
@@ -17,7 +20,7 @@ psych_router = APIRouter()
     '/psych/me/availability',
     status_code=HTTPStatus.CREATED,
 )
-async def create_appointment(
+async def create_avaliabilite(
     db: DBSession,
     r: rediscon,
     user: CurrentUser,
@@ -33,3 +36,9 @@ async def create_appointment(
 )
 async def get_schedule(db: DBSession, r: rediscon, user: CurrentUser):
     return await psych_service.get_avaliabilites(db, r, user)
+    '/psych/me/appointments',
+    status_code=HTTPStatus.OK,
+    response_model=List[AppointmentUserResponse]
+)
+async def get_appiontment(db: DBSession, user: CurrentUser):
+    return await appoint_service.get_psych_appointment(db, user)

@@ -1,11 +1,13 @@
-from sqlalchemy import select
+from typing import List
+
+from sqlalchemy import or_, select
 
 from app.api.v1.dependencies import DBSession, rediscon
 from app.models.service_models import Service
 from app.schemas.service_schema import ServiceQuery, ServiceResponse
 
 
-async def get_services(db: DBSession):
+async def get_services(db: DBSession) -> List[Service] | None:
     stmt = select(Service).limit(100).order_by(Service.id)
 
     result = await db.execute(stmt)
@@ -13,7 +15,7 @@ async def get_services(db: DBSession):
     return result.scalars().all()
 
 
-async def get_service_by_id(db: DBSession, service_id: int):
+async def get_service_by_id(db: DBSession, service_id: int) -> Service | None:
     stmt = select(Service).where(Service.id == service_id)
 
     result = await db.execute(stmt)
@@ -21,7 +23,9 @@ async def get_service_by_id(db: DBSession, service_id: int):
     return result.scalar_one_or_none()
 
 
-async def cache_service(db: DBSession, r: rediscon, service_id: int):
+async def cache_service(
+    db: DBSession, r: rediscon, service_id: int
+) -> ServiceResponse | None:
     cache_key = f'service{service_id}'
     service_cache = await r.get(cache_key)
 
@@ -40,20 +44,29 @@ async def cache_service(db: DBSession, r: rediscon, service_id: int):
     return None
 
 
-async def filter_services(db: DBSession, filter_query: ServiceQuery):
+async def filter_services(
+    db: DBSession, filter_query: ServiceQuery
+) -> List[Service] | None:
     q = select(Service)
 
     filter_data = filter_query.model_dump(
-        exclude={'limit', 'offset'}, exclude_none=True
+        exclude={'limit', 'offset', 'option'}, exclude_none=True
     )
+
+    conditions = []
 
     for field, value in filter_data.items():
         if field == 'name':
-            q = q.filter(Service.name.ilike(f'%{value}%'))
-
+            conditions.append(Service.name.ilike(f'%{value}%'))
         elif hasattr(Service, field):
             db_attribute = getattr(Service, field)
-            q = q.filter(db_attribute == value)
+            conditions.append(db_attribute == value)
+
+    if conditions:
+        if filter_query.option == 'or':
+            q = q.where(or_(*conditions))
+        else:
+            q = q.where(*conditions)
 
     if filter_query.limit > 0:
         q = q.limit(filter_query.limit)

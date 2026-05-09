@@ -49,9 +49,7 @@ async def get_user_by_id(db: DBSession, id_user: int) -> User | None:
     return exist.scalar_one_or_none()
 
 
-async def update_data(
-    db: DBSession, user: CurrentUser, update: UserUpdate
-) -> User:
+async def update_data(db: DBSession, user: CurrentUser, update: UserUpdate) -> User:
 
     try:
         user.email = update.email
@@ -87,9 +85,7 @@ async def delete_user(db: DBSession, r: rediscon, user: CurrentUser):
         raise HTTPException(status_code=409, detail=f'{e}')
 
 
-async def cache_user(
-    db: DBSession, r: rediscon, id_user: int
-) -> UserPublic | None:
+async def cache_user(db: DBSession, r: rediscon, id_user: int) -> UserPublic | None:
 
     cache_key = f'user:{id_user}'
     user_cached = await r.get(cache_key)
