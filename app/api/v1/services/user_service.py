@@ -4,7 +4,7 @@ from fastapi import HTTPException
 from sqlalchemy import select
 
 from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
-from app.api.v1.repositories import service_repo, user_repo, appointment_repo
+from app.api.v1.repositories import appointment_repo, service_repo, user_repo
 from app.models.users_models import User
 from app.schemas.service_schema import ServiceQuery
 from app.schemas.user_schema import UserCreate, UserPublic, UserUpdate
@@ -77,10 +77,9 @@ async def update_user_data(
 async def delete_user(db: DBSession, user: CurrentUser, r: rediscon):
     if user.role != 'cliente':
         raise HTTPException(
-            status_code=403,
-            detail="Somente clientes podem utilizar essa função."
+            status_code=403, detail='Somente clientes podem utilizar essa função.'
         )
-    
+
     await appointment_repo.delete_appointment_user(db, user)
 
     await user_repo.delete_user(db, r, user)

@@ -128,14 +128,14 @@ class AppointmentSimulation(BaseModel):
             )
 
         return value.astimezone(timezone.utc)
-    
+
     @field_validator('service_id')
     @classmethod
     def validate_id_service_is_not_zero(cls, value: int):
         if value <= 0:
             raise ValueError('O id do serviço não pode ser 0 ou negativo.')
         return value
-    
+
     model_config = ConfigDict(from_attributes=True)
 
 
@@ -145,4 +145,3 @@ class PsychSearchResponse(BaseModel):
     crp: str
 
     model_config = ConfigDict(from_attributes=True)
-

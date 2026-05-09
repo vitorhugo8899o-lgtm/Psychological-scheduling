@@ -79,6 +79,27 @@ async def test_delete_user(token_client):
 
 
 @pytest.mark.asyncio
+async def test_delete_user_with_appointment(
+    availability, token_client, service, schedule
+):
+    req = await token_client.delete('/api/v1/users')
+
+    status = 204
+
+    assert req.status_code == status
+
+
+@pytest.mark.asyncio
+async def test_forbiden_delete_roles(token_psych):
+    req = await token_psych.delete('/api/v1/users')
+
+    status = 403
+
+    assert req.status_code == status
+    assert req.json()['detail'] == 'Somente clientes podem utilizar essa função.'
+
+
+@pytest.mark.asyncio
 async def test_get_user(user_client, token_adm):
     req = await token_adm.get(f'/api/v1/users/{user_client.id}')
 

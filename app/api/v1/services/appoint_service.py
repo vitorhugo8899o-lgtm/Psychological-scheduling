@@ -6,7 +6,7 @@ from app.api.v1.repositories.appointment_repo import (
     create_appointment,
     get_all_psych_appointment,
     get_all_user_appointment,
-    search_available_psychologists
+    search_available_psychologists,
 )
 from app.api.v1.repositories.psych_repo import avaliabilite_exists, get_psych
 from app.api.v1.repositories.service_repo import get_service_by_id
@@ -97,8 +97,8 @@ async def get_psych_appointment(db: DBSession, user: CurrentUser):
     return appointments
 
 
-async def simulation_available_psychologists(db:DBSession, simulation:AppointmentSimulation):
-    service_time = await get_service_by_id(db,simulation.service_id)
+async def simulation_available_psychologists(db: DBSession, simulation: AppointmentSimulation):
+    service_time = await get_service_by_id(db, simulation.service_id)
 
     if not service_time:
         raise HTTPException(
@@ -106,7 +106,7 @@ async def simulation_available_psychologists(db:DBSession, simulation:Appointmen
             detail="Serviço não encontrado."
         )
 
-    search = await search_available_psychologists(db,simulation.date_time, service_time.duration_minutes)
+    search = await search_available_psychologists(db, simulation.date_time, service_time.duration_minutes)
 
     if not search:
         date = format_hour_br(simulation.date_time)
@@ -114,5 +114,5 @@ async def simulation_available_psychologists(db:DBSession, simulation:Appointmen
             status_code=404,
             detail=f"Nehuma disponibilidade para a data: {date}"
         )
-    
+
     return search

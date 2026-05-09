@@ -265,6 +265,26 @@ async def availability(db_session, user_psych):
 
 
 @pytest_asyncio.fixture(scope='function')
+async def availability2(db_session, user_psych):
+    days = [0, 1, 2, 3, 4, 5, 6]
+    availability_save = []
+    for d in days:
+        new_availability = models.Avaliabilite(
+            id_psychologist=user_psych.id,
+            day_of_the_week=d,
+            start_time=time(9, 10),
+            end_time=time(13, 30),
+        )
+
+        availability_save.append(new_availability)
+
+    db_session.add_all(availability_save)
+    await db_session.commit()
+
+    return user_psych
+
+
+@pytest_asyncio.fixture(scope='function')
 async def service(db_session):
     new_service = models.Service(
         name='Terapia de casal',

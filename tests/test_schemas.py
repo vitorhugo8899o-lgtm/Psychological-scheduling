@@ -378,3 +378,62 @@ async def test_schedule_cannot_receive_a_negative_id_from_the_service(
         req.json()['detail'][0]['msg']
         == 'Value error, O id do serviço não pode ser 0 ou negativo.'
     )  # noqa
+
+
+@pytest.mark.asyncio
+async def test_schema_appointment_simulation_has_no_timezone_in_data(token_client):
+    payload = {'date_time': '2026-05-11T11:10:00', 'service_id': '1'}
+
+    req = await token_client.post('/api/v1/appointments/simulation', json=payload)
+
+    status = 422
+
+    assert req.status_code == status
+    assert (
+        req.json()['detail'][0]['msg'] == 'Value error, A data precisa conter timezone.'
+    )
+
+
+@pytest.mark.asyncio
+async def test_schema_appointment_simulation_datetime_past(token_client):
+    payload = {'date_time': '2026-05-07T11:10:00Z', 'service_id': '1'}
+
+    req = await token_client.post('/api/v1/appointments/simulation', json=payload)
+
+    status = 422
+
+    assert req.status_code == status
+    assert (
+        req.json()['detail'][0]['msg']
+        == 'Value error, O horário não pode estar no passado. Horário 07/05/2026 08:10'  # noqa
+    )
+
+
+@pytest.mark.asyncio
+async def test_appointment_simulation_datetime_deadline(token_client):
+    payload = {'date_time': '2026-08-07T11:10:00Z', 'service_id': '1'}
+
+    req = await token_client.post('/api/v1/appointments/simulation', json=payload)
+
+    status = 422
+
+    assert req.status_code == status
+    assert (
+        req.json()['detail'][0]['msg']
+        == 'Value error, A data fornecida ultrapassa a data limite permitida. Data: 07/08/2026 08:10'  # noqa
+    )
+
+
+@pytest.mark.asyncio
+async def test_appointment_simulation_service_id_negative_error(token_client):
+    payload = {'date_time': '2026-05-15T11:10:00Z', 'service_id': -1}
+
+    req = await token_client.post('/api/v1/appointments/simulation', json=payload)
+
+    status = 422
+
+    assert req.status_code == status
+    assert (
+        req.json()['detail'][0]['msg']
+        == 'Value error, O id do serviço não pode ser 0 ou negativo.'  # noqa
+    )
