@@ -5,6 +5,7 @@ from zoneinfo import ZoneInfo
 from fastapi import HTTPException
 from sqlalchemy import and_, case, delete, exists, not_, select
 from sqlalchemy.exc import IntegrityError, OperationalError
+from sqlalchemy.orm import joinedload
 
 from app.api.v1.dependencies import CurrentUser, DBSession
 from app.api.v1.util.util import ensure_utc
@@ -177,3 +178,18 @@ async def search_available_psychologists(
         available_data.append({'id': psych.id, 'fullname': fullname, 'crp': psych.crp})
 
     return available_data
+
+
+async def get_appointment_by_id(db: DBSession, appoinment_id: int, user_id: id):
+    stmt = (
+        select(Appointment)
+        .options(joinedload(Appointment.service))
+        .where(
+            Appointment.id == appoinment_id,
+            Appointment.id_client == user_id
+        )
+    )
+
+    result = await db.execute(stmt)
+
+    return result.scalar_one_or_none()
