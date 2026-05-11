@@ -184,10 +184,7 @@ async def get_appointment_by_id(db: DBSession, appoinment_id: int, user_id: id):
     stmt = (
         select(Appointment)
         .options(joinedload(Appointment.service))
-        .where(
-            Appointment.id == appoinment_id,
-            Appointment.id_client == user_id
-        )
+        .where(Appointment.id == appoinment_id, Appointment.id_client == user_id)
     )
 
     result = await db.execute(stmt)

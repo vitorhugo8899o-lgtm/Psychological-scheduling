@@ -7,7 +7,7 @@ from app.api.v1.services.payment_service import (
     prepare_data_for_payment,
     process_update_payment,
 )
-from app.schemas.payment_schema import PaymentCreate
+from app.schemas.payment_schema import PaymentCreate, PaymentResponse
 
 payment_route = APIRouter()
 
@@ -17,12 +17,13 @@ async def create_payment(db: DBSession, user: CurrentUser, appointment: PaymentC
     return await prepare_data_for_payment(db, appointment, user.id)
 
 
-@payment_route.post("/payments/webhook")
+@payment_route.post(
+    '/payments/webhook', status_code=201, response_model=PaymentResponse | dict
+)
 async def mercado_pago_webhook(request: Request, db: DBSession):
     body = await request.json()
-    print(body)
 
-    data_id = body.get("data", {}).get("id")
-    event_type = body.get("type")
+    data_id = body.get('data', {}).get('id')
+    event_type = body.get('type')
 
     return await process_update_payment(db, data_id, event_type)
