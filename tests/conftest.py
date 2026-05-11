@@ -16,7 +16,7 @@ from sqlalchemy.pool import NullPool
 
 from app import models
 from app.api.v1.dependencies import get_db, get_redis
-from app.api.v1.repositories import auth_repo
+from app.api.v1.repositories import auth_repo, payment_repo
 from app.core.config import Settings
 from app.db.base import Base
 from app.main import app
@@ -175,6 +175,29 @@ async def user_psych(db_session):
 
 
 @pytest_asyncio.fixture(scope='function')
+async def user_psych_payment(db_session):
+    raw_password = 'Senha12@#'
+
+    user = models.User(
+        fullname='Full Name',
+        email='userpsych@example.com',
+        password=auth_repo.hash_password(raw_password),
+        role='psychologist',
+    )
+
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+
+    psych = models.Psychologist(user=user, crp='CRP 01/5596')
+
+    db_session.add(psych)
+    await db_session.commit()
+
+    return psych
+
+
+@pytest_asyncio.fixture(scope='function')
 async def fake_psych(db_session):
     raw_password = 'Senha12@#'
 
@@ -282,6 +305,26 @@ async def availability2(db_session, user_psych):
     await db_session.commit()
 
     return user_psych
+
+
+@pytest_asyncio.fixture(scope='function')
+async def availability_paymenttest(db_session, user_psych_payment):
+    days = [0, 1, 2, 3, 4, 5, 6]
+    availability_save = []
+    for d in days:
+        new_availability = models.Avaliabilite(
+            id_psychologist=user_psych_payment.id,
+            day_of_the_week=d,
+            start_time=time(9, 10),
+            end_time=time(13, 30),
+        )
+
+        availability_save.append(new_availability)
+
+    db_session.add_all(availability_save)
+    await db_session.commit()
+
+    return user_psych_payment
 
 
 @pytest_asyncio.fixture(scope='function')
@@ -428,7 +471,56 @@ async def schedule_psych(
     return appointment
 
 
+@pytest_asyncio.fixture(scope='function')
+async def schedule_payment(
+    db_session,
+    service,
+    availability_paymenttest,
+    user_client,
+):
+    appointment = models.Appointment(
+        id_client=user_client.id,
+        id_psychologist=availability_paymenttest.id,
+        id_service=service.id,
+        status=AppointmentStatus.confirmed,
+        date_time=datetime(2026, 5, 11, 14, 30, tzinfo=timezone.utc),
+    )
+
+    db_session.add(appointment)
+    await db_session.commit()
+    await db_session.refresh(appointment)
+
+    return appointment
+
+
 @pytest.fixture(autouse=True)
 def frozen_time():
     with freeze_time('2026-05-11'):
         yield
+
+
+@patch('app.api.v1.repositories.sdk.preference.create')
+async def test_create_payment(mock_create):
+    mock_create.return_value = {
+        'response': {'id': '1', 'init_point': 'https://checkout-fake.com'}
+    }
+
+    result = await payment_repo.create_preference(...)
+
+    assert result['checkout_url'] == 'https://checkout-fake.com'
+
+
+@pytest.fixture(scope='function')
+async def Payment(db_session,schedule_payment):
+    new_payment = models.Payment(
+        id_mercado_pago=123,
+        id_appointment=f'{schedule_payment.id}',
+        amount=90.0,
+        status="pending",
+    )
+
+    db_session.add(new_payment)
+    await db_session.commit()
+    await db_session.refresh(new_payment)
+
+    return new_payment

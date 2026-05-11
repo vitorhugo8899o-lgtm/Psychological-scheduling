@@ -21,51 +21,48 @@ async def prepare_data_for_payment(
     if not result:
         raise HTTPException(
             status_code=404,
-            detail="Erro ao tentar encontrar a consulta, tente novamente."
+            detail='Erro ao tentar encontrar a consulta, tente novamente.',
         )
 
     data = PaymentePreference(
         title=result.service.name,
         description=result.service.description,
-        unit_price=result.service.price
+        unit_price=result.service.price,
     )
 
     process_data = payment_repo.create_preference(data, appointment.appointment_id)
 
-    return {
-        "checkout_url": process_data
-    }
+    return {'checkout_url': process_data}
 
 
 async def process_update_payment(db: DBSession, data_id, event_type):
-    if not data_id or event_type != "payment":
-        return {"success": True, "detail": "Evento ignorado"}
+    if not data_id or event_type != 'payment':
+        return {'success': True, 'detail': 'Evento ignorado'}
 
     payment_response = sdk.payment().get(data_id)
-    payment = payment_response.get("response")
+    payment = payment_response.get('response')
 
     if not payment:
         raise HTTPException(
-            status_code=400,
-            detail="Pagamento não encontrado no Mercado Pago"
+            status_code=400, detail='Pagamento não encontrado no Mercado Pago'
         )
 
-    status = payment.get("status")
-    external_reference = payment.get("external_reference")
-    transaction_amount = payment.get("transaction_amount", 0.0)
+    status = payment.get('status')
+    external_reference = payment.get('external_reference')
+    transaction_amount = payment.get('transaction_amount', 0.0)
 
     try:
-        if not external_reference or not external_reference.startswith("Appointment:"):
-            return {"success": True, "detail": "Não é um pagamento de consulta"}
-        appointment_id = int(external_reference.split(":")[1])
-    except (IndexError, ValueError):
-        return {"success": True, "detail": "Formato de external_reference inválido"}
+        if not external_reference or not external_reference.startswith('Appointment:'):
+            return {'success': True, 'detail': 'Não é um pagamento de consulta'}
+        appointment_id = int(external_reference.split(':')[1])
+    except IndexError, ValueError:
+        return {'success': True, 'detail': 'Formato de external_reference inválido'}
 
-    if status == "approved":
+    if status == 'approved':
         new_payment_status = PaymentStatus.approved
         new_appointment_status = AppointmentStatus.confirmed
 
-    elif status in {"rejected", "cancelled"}:
+    elif status in {'rejected', 'cancelled'}:
         new_payment_status = PaymentStatus.rejected
         new_appointment_status = AppointmentStatus.canceled
 
@@ -82,7 +79,7 @@ async def process_update_payment(db: DBSession, data_id, event_type):
             id_mercado_pago=str(data_id),
             id_appointment=appointment_id,
             amount=transaction_amount,
-            status=new_payment_status
+            status=new_payment_status,
         )
         result = await create_payment_and_update_appointment(
             db, data_payment, new_appointment_status

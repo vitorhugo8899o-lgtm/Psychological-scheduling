@@ -29,8 +29,8 @@ async def login_user(db: DBSession, user: Form_data, response: Response):
         value=token.access_token,
         max_age=60 * 60,
         httponly=True,
-        secure=True,
-        samesite='none',
+        secure=False,
+        samesite='lax',
     )
 
     response.headers['Cache-Control'] = 'no-store'
