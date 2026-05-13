@@ -510,13 +510,13 @@ async def test_create_payment(mock_create):
     assert result['checkout_url'] == 'https://checkout-fake.com'
 
 
-@pytest.fixture(scope='function')
-async def Payment(db_session,schedule_payment):
+@pytest_asyncio.fixture(scope='function')
+async def Payment(db_session, schedule_payment):
     new_payment = models.Payment(
         id_mercado_pago=123,
         id_appointment=f'{schedule_payment.id}',
         amount=90.0,
-        status="pending",
+        status='pending',
     )
 
     db_session.add(new_payment)
