@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
 
-from pydantic import BaseModel, ConfigDict, computed_field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator
 
 from app.schemas.custom_schema import AppointmentStatus
 
@@ -145,3 +145,8 @@ class PsychSearchResponse(BaseModel):
     crp: str
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ReschedulingAppointment(BaseModel):
+    id_appointment: int = Field(ge=1)
+    date_new: datetime
