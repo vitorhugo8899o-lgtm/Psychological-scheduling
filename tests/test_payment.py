@@ -24,7 +24,10 @@ async def test_create_payment_appointment_not_exist(token_client):
     status = 404
 
     assert response.status_code == status
-    assert response.json()['detail'] == 'Erro ao tentar encontrar a consulta, tente novamente.'  #noqa
+    assert (
+        response.json()['detail']
+        == 'Erro ao tentar encontrar a consulta, tente novamente.'
+    )  # noqa
 
 
 @pytest.mark.asyncio
@@ -38,35 +41,30 @@ async def test_trying_to_pay_for_another_user_consultation(
     status = 404
 
     assert response.status_code == status
-    assert response.json()['detail'] == 'Erro ao tentar encontrar a consulta, tente novamente.'  #noqa
+    assert (
+        response.json()['detail']
+        == 'Erro ao tentar encontrar a consulta, tente novamente.'
+    )  # noqa
 
 
-@patch("app.api.v1.repositories.payment_repo.sdk.payment")
+@patch('app.api.v1.repositories.payment_repo.sdk.payment')
 @pytest.mark.asyncio
 async def test_webhook(
     mock_payment, token_client, availability_paymenttest, schedule_payment
 ):
 
     mock_payment.return_value.get.return_value = {
-        "response": {
-            "id": "123",
-            "status": "approved",
-            "transaction_amount": 90,
-            "external_reference": f"Appointment:{schedule_payment.id}"
+        'response': {
+            'id': '123',
+            'status': 'approved',
+            'transaction_amount': 90,
+            'external_reference': f'Appointment:{schedule_payment.id}',
         }
     }
 
-    payload = {
-        "type": "payment",
-        "data": {
-            "id": "123"
-        }
-    }
+    payload = {'type': 'payment', 'data': {'id': '123'}}
 
-    response = await token_client.post(
-        "/api/v1/payments/webhook",
-        json=payload
-    )
+    response = await token_client.post('/api/v1/payments/webhook', json=payload)
 
     status = 201
 
@@ -80,30 +78,23 @@ async def test_webhook(
     assert response.json()['format_datetime'] == '10/05/2026 21:00'
 
 
-@patch("app.api.v1.repositories.payment_repo.sdk.payment")
+@patch('app.api.v1.repositories.payment_repo.sdk.payment')
 @pytest.mark.asyncio
 async def test_webhook_is_not_a_payment_event(
     mock_payment, token_client, availability_paymenttest, schedule_payment
 ):
     mock_payment.return_value.get.return_value = {
-        "response": {
-            "id": "123f",
-            "status": "approved",
-            "transaction_amount": 90,
-            "external_reference": f"Appointment:{schedule_payment.id}"
+        'response': {
+            'id': '123f',
+            'status': 'approved',
+            'transaction_amount': 90,
+            'external_reference': f'Appointment:{schedule_payment.id}',
         }
     }
 
-    payload = {
-        "data": {
-            "id": "123"
-        }
-    }
+    payload = {'data': {'id': '123'}}
 
-    response = await token_client.post(
-        "/api/v1/payments/webhook",
-        json=payload
-    )
+    response = await token_client.post('/api/v1/payments/webhook', json=payload)
 
     status = 201
 
@@ -112,31 +103,23 @@ async def test_webhook_is_not_a_payment_event(
     assert response.json()['detail'] == 'Evento ignorado'
 
 
-@patch("app.api.v1.repositories.payment_repo.sdk.payment")
+@patch('app.api.v1.repositories.payment_repo.sdk.payment')
 @pytest.mark.asyncio
 async def test_external_reference_invalid(
     mock_payment, token_client, availability_paymenttest, schedule_payment
 ):
     mock_payment.return_value.get.return_value = {
-        "response": {
-            "id": "123",
-            "status": "approved",
-            "transaction_amount": 90,
-            "external_reference": "not_appointment:78"
+        'response': {
+            'id': '123',
+            'status': 'approved',
+            'transaction_amount': 90,
+            'external_reference': 'not_appointment:78',
         }
     }
 
-    payload = {
-        "type": "payment",
-        "data": {
-            "id": "123"
-        }
-    }
+    payload = {'type': 'payment', 'data': {'id': '123'}}
 
-    response = await token_client.post(
-        "/api/v1/payments/webhook",
-        json=payload
-    )
+    response = await token_client.post('/api/v1/payments/webhook', json=payload)
 
     status = 201
 
@@ -145,31 +128,23 @@ async def test_external_reference_invalid(
     assert response.json()['detail'] == 'Não é um pagamento de consulta'
 
 
-@patch("app.api.v1.repositories.payment_repo.sdk.payment")
+@patch('app.api.v1.repositories.payment_repo.sdk.payment')
 @pytest.mark.asyncio
 async def test_payment_cancelled(
     mock_payment, token_client, availability_paymenttest, schedule_payment
 ):
     mock_payment.return_value.get.return_value = {
-        "response": {
-            "id": "123",
-            "status": "cancelled",
-            "transaction_amount": 90,
-            "external_reference": f"Appointment:{schedule_payment.id}"
+        'response': {
+            'id': '123',
+            'status': 'cancelled',
+            'transaction_amount': 90,
+            'external_reference': f'Appointment:{schedule_payment.id}',
         }
     }
 
-    payload = {
-        "type": "payment",
-        "data": {
-            "id": "123"
-        }
-    }
+    payload = {'type': 'payment', 'data': {'id': '123'}}
 
-    response = await token_client.post(
-        "/api/v1/payments/webhook",
-        json=payload
-    )
+    response = await token_client.post('/api/v1/payments/webhook', json=payload)
 
     status = 201
 
@@ -182,30 +157,22 @@ async def test_payment_cancelled(
     assert response.json()['format_datetime'] == '10/05/2026 21:00'
 
 
-@patch("app.api.v1.repositories.payment_repo.sdk.payment")
+@patch('app.api.v1.repositories.payment_repo.sdk.payment')
 @pytest.mark.asyncio
 async def test_payment_pending(
     mock_payment, token_client, availability_paymenttest, schedule_payment
 ):
     mock_payment.return_value.get.return_value = {
-        "response": {
-            "id": "123",
-            "transaction_amount": 90,
-            "external_reference": f"Appointment:{schedule_payment.id}"
+        'response': {
+            'id': '123',
+            'transaction_amount': 90,
+            'external_reference': f'Appointment:{schedule_payment.id}',
         }
     }
 
-    payload = {
-        "type": "payment",
-        "data": {
-            "id": "123"
-        }
-    }
+    payload = {'type': 'payment', 'data': {'id': '123'}}
 
-    response = await token_client.post(
-        "/api/v1/payments/webhook",
-        json=payload
-    )
+    response = await token_client.post('/api/v1/payments/webhook', json=payload)
 
     status = 201
 

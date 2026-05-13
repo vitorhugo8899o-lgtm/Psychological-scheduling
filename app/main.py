@@ -1,9 +1,10 @@
 import sys
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
-
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from slowapi.errors import RateLimitExceeded
 from sqlalchemy import text
 
 from app.api.v1.router import api_router
@@ -49,3 +50,10 @@ app.add_middleware(
     allow_methods=['*'],
     allow_headers=['*'],
 )
+
+
+@app.exception_handler(RateLimitExceeded)
+async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
+    return JSONResponse(
+        status_code=429, content={'detail': 'Você atingiu o limite de requisições'}
+    )

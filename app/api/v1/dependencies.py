@@ -34,6 +34,8 @@ async def get_current_user(request: Request, db: DBSession) -> User:
     if not user:
         raise HTTPException(status_code=409, detail='Usuário não encontrado!')
 
+    request.state.user = user.id
+
     return user
 
 
