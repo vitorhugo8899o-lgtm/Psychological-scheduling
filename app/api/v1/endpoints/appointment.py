@@ -9,6 +9,7 @@ from app.api.v1.services.appoint_service import (
     rescheduling_appointmnet,
     simulation_available_psychologists,
 )
+from app.redis.limiter import limiter
 from app.schemas.appointment_schema import (
     AppointmentCreate,
     AppointmentResponse,
@@ -23,6 +24,7 @@ appointment_route = APIRouter()
 @appointment_route.post(
     '/appointments', status_code=HTTPStatus.CREATED, response_model=AppointmentResponse
 )
+@limiter.limit('3/minute')
 async def schedule_an_appointment(
     db: DBSession, user: CurrentUser, payload: AppointmentCreate
 ):
@@ -34,6 +36,7 @@ async def schedule_an_appointment(
     status_code=HTTPStatus.OK,
     response_model=List[PsychSearchResponse],
 )
+@limiter.limit('3/minute')
 async def get_simulation_appointment(
     db: DBSession, user: CurrentUser, simulation: AppointmentSimulation
 ):
@@ -45,6 +48,7 @@ async def get_simulation_appointment(
     status_code=HTTPStatus.OK,
     response_model=AppointmentResponse,
 )
+@limiter.limit('3/hour')
 async def rescheduling(
     user: CurrentUser, db: DBSession, appointment: ReschedulingAppointment
 ):
