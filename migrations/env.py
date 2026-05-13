@@ -8,7 +8,7 @@ from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
 from app.db.base import Base
-from app.core.config import Settings
+from app.core.config import settings
 
 import app.models
 
@@ -23,7 +23,7 @@ if config.config_file_name is not None:
 
 config.set_main_option(
     "sqlalchemy.url",
-    Settings().DATABASE_URL
+    settings.DATABASE_URL
 )
 
 # add your model's MetaData object here

@@ -10,3 +10,7 @@ class Settings(BaseSettings):
     ALGORITHM: str
     REDIS_URL: str
     API_KEY_MERCADO_PAGO: str
+    TESTING: bool = False
+
+
+settings = Settings()

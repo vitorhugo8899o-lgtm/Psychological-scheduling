@@ -2,13 +2,13 @@ import mercadopago
 from sqlalchemy import select
 
 from app.api.v1.dependencies import DBSession
-from app.core.config import Settings
+from app.core.config import settings
 from app.models.appointments_models import Appointment
 from app.models.paymentes_models import Payment
 from app.schemas.custom_schema import AppointmentStatus
 from app.schemas.payment_schema import PaymentDB, PaymentePreference
 
-sdk = mercadopago.SDK(Settings().API_KEY_MERCADO_PAGO)
+sdk = mercadopago.SDK(settings.API_KEY_MERCADO_PAGO)
 
 
 def create_preference(data: PaymentePreference, id_appointment: int):

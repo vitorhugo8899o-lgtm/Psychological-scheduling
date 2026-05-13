@@ -4,9 +4,7 @@ import jwt
 from argon2 import PasswordHasher
 from argon2.exceptions import VerificationError
 
-from app.core.config import Settings
-
-settings = Settings()
+from app.core.config import settings
 
 ph = PasswordHasher()
 
