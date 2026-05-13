@@ -1,3 +1,11 @@
+import os  #noqa
+
+os.environ['TESTING'] = 'true'  #noqa
+
+from app.core.config import settings  #noqa
+from app.main import app  # noqa
+
+
 import asyncio
 from datetime import datetime, time, timedelta, timezone
 from unittest.mock import AsyncMock, patch
@@ -17,14 +25,10 @@ from sqlalchemy.pool import NullPool
 from app import models
 from app.api.v1.dependencies import get_db, get_redis
 from app.api.v1.repositories import auth_repo, payment_repo
-from app.core.config import Settings
 from app.db.base import Base
-from app.main import app
 from app.schemas.custom_schema import AppointmentStatus
 
 TEST_DATABASE_URL = 'postgresql+asyncpg://postgres:postgres@localhost:5433/test_db'
-
-settings = Settings()
 
 
 test_engine = create_async_engine(TEST_DATABASE_URL, poolclass=NullPool)

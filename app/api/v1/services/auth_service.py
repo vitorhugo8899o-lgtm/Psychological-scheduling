@@ -6,14 +6,12 @@ from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import EmailStr, TypeAdapter, ValidationError
 
 from app.api.v1.repositories import auth_repo, user_repo
-from app.core.config import Settings
+from app.core.config import settings
 from app.models.users_models import User
 from app.schemas.custom_schema import Token
 
 if TYPE_CHECKING:
     from app.api.v1.dependencies import DBSession
-
-settings = Settings()
 
 email_validator = TypeAdapter(EmailStr)
 
