@@ -8,13 +8,19 @@ from app.api.v1.repositories.appointment_repo import (
     create_appointment,
     get_all_psych_appointment,
     get_all_user_appointment,
+    get_appointment_by_id,
     search_available_psychologists,
+    update_appoinment_datetime,
 )
 from app.api.v1.repositories.psych_repo import avaliabilite_exists, get_psych
 from app.api.v1.repositories.service_repo import get_service_by_id
-from app.api.v1.util.util import format_hour_br
+from app.api.v1.util.util import format_hour_br, time_passed
 from app.models.appointments_models import Appointment
-from app.schemas.appointment_schema import AppointmentCreate, AppointmentSimulation
+from app.schemas.appointment_schema import (
+    AppointmentCreate,
+    AppointmentSimulation,
+    ReschedulingAppointment,
+)
 
 
 async def check_for_conflict(
@@ -124,3 +130,75 @@ async def simulation_available_psychologists(
         )
 
     return search
+
+
+async def rescheduling_appointmnet(
+    db: DBSession, user: CurrentUser, payload: ReschedulingAppointment
+):
+    appointment = await get_appointment_by_id(db, payload.id_appointment, user.id)
+
+    if not appointment:
+        raise HTTPException(status_code=404, detail='Consulta não encontrada.')
+
+    passed = time_passed(appointment.date_time)
+
+    if passed:
+        raise HTTPException(
+            status_code=400,
+            detail='Já se passaram 24 horas desde o momento em que a consulta foi marcada.',  # noqa
+        )
+
+    new_date = AppointmentCreate(
+        id_psychologist=appointment.id_psychologist,
+        service_id=appointment.service.id,
+        date_time=payload.date_new,
+    )
+
+    conflit_user = await check_appointment_conflict(
+        db,
+        new_date,
+        appointment.service.duration_minutes,
+        id_client=appointment.id_client,
+    )
+
+    if conflit_user:
+        date = format_hour_br(conflit_user.date_time)
+        raise HTTPException(
+            status_code=409,
+            detail=f'Você já possui uma consulta marcada neste período. Consulta:{date}'
+        )
+
+    avaliabilites = await avaliabilite_exists(
+        db,
+        appointment.id_psychologist,
+        new_date.date_time,
+        appointment.service.duration_minutes,
+    )
+
+    if not avaliabilites:
+        raise HTTPException(
+            status_code=409,
+            detail='O psicólogo solcitado não atende na data informada.',
+        )
+
+    psych_appointment = await check_appointment_conflict(
+        db,
+        new_date,
+        appointment.service.duration_minutes,
+        id_psychologist=appointment.id_psychologist,
+    )
+
+    if psych_appointment:
+        date = format_hour_br(psych_appointment.date_time)
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                f'O psicólogo já possui uma consulta marcada neste horário. Consulta: {date}'  # noqa
+            ),
+        )
+
+    new_appointment = await update_appoinment_datetime(
+        db, appointment, new_date.date_time
+    )
+
+    return new_appointment

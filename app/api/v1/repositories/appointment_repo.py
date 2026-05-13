@@ -180,7 +180,7 @@ async def search_available_psychologists(
     return available_data
 
 
-async def get_appointment_by_id(db: DBSession, appoinment_id: int, user_id: id):
+async def get_appointment_by_id(db: DBSession, appoinment_id: int, user_id: int):
     stmt = (
         select(Appointment)
         .options(joinedload(Appointment.service))
@@ -190,3 +190,14 @@ async def get_appointment_by_id(db: DBSession, appoinment_id: int, user_id: id):
     result = await db.execute(stmt)
 
     return result.scalar_one_or_none()
+
+
+async def update_appoinment_datetime(
+    db: DBSession, appoinment: Appointment, new_date: datetime
+):
+    appoinment.date_time = new_date
+
+    await db.commit()
+    await db.refresh(appoinment)
+
+    return appoinment
