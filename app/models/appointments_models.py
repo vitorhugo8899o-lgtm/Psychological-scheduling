@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import TYPE_CHECKING
 
 from sqlalchemy import DateTime, ForeignKey
@@ -29,6 +29,10 @@ class Appointment(Base):
         SAEnum(AppointmentStatus, name='appointment_enum_status'),
         default=AppointmentStatus.pending,
         nullable=False,
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
 
     client: Mapped['User'] = relationship(
