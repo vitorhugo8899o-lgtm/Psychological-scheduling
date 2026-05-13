@@ -1,5 +1,7 @@
 from datetime import datetime  # noqa
 
+from unittest.mock import patch
+
 import pytest
 
 
@@ -305,3 +307,158 @@ async def test_no_psychologists_available_on_that_date(
         req.json()['detail']
         == 'Nehuma disponibilidade para a data: 12/05/2026 às 15:10'
     )  # noqa
+
+
+@patch('app.api.v1.services.appoint_service.time_passed')
+@pytest.mark.asyncio
+async def test_reschedule_an_appointment(
+    mock_time_passed, availability, token_client, service, schedule_refresh
+):
+
+    mock_time_passed.return_value = False
+
+    payload = {
+        'id_appointment': f'{schedule_refresh.id}',
+        'date_new': '2026-05-12T15:00:00Z',
+    }
+
+    response = await token_client.post(
+        '/api/v1/appointments/rescheduling', json=payload
+    )
+
+    status = 200
+
+    assert response.status_code == status
+    assert response.json()['id'] == 1
+    assert 'id_client' in response.json()
+    assert 'id_psychologist' in response.json()
+    assert response.json()['id_service'] == 1
+    assert 'date_time' in response.json()
+    assert response.json()['status'] == 'confirmed'
+    assert response.json()['datetime_format'] == '12/05/2026 12:00'
+
+
+@pytest.mark.asyncio
+async def test_try_to_reschedule_an_appointment_but_any_available_dates(token_client):
+    payload = {
+        'id_appointment': 50,
+        'date_new': '2026-05-12T15:00:00Z',
+    }
+
+    response = await token_client.post(
+        '/api/v1/appointments/rescheduling', json=payload
+    )
+
+    status = 404
+
+    assert response.status_code == status
+    assert response.json()['detail'] == 'Consulta não encontrada.'
+
+
+@patch('app.api.v1.services.appoint_service.time_passed')
+@pytest.mark.asyncio
+async def test_try_to_reschedule_but_time_passed(
+    mock_time_passed, availability, token_client, service, schedule_refresh
+):
+
+    mock_time_passed.return_value = True
+
+    payload = {
+        'id_appointment': f'{schedule_refresh.id}',
+        'date_new': '2026-05-12T15:00:00Z',
+    }
+
+    response = await token_client.post(
+        '/api/v1/appointments/rescheduling', json=payload
+    )
+
+    status = 400
+
+    assert response.status_code == status
+    assert (
+        response.json()['detail']
+        == 'Já se passaram 24 horas desde o momento em que a consulta foi marcada.'
+    )  # noqa
+
+
+@patch('app.api.v1.services.appoint_service.time_passed')
+@pytest.mark.asyncio
+async def test_try_to_reschedule_but_conflit_date(
+    mock_time_passed, availability, token_client, service, schedule_refresh
+):
+
+    mock_time_passed.return_value = False
+
+    payload = {
+        'id_appointment': f'{schedule_refresh.id}',
+        'date_new': '2026-05-11T14:00:00Z',
+    }
+
+    response = await token_client.post(
+        '/api/v1/appointments/rescheduling', json=payload
+    )
+
+    status = 409
+
+    assert response.status_code == status
+    assert (
+        response.json()['detail']
+        == 'Você já possui uma consulta marcada neste período. Consulta:11/05/2026 às 11:30'  # noqa
+    )
+
+
+@patch('app.api.v1.services.appoint_service.time_passed')
+@pytest.mark.asyncio
+async def test_try_to_reschedule_but_psych_not_available_on_this_date(
+    mock_time_passed, availability, token_client, service, schedule_refresh
+):
+
+    mock_time_passed.return_value = False
+
+    payload = {
+        'id_appointment': f'{schedule_refresh.id}',
+        'date_new': '2026-05-18T20:00:00Z',
+    }
+
+    response = await token_client.post(
+        '/api/v1/appointments/rescheduling', json=payload
+    )
+
+    status = 409
+
+    assert response.status_code == status
+    assert (
+        response.json()['detail']
+        == 'O psicólogo solcitado não atende na data informada.'  # noqa
+    )
+
+
+@patch('app.api.v1.services.appoint_service.time_passed')
+@pytest.mark.asyncio
+async def test_try_to_reschedule_but_psych_has_appointments_available(  # noqa
+    mock_time_passed,
+    availability,
+    token_client,
+    service,
+    schedule_refresh2,
+    schedule_refresh,
+):
+
+    mock_time_passed.return_value = False
+
+    payload = {
+        'id_appointment': f'{schedule_refresh.id}',
+        'date_new': '2026-05-11T15:20:00Z',
+    }
+
+    response = await token_client.post(
+        '/api/v1/appointments/rescheduling', json=payload
+    )
+
+    status = 409
+
+    assert response.status_code == status
+    assert (
+        response.json()['detail']
+        == 'O psicólogo já possui uma consulta marcada neste horário. Consulta: 11/05/2026 às 12:20'  # noqa
+    )

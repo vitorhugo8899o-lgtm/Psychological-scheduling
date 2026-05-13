@@ -1,8 +1,8 @@
-import os  #noqa
+import os  # noqa
 
-os.environ['TESTING'] = 'true'  #noqa
+os.environ['TESTING'] = 'true'  # noqa
 
-from app.core.config import settings  #noqa
+from app.core.config import settings  # noqa
 from app.main import app  # noqa
 
 
@@ -27,6 +27,7 @@ from app.api.v1.dependencies import get_db, get_redis
 from app.api.v1.repositories import auth_repo, payment_repo
 from app.db.base import Base
 from app.schemas.custom_schema import AppointmentStatus
+
 
 TEST_DATABASE_URL = 'postgresql+asyncpg://postgres:postgres@localhost:5433/test_db'
 
@@ -202,6 +203,29 @@ async def user_psych_payment(db_session):
 
 
 @pytest_asyncio.fixture(scope='function')
+async def user_psych_refresh(db_session):
+    raw_password = 'Senha12@#'
+
+    user = models.User(
+        fullname='Full Name',
+        email='userrefresh@example.com',
+        password=auth_repo.hash_password(raw_password),
+        role='psychologist',
+    )
+
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+
+    psych = models.Psychologist(user=user, crp='CRP 02/5596')
+
+    db_session.add(psych)
+    await db_session.commit()
+
+    return psych
+
+
+@pytest_asyncio.fixture(scope='function')
 async def fake_psych(db_session):
     raw_password = 'Senha12@#'
 
@@ -329,6 +353,26 @@ async def availability_paymenttest(db_session, user_psych_payment):
     await db_session.commit()
 
     return user_psych_payment
+
+
+@pytest_asyncio.fixture(scope='function')
+async def availabilty_refresh(db_session, user_psych_refresh):
+    days = [0, 1, 2, 3, 4, 5, 6]
+    availability_save = []
+    for d in days:
+        new_availability = models.Avaliabilite(
+            id_psychologist=user_psych_refresh.id,
+            day_of_the_week=d,
+            start_time=time(9, 10),
+            end_time=time(13, 30),
+        )
+
+        availability_save.append(new_availability)
+
+    db_session.add_all(availability_save)
+    await db_session.commit()
+
+    return user_psych_refresh
 
 
 @pytest_asyncio.fixture(scope='function')
@@ -488,6 +532,50 @@ async def schedule_payment(
         id_service=service.id,
         status=AppointmentStatus.confirmed,
         date_time=datetime(2026, 5, 11, 14, 30, tzinfo=timezone.utc),
+    )
+
+    db_session.add(appointment)
+    await db_session.commit()
+    await db_session.refresh(appointment)
+
+    return appointment
+
+
+@pytest_asyncio.fixture(scope='function')
+async def schedule_refresh(
+    db_session,
+    service,
+    availabilty_refresh,
+    user_client,
+):
+    appointment = models.Appointment(
+        id_client=user_client.id,
+        id_psychologist=availabilty_refresh.id,
+        id_service=service.id,
+        status=AppointmentStatus.confirmed,
+        date_time=datetime(2026, 5, 11, 14, 30, tzinfo=timezone.utc),
+    )
+
+    db_session.add(appointment)
+    await db_session.commit()
+    await db_session.refresh(appointment)
+
+    return appointment
+
+
+@pytest_asyncio.fixture(scope='function')
+async def schedule_refresh2(
+    db_session,
+    service,
+    availabilty_refresh,
+    user_client2,
+):
+    appointment = models.Appointment(
+        id_client=user_client2.id,
+        id_psychologist=availabilty_refresh.id,
+        id_service=service.id,
+        status=AppointmentStatus.confirmed,
+        date_time=datetime(2026, 5, 11, 15, 20, tzinfo=timezone.utc),
     )
 
     db_session.add(appointment)
