@@ -7,9 +7,11 @@ from sqlalchemy.exc import IntegrityError, OperationalError
 from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
 from app.models.avaliabilites_models import Avaliabilite
 from app.models.psychologist_models import Psychologist
+from app.models.appointments_models import Appointment
 from app.schemas.psychologist_schema import (
     DeleteAvailabilySchema,
     availability_list_adapter,
+    SchemaMetrics
 )
 
 
@@ -133,3 +135,18 @@ async def delete_availbilty(
     except Exception as e:
         await db.rollback()
         raise f'Um erro inesperado ocorreu: {e}'
+
+
+async def get_count_appoinment(db:DBSession, user:CurrentUser, date:SchemaMetrics):
+    stmt = (select(func.count())
+            .select_from(Appointment)
+            .where(
+                Appointment.id_psychologist == user.psychologist_profile.id,
+                Appointment.created_at >= date.start_date,
+                Appointment.created_at < date.end_date
+            )
+    )
+
+    metrics = await db.execute(stmt)
+
+    return metrics.scalar()
