@@ -75,10 +75,10 @@ async def stats_count_appointmnet(
     return await psych_service.get_appoinment_count(db, user, date)
 
 
-@psych_router.post(
+@psych_router.get(
     '/psych/me/stats/rate-appoinments',
     status_code=HTTPStatus.OK,
-    response_model=ResponseRate,
+    response_model=ResponseRate | dict,
 )
 @limiter.limit('3/minute')
 async def stats_rate(request: Request, db: DBSession, user: CurrentUser):
