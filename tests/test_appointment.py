@@ -485,16 +485,15 @@ async def test_cancel_appoinment_not_found(token_client):
     stauts = 404
 
     assert response.status_code == stauts
-    assert response.json()['detail'] == 'Consulta não encontrada, verifique em sua Aba se realmente possui uma consulta'  #noqa
+    assert (
+        response.json()['detail']
+        == 'Consulta não encontrada, verifique em sua Aba se realmente possui uma consulta'  # noqa
+    )
 
 
 @pytest.mark.asyncio
 async def test_appoinment_already_cancelled(
-    db_session,
-    availability,
-    token_client,
-    service,
-    schedule
+    db_session, availability, token_client, service, schedule
 ):
     schedule.status = 'canceled'
     db_session.commit()
@@ -506,16 +505,15 @@ async def test_appoinment_already_cancelled(
     status = 409
 
     assert response.status_code == status
-    assert response.json()['detail'] == 'Esta consulta já foi cancelada, verifique na sua Aba de consultas.'  #noqa
+    assert (
+        response.json()['detail']
+        == 'Esta consulta já foi cancelada, verifique na sua Aba de consultas.'
+    )  # noqa
 
 
 @pytest.mark.asyncio
 async def test_appoinment_cancel_time_passed(
-    db_session,
-    availability,
-    token_client,
-    service,
-    schedule
+    db_session, availability, token_client, service, schedule
 ):
     schedule.date_time = datetime(2026, 5, 9, 12, 30, tzinfo=timezone.utc)
     db_session.commit()
@@ -527,4 +525,7 @@ async def test_appoinment_cancel_time_passed(
     status = 400
 
     assert response.status_code == status
-    assert response.json()['detail'] == 'O tempo para cancelamento da consulta já passou, se desejar um reembolso busque na aba de consulta ao lado'  #noqa
+    assert (
+        response.json()['detail']
+        == 'O tempo para cancelamento da consulta já passou, se desejar um reembolso busque na aba de consulta ao lado'  # noqa
+    )
