@@ -201,3 +201,12 @@ async def update_appoinment_datetime(
     await db.refresh(appoinment)
 
     return appoinment
+
+
+async def update_cancel_appointment(db: DBSession, appoinment: Appointment):
+    appoinment.status = AppointmentStatus.canceled
+
+    await db.commit()
+    await db.refresh(appoinment)
+
+    return appoinment
