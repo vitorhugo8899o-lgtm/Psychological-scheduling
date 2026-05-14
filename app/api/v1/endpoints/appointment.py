@@ -43,7 +43,7 @@ async def get_simulation_appointment(
     request: Request,
     db: DBSession,
     user: CurrentUser,
-    simulation: AppointmentSimulation
+    simulation: AppointmentSimulation,
 ):
     return await simulation_available_psychologists(db, simulation)
 
@@ -58,7 +58,7 @@ async def rescheduling(
     request: Request,
     user: CurrentUser,
     db: DBSession,
-    appointment: ReschedulingAppointment
+    appointment: ReschedulingAppointment,
 ):
     return await rescheduling_appointmnet(db, user, appointment)
 
@@ -66,13 +66,10 @@ async def rescheduling(
 @appointment_route.post(
     '/appointments/cancel',
     status_code=HTTPStatus.OK,
-    response_model=AppointmentResponse
+    response_model=AppointmentResponse,
 )
 @limiter.limit('3/minute')
 async def cancel_appointment(
-    request: Request,
-    db: DBSession,
-    user: CurrentUser,
-    appointmnet: CancelAppointment
+    request: Request, db: DBSession, user: CurrentUser, appointmnet: CancelAppointment
 ):
     return await cancel_service(db, user, appointmnet.id_appointment)
