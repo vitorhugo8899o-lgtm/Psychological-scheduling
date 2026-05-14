@@ -1,4 +1,4 @@
-from datetime import datetime, time
+from datetime import datetime, time, date
 from typing import ClassVar, List, Set
 
 from pydantic import (
@@ -156,3 +156,34 @@ class DeleteAvailabilySchema(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class SchemaMetrics(BaseModel):
+    start_date: date
+    end_date: date
+
+
+    @field_validator('start_date', 'end_date')
+    @classmethod
+    def validate_date(cls, v: date):
+        today = date.today()
+
+        min_date = date(today.year - 10, today.month, today.day)
+        max_date = date(today.year + 1, today.month, today.day)
+
+        if v < min_date:
+            raise ValueError(
+                "A data não pode ser inferior a 10 anos."
+            )
+
+        if v > max_date:
+            raise ValueError(
+                f"A data não pode ser superior a 1 ano."
+            )
+
+        return v
+
+
+class ResponseMetrics(BaseModel):
+    total: int
+    message: str
