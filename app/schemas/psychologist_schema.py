@@ -171,14 +171,10 @@ class SchemaMetrics(BaseModel):
         max_date = date(today.year + 1, today.month, today.day)
 
         if v < min_date:
-            raise ValueError(
-                "A data não pode ser inferior a 10 anos."
-            )
+            raise ValueError('A data não pode ser inferior a 10 anos.')
 
         if v > max_date:
-            raise ValueError(
-                "A data não pode ser superior a 1 ano."
-            )
+            raise ValueError('A data não pode ser superior a 1 ano.')
 
         return v
 
@@ -186,3 +182,11 @@ class SchemaMetrics(BaseModel):
 class ResponseMetrics(BaseModel):
     total: int
     message: str
+
+
+class ResponseRate(BaseException):
+    total_appoinments: int
+    total_cancelled: int
+    total_confirmed: int
+    cancelation_rate: str
+    confirmed_rate: str
