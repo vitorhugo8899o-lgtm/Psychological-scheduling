@@ -1,4 +1,4 @@
-from datetime import datetime  # noqa
+from datetime import datetime, timezone  # noqa
 
 from unittest.mock import patch
 
@@ -462,3 +462,69 @@ async def test_try_to_reschedule_but_psych_has_appointments_available(  # noqa
         response.json()['detail']
         == 'O psicólogo já possui uma consulta marcada neste horário. Consulta: 11/05/2026 às 12:20'  # noqa
     )
+
+
+@pytest.mark.asyncio
+async def test_cancel_appoinment(availability, token_client, service, schedule):
+    payload = {'id_appointment': f'{schedule.id}'}
+
+    response = await token_client.post('/api/v1/appointments/cancel', json=payload)
+
+    stauts = 200
+
+    assert response.status_code == stauts
+    assert response.json()['status'] == 'canceled'
+
+
+@pytest.mark.asyncio
+async def test_cancel_appoinment_not_found(token_client):
+    payload = {'id_appointment': 15}
+
+    response = await token_client.post('/api/v1/appointments/cancel', json=payload)
+
+    stauts = 404
+
+    assert response.status_code == stauts
+    assert response.json()['detail'] == 'Consulta não encontrada, verifique em sua Aba se realmente possui uma consulta'  #noqa
+
+
+@pytest.mark.asyncio
+async def test_appoinment_already_cancelled(
+    db_session,
+    availability,
+    token_client,
+    service,
+    schedule
+):
+    schedule.status = 'canceled'
+    db_session.commit()
+
+    payload = {'id_appointment': f'{schedule.id}'}
+
+    response = await token_client.post('/api/v1/appointments/cancel', json=payload)
+
+    status = 409
+
+    assert response.status_code == status
+    assert response.json()['detail'] == 'Esta consulta já foi cancelada, verifique na sua Aba de consultas.'  #noqa
+
+
+@pytest.mark.asyncio
+async def test_appoinment_cancel_time_passed(
+    db_session,
+    availability,
+    token_client,
+    service,
+    schedule
+):
+    schedule.date_time = datetime(2026, 5, 9, 12, 30, tzinfo=timezone.utc)
+    db_session.commit()
+
+    payload = {'id_appointment': f'{schedule.id}'}
+
+    response = await token_client.post('/api/v1/appointments/cancel', json=payload)
+
+    status = 400
+
+    assert response.status_code == status
+    assert response.json()['detail'] == 'O tempo para cancelamento da consulta já passou, se desejar um reembolso busque na aba de consulta ao lado'  #noqa

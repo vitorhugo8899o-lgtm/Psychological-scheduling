@@ -211,13 +211,13 @@ async def cancel_service(db: DBSession, user: CurrentUser, id_appoinment: int):
     if not appoinment:
         raise HTTPException(
             status_code=404,
-            detail="Consulta não encontrada, verifique em sua Aba se realmente possui uma consulta"  #noqa
+            detail='Consulta não encontrada, verifique em sua Aba se realmente possui uma consulta',  # noqa
         )
 
     if appoinment.status == 'canceled':
         raise HTTPException(
             status_code=409,
-            detail="Esta consulta já foi cancelada, verifique na sua Aba de consultas."
+            detail='Esta consulta já foi cancelada, verifique na sua Aba de consultas.',
         )
 
     passed = time_passed(appoinment.date_time)
@@ -225,7 +225,7 @@ async def cancel_service(db: DBSession, user: CurrentUser, id_appoinment: int):
     if passed:
         raise HTTPException(
             status_code=400,
-            detail="O tempo para cancelamento da consulta já passou, se desejar um reembolso busque na aba de consulta ao lado"  #noqa
+            detail='O tempo para cancelamento da consulta já passou, se desejar um reembolso busque na aba de consulta ao lado',  # noqa
         )
 
     return await update_cancel_appointment(db, appoinment)
