@@ -6,7 +6,7 @@ from app.models.avaliabilites_models import Avaliabilite
 from app.schemas.psychologist_schema import (
     DeleteAvailabilySchema,
     PsychologistAvaliabiliteCreate,
-    SchemaMetrics
+    SchemaMetrics,
 )
 
 
@@ -101,23 +101,22 @@ async def delete_availbility_psych(
     return result
 
 
-async def get_appoinment_count(db:DBSession, user:CurrentUser, date:SchemaMetrics):
+async def get_appoinment_count(db: DBSession, user: CurrentUser, date: SchemaMetrics):
     if not user.psychologist_profile:
         raise HTTPException(
             status_code=403,
             detail="O usuário não tem permissõa para realizar essa ação."
         )
-    
+
     metrics = await psych_repo.get_count_appoinment(db, user, date)
-    
 
     if not metrics:
         return {
             'total': 0,
-            'message': f'Nenhum dado encontrado no período de {date.start_date} a {date.end_date}'
+            'message': f'Nenhum dado encontrado no período de {date.start_date} a {date.end_date}'  #noqa
         }
-    
+
     return {
         'total': f'{metrics}',
-        'message': f'Total de consultas realizadas entre {date.start_date} a {date.end_date}'
+        'message': f'Total de consultas realizadas entre {date.start_date} a {date.end_date}'  #noqa
     }

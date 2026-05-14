@@ -212,3 +212,56 @@ async def test_trying_to_delete_an_availability_without_usin_psych(token_client)
         response.json()['detail']
         == 'Usuário não tem permissão para realizar essa função'
     )  # noqa
+
+
+@pytest.mark.asyncio
+async def test_get_appooinment_in_time_period(token_psych, schedule_psych):
+    payload = {
+        'start_date': '2026-05-11',
+        'end_date': '2026-05-30'
+    }
+
+    response = await token_psych.post(
+        '/api/v1/psych/me/stats/appoinment-count', json=payload
+    )
+
+    status = 200
+
+    assert response.status_code == status
+    assert response.json()['total'] == 1
+    assert response.json()['message'] == 'Total de consultas realizadas entre 2026-05-11 a 2026-05-30'  #noqa
+
+
+@pytest.mark.asyncio
+async def test_get_count_appoinment_but_no_one(token_psych):
+    payload = {
+        'start_date': '2026-05-11',
+        'end_date': '2026-05-30'
+    }
+
+    response = await token_psych.post(
+        '/api/v1/psych/me/stats/appoinment-count', json=payload
+    )
+
+    status = 200
+
+    assert response.status_code == status
+    assert response.json()['total'] == 0
+    assert response.json()['message'] == 'Nenhum dado encontrado no período de 2026-05-11 a 2026-05-30' #noqa
+
+
+@pytest.mark.asyncio
+async def test_user_try_get_metrics_appoinment(token_client):
+    payload = {
+        'start_date': '2026-05-11',
+        'end_date': '2026-05-30'
+    }
+
+    response = await token_client.post(
+        '/api/v1/psych/me/stats/appoinment-count', json=payload
+    )
+
+    status = 403
+
+    assert response.status_code == status
+    assert response.json()['detail'] == 'O usuário não tem permissõa para realizar essa ação.'  #noqa

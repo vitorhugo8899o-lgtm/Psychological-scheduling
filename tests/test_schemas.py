@@ -437,3 +437,37 @@ async def test_appointment_simulation_service_id_negative_error(token_client):
         req.json()['detail'][0]['msg']
         == 'Value error, O id do serviço não pode ser 0 ou negativo.'  # noqa
     )
+
+
+@pytest.mark.asyncio
+async def test_date_has_passed_the_minimum_deadline(token_psych):
+    payload = {
+        'start_date': '2014-05-11',
+        'end_date': '2026-05-30'
+    }
+
+    response = await token_psych.post(
+        '/api/v1/psych/me/stats/appoinment-count', json=payload
+    )
+
+    status = 422
+
+    assert response.status_code == status
+    assert response.json()['detail'][0]['msg'] == 'Value error, A data não pode ser inferior a 10 anos.'  #noqa
+
+
+@pytest.mark.asyncio
+async def test_date_deadline_has_passed(token_psych):
+    payload = {
+        'start_date': '2026-05-11',
+        'end_date': '2028-05-30'
+    }
+
+    response = await token_psych.post(
+        '/api/v1/psych/me/stats/appoinment-count', json=payload
+    )
+
+    status = 422
+
+    assert response.status_code == status
+    assert response.json()['detail'][0]['msg'] == 'Value error, A data não pode ser superior a 1 ano.'  #noqa

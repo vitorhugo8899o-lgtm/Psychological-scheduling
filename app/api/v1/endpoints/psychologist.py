@@ -11,8 +11,8 @@ from app.schemas.psychologist_schema import (
     AvailabilityCacheSchema,
     DeleteAvailabilySchema,
     PsychologistAvaliabiliteCreate,
+    ResponseMetrics,
     SchemaMetrics,
-    ResponseMetrics
 )
 
 psych_router = APIRouter()
@@ -62,6 +62,16 @@ async def delete_availbily(
     return await psych_service.delete_availbility_psych(db, user, availability)
 
 
-@psych_router.post('/psych/me/stats', status_code=HTTPStatus.OK, response_model=ResponseMetrics)
-async def stats_psych(db:DBSession, user: CurrentUser, date: SchemaMetrics):
+@psych_router.post(
+    '/psych/me/stats/appoinment-count',
+    status_code=HTTPStatus.OK,
+    response_model=ResponseMetrics
+)
+@limiter.limit('3/minute')
+async def stats_psych(
+    request: Request,
+    db: DBSession,
+    user: CurrentUser,
+    date: SchemaMetrics
+):
     return await psych_service.get_appoinment_count(db, user, date)
