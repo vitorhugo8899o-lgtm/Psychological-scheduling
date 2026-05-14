@@ -184,7 +184,7 @@ class ResponseMetrics(BaseModel):
     message: str
 
 
-class ResponseRate(BaseException):
+class ResponseRate(BaseModel):
     total_appoinments: int
     total_cancelled: int
     total_confirmed: int

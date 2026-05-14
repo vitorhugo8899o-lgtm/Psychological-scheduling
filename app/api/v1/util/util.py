@@ -25,6 +25,9 @@ def time_passed(date_compare: datetime) -> bool:
 
 
 def cauculation_rate(total_appoinments: int, total_compared: int):
+    if total_appoinments | total_compared == 0:
+        return
+
     rate = (total_compared / total_appoinments) * 100
 
     return f'{rate:.2f}'.replace('.', ',')

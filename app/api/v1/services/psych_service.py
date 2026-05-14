@@ -7,6 +7,7 @@ from app.models.avaliabilites_models import Avaliabilite
 from app.schemas.psychologist_schema import (
     DeleteAvailabilySchema,
     PsychologistAvaliabiliteCreate,
+    ResponseRate,
     SchemaMetrics,
 )
 
@@ -132,14 +133,8 @@ async def get_rate(db: DBSession, user: CurrentUser):
 
     metrics = await psych_repo.get_appoiment_rate(db, user)
 
-    if not metrics:
-        return {
-            'total_appoinments': 0,
-            'total_cancelled': 0,
-            'total_confirmed': 0,
-            'cancelation_rate': 0,
-            'confirmed_rate': 0,
-        }
+    if metrics.total_appoinments == 0:
+        return {'message': 'Você não possui nenhum dado de consulta.'}
 
     cancelation_rate = cauculation_rate(
         metrics.total_appoinments, metrics.total_cancelled
@@ -149,10 +144,10 @@ async def get_rate(db: DBSession, user: CurrentUser):
         metrics.total_appoinments, metrics.total_confirmed
     )
 
-    return {
-        'total_appoinments': f'{metrics.total_appoinments}',
-        'total_cancelled': f'{metrics.total_cancelled}',
-        'total_confirmed': f'{metrics.total_confirmed}',
-        'cancelation_rate': f'{cancelation_rate}%',
-        'confirmed_rate': f'{confirmed_rate}%',
-    }
+    return ResponseRate(
+        total_appoinments=metrics.total_appoinments,
+        total_cancelled=metrics.total_cancelled,
+        total_confirmed=metrics.total_confirmed,
+        cancelation_rate=f'{cancelation_rate}%',
+        confirmed_rate=f'{confirmed_rate}%',
+    )

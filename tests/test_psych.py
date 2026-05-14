@@ -265,3 +265,41 @@ async def test_user_try_get_metrics_appoinment(token_client):
         response.json()['detail']
         == 'O usuário não tem permissõa para realizar essa ação.'
     )  # noqa
+
+
+@pytest.mark.asyncio
+async def test_get_rate_metrics(
+    db_session, token_psych, schedule_psych, schedule, schedule2
+):
+    schedule_psych.status = 'confirmed'
+    schedule.status = 'canceled'
+    await db_session.commit()
+
+    response = await token_psych.get('/api/v1/psych/me/stats/rate-appoinments')
+
+    total_appoinments = 3
+
+    status = 200
+
+    assert response.status_code == status
+    assert response.json()['total_appoinments'] == total_appoinments
+
+
+@pytest.mark.asyncio
+async def test_user_try_get_rate_metrics(token_client):
+    response = await token_client.get('/api/v1/psych/me/stats/rate-appoinments')
+
+    status = 403
+
+    assert response.status_code == status
+    assert response.json()['detail'] == 'O usuário não tem permissõa para realizar essa ação.'  #noqa
+
+
+@pytest.mark.asyncio
+async def test_psych_has_no_appoimnet_for_metrics(token_psych):
+    response = await token_psych.get('/api/v1/psych/me/stats/rate-appoinments')
+
+    status = 200
+
+    assert response.status_code == status
+    assert response.json()['message'] == 'Você não possui nenhum dado de consulta.'
