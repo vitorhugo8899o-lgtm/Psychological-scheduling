@@ -41,6 +41,9 @@ async def login(
             detail=('Email ou senha incorretos!, verifique se digitou corretamente'),
         )
 
+    if user.is_active is False:
+        raise HTTPException(status_code=403, detail='Esta conta se encontra desativa.')
+
     access_token = auth_repo.create_token(data={'sub': f'{user.email}'})
 
     token = Token(access_token=access_token, token_type='Bearer')

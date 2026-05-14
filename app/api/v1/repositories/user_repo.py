@@ -73,16 +73,9 @@ async def update_data(db: DBSession, user: CurrentUser, update: UserUpdate) -> U
         raise HTTPException(status_code=500, detail=f'{e}')
 
 
-async def delete_user(db: DBSession, r: rediscon, user: CurrentUser):
-    try:
-        await db.delete(user)
-        await db.commit()
-    except OperationalError as e:
-        await db.rollback()
-        raise HTTPException(status_code=409, detail=f'{e}')
-    except InvalidRequestError as e:
-        await db.rollback()
-        raise HTTPException(status_code=409, detail=f'{e}')
+async def desactive_user(db: DBSession, user: CurrentUser):
+    user.is_active = False
+    await db.commit()
 
 
 async def cache_user(db: DBSession, r: rediscon, id_user: int) -> UserPublic | None:
