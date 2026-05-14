@@ -1,4 +1,4 @@
-from datetime import datetime, time, date
+from datetime import date, datetime, time
 from typing import ClassVar, List, Set
 
 from pydantic import (
@@ -162,7 +162,6 @@ class SchemaMetrics(BaseModel):
     start_date: date
     end_date: date
 
-
     @field_validator('start_date', 'end_date')
     @classmethod
     def validate_date(cls, v: date):
@@ -178,7 +177,7 @@ class SchemaMetrics(BaseModel):
 
         if v > max_date:
             raise ValueError(
-                f"A data não pode ser superior a 1 ano."
+                "A data não pode ser superior a 1 ano."
             )
 
         return v
