@@ -22,3 +22,9 @@ def format_hour_br(date: datetime):
 
 def time_passed(date_compare: datetime) -> bool:
     return datetime.now(UTC) >= date_compare + timedelta(hours=24)
+
+
+def cauculation_rate(total_appoinments: int, total_compared: int):
+    rate = (total_compared / total_appoinments) * 100
+
+    return f'{rate:.2f}'.replace('.', ',')

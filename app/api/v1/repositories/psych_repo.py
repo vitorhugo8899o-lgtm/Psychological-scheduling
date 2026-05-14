@@ -138,15 +138,40 @@ async def delete_availbilty(
 
 
 async def get_count_appoinment(db: DBSession, user: CurrentUser, date: SchemaMetrics):
-    stmt = (select(func.count())
-            .select_from(Appointment)
-            .where(
-                Appointment.id_psychologist == user.psychologist_profile.id,
-                Appointment.created_at >= date.start_date,
-                Appointment.created_at < date.end_date
-            )
+    stmt = (
+        select(func.count())
+        .select_from(Appointment)
+        .where(
+            Appointment.id_psychologist == user.psychologist_profile.id,
+            Appointment.created_at >= date.start_date,
+            Appointment.created_at < date.end_date,
+        )
     )
 
     metrics = await db.execute(stmt)
 
     return metrics.scalar()
+
+
+async def get_appoiment_rate(db: DBSession, user: CurrentUser):
+    stmt = select(
+        func.count().label('total_appoinments'),
+        func
+        .count()
+        .filter(
+            Appointment.id_psychologist == user.psychologist_profile.id,
+            Appointment.status == 'canceled',
+        )
+        .label('total_cancelled'),
+        func
+        .count()
+        .filter(
+            Appointment.id_psychologist == user.psychologist_profile.id,
+            Appointment.status == 'confirmed',
+        )
+        .label('total_confirmed'),
+    )
+
+    result = await db.execute(stmt)
+
+    return result.one()

@@ -2,6 +2,7 @@ from fastapi import HTTPException
 
 from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
 from app.api.v1.repositories import psych_repo
+from app.api.v1.util.util import cauculation_rate
 from app.models.avaliabilites_models import Avaliabilite
 from app.schemas.psychologist_schema import (
     DeleteAvailabilySchema,
@@ -105,7 +106,7 @@ async def get_appoinment_count(db: DBSession, user: CurrentUser, date: SchemaMet
     if not user.psychologist_profile:
         raise HTTPException(
             status_code=403,
-            detail="O usuário não tem permissõa para realizar essa ação."
+            detail='O usuário não tem permissõa para realizar essa ação.',
         )
 
     metrics = await psych_repo.get_count_appoinment(db, user, date)
@@ -113,10 +114,45 @@ async def get_appoinment_count(db: DBSession, user: CurrentUser, date: SchemaMet
     if not metrics:
         return {
             'total': 0,
-            'message': f'Nenhum dado encontrado no período de {date.start_date} a {date.end_date}'  #noqa
+            'message': f'Nenhum dado encontrado no período de {date.start_date} a {date.end_date}',  # noqa
         }
 
     return {
         'total': f'{metrics}',
-        'message': f'Total de consultas realizadas entre {date.start_date} a {date.end_date}'  #noqa
+        'message': f'Total de consultas realizadas entre {date.start_date} a {date.end_date}',  # noqa
+    }
+
+
+async def get_rate(db: DBSession, user: CurrentUser):
+    if not user.psychologist_profile:
+        raise HTTPException(
+            status_code=403,
+            detail='O usuário não tem permissõa para realizar essa ação.',
+        )
+
+    metrics = await psych_repo.get_appoiment_rate(db, user)
+
+    if not metrics:
+        return {
+            'total_appoinments': 0,
+            'total_cancelled': 0,
+            'total_confirmed': 0,
+            'cancelation_rate': 0,
+            'confirmed_rate': 0,
+        }
+
+    cancelation_rate = cauculation_rate(
+        metrics.total_appoinments, metrics.total_cancelled
+    )
+
+    confirmed_rate = cauculation_rate(
+        metrics.total_appoinments, metrics.total_confirmed
+    )
+
+    return {
+        'total_appoinments': f'{metrics.total_appoinments}',
+        'total_cancelled': f'{metrics.total_cancelled}',
+        'total_confirmed': f'{metrics.total_confirmed}',
+        'cancelation_rate': f'{cancelation_rate}%',
+        'confirmed_rate': f'{confirmed_rate}%',
     }
