@@ -1,4 +1,5 @@
 from http import HTTPStatus
+from typing import List
 
 from fastapi import APIRouter
 
@@ -8,7 +9,12 @@ from app.schemas.psychologist_schema import (
     PsychologistCreate,
     PsychologistPublic,
 )
-from app.schemas.service_schema import ServiceResponse, ServiceSchema
+from app.schemas.service_schema import (
+    FinancialSchema,
+    ServiceMetric,
+    ServiceResponse,
+    ServiceSchema,
+)
 
 adm_router = APIRouter()
 
@@ -29,3 +35,12 @@ async def create_psychologist(
 )
 async def create_service(db: DBSession, user: CurrentUser, service: ServiceSchema):
     return await adm_service.create_service(db, user.role, service)
+
+
+@adm_router.post(
+    '/financial-report',
+    status_code=HTTPStatus.OK,
+    response_model=List[ServiceMetric] | dict
+)
+async def financial_report(db: DBSession, user: CurrentUser, report: FinancialSchema):
+    return await adm_service.get_financial_report(db, user, report)

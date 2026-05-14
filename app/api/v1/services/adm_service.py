@@ -6,7 +6,7 @@ from app.models.psychologist_models import Psychologist
 from app.models.service_models import Service
 from app.schemas.custom_schema import UserRole
 from app.schemas.psychologist_schema import PsychologistCreate
-from app.schemas.service_schema import ServiceSchema
+from app.schemas.service_schema import FinancialSchema, ServiceSchema
 
 
 async def create_psychologist_service(
@@ -55,3 +55,24 @@ async def create_service(
         )
 
     return await adm_repo.create_service(db, service_db)
+
+
+async def get_financial_report(
+    db: DBSession,
+    user: CurrentUser,
+    report: FinancialSchema
+):
+    if user.role != 'adm':
+        raise HTTPException(
+            status_code=403,
+            detail="O usuário não tem permissão para realizar essa ação"
+        )
+
+    collection = await adm_repo.total_collected_metrics(db, report)
+
+    if not collection:
+        return {
+            'message': f'Nenhum Relátorio de pagamento para o périodo de {report.start_date} a {report.end_date}'  #noqa
+        }
+
+    return collection

@@ -173,3 +173,7 @@ pyrightconfig.json
 # End of https://www.toptal.com/developers/gitignore/api/python
 
 # Generated using ignr.py - github.com/Antrikshy/ignr.py
+
+
+#HTML para testar API do mercao pago
+index.html

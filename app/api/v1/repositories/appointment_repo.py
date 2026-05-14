@@ -28,8 +28,10 @@ async def check_appointment_conflict(
     new_start = ensure_utc(payload.date_time)
     new_end = new_start + timedelta(minutes=time_service)
 
-    stmt = select(Appointment).where(
-        Appointment.status != AppointmentStatus.canceled,
+    stmt = (
+        select(Appointment)
+        .options(joinedload(Appointment.service))
+        .where(Appointment.status != AppointmentStatus.canceled)
     )
 
     if id_psychologist:
@@ -38,19 +40,15 @@ async def check_appointment_conflict(
     if id_client:
         stmt = stmt.where(Appointment.id_client == id_client)
 
-    result = await db.scalars(stmt)
-
-    appointments = result.all()
+    result = await db.execute(stmt)
+    appointments = result.scalars().all()
 
     for appointment in appointments:
         service = appointment.service
-
         existing_start = ensure_utc(appointment.date_time)
-
         existing_end = existing_start + timedelta(minutes=service.duration_minutes)
 
         has_conflict = existing_start < new_end and existing_end > new_start
-
         if has_conflict:
             return appointment
 
