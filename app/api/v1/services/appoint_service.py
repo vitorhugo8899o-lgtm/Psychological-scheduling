@@ -11,6 +11,7 @@ from app.api.v1.repositories.appointment_repo import (
     get_appointment_by_id,
     search_available_psychologists,
     update_appoinment_datetime,
+    update_cancel_appointment,
 )
 from app.api.v1.repositories.psych_repo import avaliabilite_exists, get_psych
 from app.api.v1.repositories.service_repo import get_service_by_id
@@ -202,3 +203,29 @@ async def rescheduling_appointmnet(
     )
 
     return new_appointment
+
+
+async def cancel_service(db: DBSession, user: CurrentUser, id_appoinment: int):
+    appoinment = await get_appointment_by_id(db, id_appoinment, user.id)
+
+    if not appoinment:
+        raise HTTPException(
+            status_code=404,
+            detail="Consulta não encontrada, verifique em sua Aba se realmente possui uma consulta"  #noqa
+        )
+
+    if appoinment.status == 'canceled':
+        raise HTTPException(
+            status_code=409,
+            detail="Esta consulta já foi cancelada, verifique na sua Aba de consultas."
+        )
+
+    passed = time_passed(appoinment.date_time)
+
+    if passed:
+        raise HTTPException(
+            status_code=400,
+            detail="O tempo para cancelamento da consulta já passou, se desejar um reembolso busque na aba de consulta ao lado"  #noqa
+        )
+
+    return await update_cancel_appointment(db, appoinment)

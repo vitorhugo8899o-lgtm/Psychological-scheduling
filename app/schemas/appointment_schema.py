@@ -150,3 +150,7 @@ class PsychSearchResponse(BaseModel):
 class ReschedulingAppointment(BaseModel):
     id_appointment: int = Field(ge=1)
     date_new: datetime
+
+
+class CancelAppointment(BaseModel):
+    id_appointment: int = Field(ge=1)

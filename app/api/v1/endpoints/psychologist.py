@@ -1,7 +1,7 @@
 from http import HTTPStatus
 from typing import List
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Request
 
 from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
 from app.api.v1.services import appoint_service, psych_service
@@ -22,6 +22,7 @@ psych_router = APIRouter()
 )
 @limiter.limit('3/minute')
 async def create_avaliabilite(
+    request: Request,
     db: DBSession,
     r: rediscon,
     user: CurrentUser,
@@ -36,7 +37,7 @@ async def create_avaliabilite(
     response_model=List[AppointmentUserResponse],
 )
 @limiter.limit('3/minute')
-async def get_appiontment(db: DBSession, user: CurrentUser):
+async def get_appiontment(request: Request, db: DBSession, user: CurrentUser):
     return await appoint_service.get_psych_appointment(db, user)
 
 
@@ -46,7 +47,7 @@ async def get_appiontment(db: DBSession, user: CurrentUser):
     response_model=List[AvailabilityCacheSchema],
 )
 @limiter.limit('3/minute')
-async def get_schedule(db: DBSession, r: rediscon, user: CurrentUser):
+async def get_schedule(request: Request, db: DBSession, r: rediscon, user: CurrentUser):
     return await psych_service.get_avaliabilites(db, r, user)
 
 
