@@ -26,7 +26,6 @@ appointment_route = APIRouter()
 @appointment_route.post(
     '/appointments', status_code=HTTPStatus.CREATED, response_model=AppointmentResponse
 )
-@limiter.limit('3/minute')
 async def schedule_an_appointment(
     request: Request, db: DBSession, user: CurrentUser, payload: AppointmentCreate
 ):

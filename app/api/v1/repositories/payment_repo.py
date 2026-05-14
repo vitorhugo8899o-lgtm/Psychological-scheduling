@@ -23,6 +23,7 @@ def create_preference(data: PaymentePreference, id_appointment: int):
             }
         ],
         'external_reference': f'Appointment:{id_appointment}',
+        "notification_url": 'https://stuffed-subsidize-remote.ngrok-free.dev/api/v1/payments/webhook'
     }
 
     preference = sdk.preference().create(preference_data)
