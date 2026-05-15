@@ -1,4 +1,5 @@
 from datetime import date
+from typing import List
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
@@ -79,6 +80,12 @@ class FinancialSchema(BaseModel):
 class ServiceMetric(BaseModel):
     service_name: str
     total_sales: int
+    total_revenue: int
 
     class Config:
         from_attributes = True
+
+
+class MetricsFinancial(BaseModel):
+    by_service: List[ServiceMetric]
+    total_general_revenue: int

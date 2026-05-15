@@ -58,21 +58,19 @@ async def create_service(
 
 
 async def get_financial_report(
-    db: DBSession,
-    user: CurrentUser,
-    report: FinancialSchema
+    db: DBSession, user: CurrentUser, report: FinancialSchema
 ):
     if user.role != 'adm':
         raise HTTPException(
             status_code=403,
-            detail="O usuário não tem permissão para realizar essa ação"
+            detail='O usuário não tem permissão para realizar essa ação',
         )
 
     collection = await adm_repo.total_collected_metrics(db, report)
 
     if not collection:
         return {
-            'message': f'Nenhum Relátorio de pagamento para o périodo de {report.start_date} a {report.end_date}'  #noqa
+            'message': f'Nenhum Relátorio de pagamento para o périodo de {report.start_date} a {report.end_date}'  # noqa
         }
 
     return collection
