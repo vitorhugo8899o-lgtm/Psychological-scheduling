@@ -292,7 +292,10 @@ async def test_user_try_get_rate_metrics(token_client):
     status = 403
 
     assert response.status_code == status
-    assert response.json()['detail'] == 'O usuário não tem permissõa para realizar essa ação.'  #noqa
+    assert (
+        response.json()['detail']
+        == 'O usuário não tem permissõa para realizar essa ação.'
+    )  # noqa
 
 
 @pytest.mark.asyncio
