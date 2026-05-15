@@ -40,7 +40,7 @@ async def create_service(db: DBSession, user: CurrentUser, service: ServiceSchem
 @adm_router.post(
     '/financial-report',
     status_code=HTTPStatus.OK,
-    response_model=List[ServiceMetric] | dict
+    response_model=List[ServiceMetric] | dict,
 )
 async def financial_report(db: DBSession, user: CurrentUser, report: FinancialSchema):
     return await adm_service.get_financial_report(db, user, report)

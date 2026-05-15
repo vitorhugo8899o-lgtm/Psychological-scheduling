@@ -59,6 +59,6 @@ async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
     )
 
 
-@app.get("/")
+@app.get('/')
 async def home():
-    return FileResponse("index.html")
+    return FileResponse('index.html')

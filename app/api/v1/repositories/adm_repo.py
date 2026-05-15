@@ -44,14 +44,14 @@ async def create_service(db: DBSession, service: ServiceSchema) -> Service:
 async def total_collected_metrics(db: DBSession, report: FinancialSchema):
     stmt = (
         select(
-            Service.name.label("service_name"),
-            func.count(Payment.id).label('total_sales')
+            Service.name.label('service_name'),
+            func.count(Payment.id).label('total_sales'),
         )
         .join(Appointment, Payment.id_appointment == Appointment.id)
         .join(Service, Appointment.id_service == Service.id)
         .where(
             Payment.created_at >= report.start_date,
-            Payment.created_at < report.end_date
+            Payment.created_at < report.end_date,
         )
         .group_by(Service.name)
         .order_by(desc('total_sales'))

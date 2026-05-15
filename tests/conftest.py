@@ -604,9 +604,10 @@ async def test_create_payment(mock_create):
 
 @pytest_asyncio.fixture(scope='function')
 async def Payment(db_session, schedule_payment):
+    id_appoimnet = int(f'{schedule_payment.id}')
     new_payment = models.Payment(
-        id_mercado_pago=123,
-        id_appointment=f'{schedule_payment.id}',
+        id_mercado_pago='123',
+        id_appointment=id_appoimnet,
         amount=90.0,
         status='pending',
     )

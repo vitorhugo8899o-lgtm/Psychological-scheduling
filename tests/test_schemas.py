@@ -471,3 +471,31 @@ async def test_date_deadline_has_passed(token_psych):
         response.json()['detail'][0]['msg']
         == 'Value error, A data não pode ser superior a 1 ano.'
     )  # noqa
+
+
+@pytest.mark.asyncio
+async def test_date_min_hit(token_adm):
+    payload = {'start_date': '2024-05-11', 'end_date': '2026-05-30'}
+
+    response = await token_adm.post('/api/v1/financial-report', json=payload)
+
+    status = 422
+
+    assert response.status_code == status
+    assert (
+        response.json()['detail'][0]['msg'] == 'Value error, A data não pode ser inferior a 1 ano.'  #noqa
+    )
+
+
+@pytest.mark.asyncio
+async def test_date_max_hit(token_adm):
+    payload = {'start_date': '2026-05-11', 'end_date': '2028-05-30'}
+
+    response = await token_adm.post('/api/v1/financial-report', json=payload)
+
+    status = 422
+
+    assert response.status_code == status
+    assert (
+        response.json()['detail'][0]['msg'] == 'Value error, A data não pode ser superior a 1 ano.'  #noqa
+    )
