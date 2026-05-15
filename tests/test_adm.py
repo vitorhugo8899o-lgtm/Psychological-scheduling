@@ -137,3 +137,50 @@ async def test_service_already_exists(token_adm, service):
 
     assert req.status_code == status
     assert req.json()['detail'] == 'Esse serviço já está registrado no banco!'
+
+
+@pytest.mark.asyncio
+async def test_get_financial_metrics(token_adm, service, Payment):
+    payload = {'start_date': '2026-05-11', 'end_date': '2026-05-20'}
+
+    response = await token_adm.post('/api/v1/financial-report', json=payload)
+
+    status = 200
+
+    total_sales = 1
+
+    assert response.status_code == status
+    assert response.json()[0]['service_name'] == 'Terapia de casal'
+    assert response.json()[0]['total_sales'] == total_sales
+
+
+@pytest.mark.asyncio
+async def test_user_try_get_financial_metrics(token_client, service, Payment):
+    payload = {'start_date': '2026-05-11', 'end_date': '2026-05-20'}
+
+    response = await token_client.post('/api/v1/financial-report', json=payload)
+
+    status = 403
+
+    assert response.status_code == status
+    assert (
+        response.json()['detail']
+        == 'O usuário não tem permissão para realizar essa ação'
+    )  # noqa
+
+
+@pytest.mark.asyncio
+async def test_get_financial_metrics_but_no_one_registry(token_adm):
+    payload = {'start_date': '2026-05-11', 'end_date': '2026-05-20'}
+
+    response = await token_adm.post('/api/v1/financial-report', json=payload)
+
+    print(response.json())
+
+    status = 200
+
+    assert response.status_code == status
+    assert (
+        response.json()['message']
+        == 'Nenhum Relátorio de pagamento para o périodo de 2026-05-11 a 2026-05-20'
+    )  # noqa
