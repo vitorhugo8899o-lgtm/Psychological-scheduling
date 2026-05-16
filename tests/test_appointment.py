@@ -496,7 +496,7 @@ async def test_appoinment_already_cancelled(
     db_session, availability, token_client, service, schedule
 ):
     schedule.status = 'canceled'
-    db_session.commit()
+    await db_session.commit()
 
     payload = {'id_appointment': f'{schedule.id}'}
 
@@ -516,7 +516,7 @@ async def test_appoinment_cancel_time_passed(
     db_session, availability, token_client, service, schedule
 ):
     schedule.date_time = datetime(2026, 5, 9, 12, 30, tzinfo=timezone.utc)
-    db_session.commit()
+    await db_session.commit()
 
     payload = {'id_appointment': f'{schedule.id}'}
 
@@ -529,3 +529,59 @@ async def test_appoinment_cancel_time_passed(
         response.json()['detail']
         == 'O tempo para cancelamento da consulta já passou, se desejar um reembolso busque na aba de consulta ao lado'  # noqa
     )
+
+
+@pytest.mark.asyncio
+async def test_try_get_the_next_user_appoimnets(
+    db_session, availability, token_client, service, schedule
+):
+    schedule.status = 'confirmed'
+    await db_session.commit()
+
+    response = await token_client.get('/api/v1/users/me/next-appointments')
+
+    status = 200
+
+    duration_minutes = 50
+
+    assert response.status_code == status
+    assert response.json()[0]['id'] == 1
+    assert 'date_time' in response.json()[0]
+    assert response.json()[0]['status'] == 'confirmed'
+    assert response.json()[0]['service']['name'] == 'Terapia de casal'
+    assert response.json()[0]['service']['duration_minutes'] == duration_minutes
+    assert response.json()[0]['psychologist']['crp'] == 'CRP 01/5596'
+    assert response.json()[0]['psychologist']['user']['fullname'] == 'Full Name'
+    assert response.json()[0]['format_date'] == '11/05/2026 às 12h:30'
+
+
+@pytest.mark.asyncio
+async def test_exception_forbiden_get_the_next_appoimnets(token_adm):
+    response = await token_adm.get('/api/v1/users/me/next-appointments')
+
+    status = 403
+
+    assert response.status_code == status
+    assert response.json()['detail'] == 'O usuário não tem permissão para realizar essa ação'  #noqa
+
+
+@pytest.mark.asyncio
+async def test_no_confirmed_appointments(token_client):
+    response = await token_client.get('/api/v1/users/me/next-appointments')
+
+    status = 200
+
+    assert response.status_code == status
+    assert response.json()['message'] == 'Você não possui nenhuma consulta marcada.'
+
+
+@pytest.mark.asyncio
+async def test_no_confirmed_appointments_status(
+    availability, token_client, service, schedule
+):
+    response = await token_client.get('/api/v1/users/me/next-appointments')
+
+    status = 200
+
+    assert response.status_code == status
+    assert response.json()['message'] == 'Você não possui nenhuma consulta marcada.'

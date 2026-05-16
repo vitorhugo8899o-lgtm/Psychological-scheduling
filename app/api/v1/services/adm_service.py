@@ -68,7 +68,7 @@ async def get_financial_report(
 
     collection = await adm_repo.total_collected_metrics(db, report)
 
-    if not collection:
+    if not collection['by_service']:
         return {
             'message': f'Nenhum Relátorio de pagamento para o périodo de {report.start_date} a {report.end_date}'  # noqa
         }
