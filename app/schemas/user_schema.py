@@ -77,3 +77,7 @@ class UserUpdate(BaseModel):
             )
 
         return v
+
+
+class UserFullNameSchema(BaseModel):
+    fullname: str

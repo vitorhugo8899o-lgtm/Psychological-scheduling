@@ -4,6 +4,8 @@ from zoneinfo import ZoneInfo
 from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator
 
 from app.schemas.custom_schema import AppointmentStatus
+from app.schemas.psychologist_schema import PsychologistSchema
+from app.schemas.service_schema import ServiceAppointment
 
 
 class AppointmentCreate(BaseModel):
@@ -180,3 +182,18 @@ class ReschedulingAppointment(BaseModel):
 
 class CancelAppointment(BaseModel):
     id_appointment: int = Field(ge=1)
+
+
+class NextAppoiments(BaseModel):
+    id: int
+    date_time: datetime
+    status: str
+    service: ServiceAppointment
+    psychologist: PsychologistSchema
+
+    @computed_field
+    @property
+    def format_date(self) -> str:
+        return self.date_time.strftime('%d/%m/%Y às %Hh:%M')
+
+    model_config = ConfigDict(from_attributes=True)

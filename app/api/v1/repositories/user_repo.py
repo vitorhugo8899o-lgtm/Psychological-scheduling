@@ -1,3 +1,4 @@
+from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 from fastapi import HTTPException
@@ -7,9 +8,12 @@ from sqlalchemy.exc import (
     InvalidRequestError,
     OperationalError,
 )
+from sqlalchemy.orm import joinedload
 
 from app.api.v1.repositories import auth_repo
+from app.models.appointments_models import Appointment
 from app.models.users_models import User
+from app.schemas.custom_schema import AppointmentStatus
 from app.schemas.user_schema import UserCreate, UserPublic, UserUpdate
 
 if TYPE_CHECKING:
@@ -31,7 +35,7 @@ async def new_user(db: DBSession, user_data: UserCreate) -> User:
         await db.rollback()
         raise HTTPException(
             status_code=500,
-            detail={'message': 'Error inesperado', 'contexto': str(e)},
+            detail={'message': 'Error  inesperado', 'contexto': str(e)},
         )
 
 
@@ -108,3 +112,20 @@ async def cache_delete(r: rediscon, id_user: int) -> str | None:
     await r.delete(cache_key)
 
     return 'Cache deletado!'
+
+
+async def user_next_appoiments(db: DBSession, user: CurrentUser):
+    stmt = (
+        select(Appointment)
+        .options(joinedload(Appointment.psychologist), joinedload(Appointment.service))
+        .where(
+            Appointment.id_client == user.id,
+            Appointment.status == AppointmentStatus.confirmed,
+            Appointment.date_time >= datetime.now(UTC),
+        )
+        .order_by(Appointment.date_time)
+    ).limit(3)
+
+    result = await db.execute(stmt)
+
+    return result.scalars().all()

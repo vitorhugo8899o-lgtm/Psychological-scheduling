@@ -8,7 +8,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
 from app.api.v1.services import appoint_service, auth_service, user_service
 from app.redis.limiter import limiter
-from app.schemas.appointment_schema import AppointmentUserResponse
+from app.schemas.appointment_schema import AppointmentUserResponse, NextAppoiments
 from app.schemas.custom_schema import LoginSuccess
 from app.schemas.user_schema import UserCreate, UserPublic, UserUpdate
 
@@ -98,3 +98,13 @@ async def desactive_user(
 @limiter.limit('6/minute')
 async def get_all_appointments(request: Request, db: DBSession, user: CurrentUser):
     return await appoint_service.get_user_appointment(db, user)
+
+
+@user_route.get(
+    '/users/me/next-appointments',
+    status_code=HTTPStatus.OK,
+    response_model=List[NextAppoiments] | dict,
+)
+@limiter.limit('3/minute')
+async def next_appoinments(request: Request, db: DBSession, user: CurrentUser):
+    return await user_service.get_next_appoiments(db, user)
