@@ -89,3 +89,8 @@ class ServiceMetric(BaseModel):
 class MetricsFinancial(BaseModel):
     by_service: List[ServiceMetric]
     total_general_revenue: int
+
+
+class ServiceAppointment(BaseModel):
+    name: str
+    duration_minutes: int

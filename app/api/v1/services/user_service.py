@@ -110,3 +110,18 @@ async def get_service_customized(db: DBSession, filter: ServiceQuery) -> List[Se
         raise HTTPException(status_code=404, detail='Nenhum serviço encontrado!')
 
     return service
+
+
+async def get_next_appoiments(db: DBSession, user: CurrentUser):
+    if user.role != 'cliente':
+        raise HTTPException(
+            status_code=403,
+            detail='O usuário não tem permissão para realizar essa ação',
+        )
+
+    appoiments = await user_repo.user_next_appoiments(db, user)
+
+    if not appoiments:
+        return {'message': 'Você não possui nenhuma consulta marcada.'}
+
+    return appoiments

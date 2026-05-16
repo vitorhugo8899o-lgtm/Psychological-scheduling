@@ -483,7 +483,8 @@ async def test_date_min_hit(token_adm):
 
     assert response.status_code == status
     assert (
-        response.json()['detail'][0]['msg'] == 'Value error, A data não pode ser inferior a 1 ano.'  #noqa
+        response.json()['detail'][0]['msg']
+        == 'Value error, A data não pode ser inferior a 1 ano.'  # noqa
     )
 
 
@@ -497,5 +498,6 @@ async def test_date_max_hit(token_adm):
 
     assert response.status_code == status
     assert (
-        response.json()['detail'][0]['msg'] == 'Value error, A data não pode ser superior a 1 ano.'  #noqa
+        response.json()['detail'][0]['msg']
+        == 'Value error, A data não pode ser superior a 1 ano.'  # noqa
     )

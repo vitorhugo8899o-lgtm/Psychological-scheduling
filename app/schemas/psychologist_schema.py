@@ -12,7 +12,7 @@ from pydantic import (
     field_validator,
 )
 
-from app.schemas.user_schema import UserPublic
+from app.schemas.user_schema import UserFullNameSchema, UserPublic
 
 
 class PsychologistCreate(BaseModel):
@@ -190,3 +190,8 @@ class ResponseRate(BaseModel):
     total_confirmed: int
     cancelation_rate: str
     confirmed_rate: str
+
+
+class PsychologistSchema(BaseModel):
+    crp: str
+    user: UserFullNameSchema
