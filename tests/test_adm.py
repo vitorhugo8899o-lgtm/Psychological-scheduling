@@ -141,7 +141,7 @@ async def test_service_already_exists(token_adm, service):
 
 @pytest.mark.asyncio
 async def test_get_financial_metrics(token_adm, service, Payment):
-    payload = {'start_date': '2026-05-11', 'end_date': '2026-05-20'}
+    payload = {'start_date': '2026-05-10', 'end_date': '2026-05-20'}
 
     response = await token_adm.post('/api/v1/financial-report', json=payload)
 
@@ -149,9 +149,12 @@ async def test_get_financial_metrics(token_adm, service, Payment):
 
     total_sales = 1
 
+    total_general_revenue = '90.00'
+
     assert response.status_code == status
-    assert response.json()[0]['service_name'] == 'Terapia de casal'
-    assert response.json()[0]['total_sales'] == total_sales
+    assert response.json()['by_service'][0]['service_name'] == 'Terapia de casal'
+    assert response.json()['by_service'][0]['total_sales'] == total_sales
+    assert response.json()['total_general_revenue'] == total_general_revenue  #noqa
 
 
 @pytest.mark.asyncio
