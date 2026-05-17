@@ -9,7 +9,7 @@ from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
 from app.api.v1.services import appoint_service, auth_service, user_service
 from app.core.config import settings
 from app.redis.limiter import limiter
-from app.schemas.appointment_schema import AppointmentUserResponse, NextAppoiments
+from app.schemas.appointment_schema import AppointmentUserResponse
 from app.schemas.custom_schema import LoginSuccess
 from app.schemas.user_schema import UserCreate, UserPublic, UserUpdate
 
@@ -123,7 +123,7 @@ async def get_all_appointments(request: Request, db: DBSession, user: CurrentUse
 @user_route.get(
     '/users/me/next-appointments',
     status_code=HTTPStatus.OK,
-    response_model=List[NextAppoiments] | dict,
+    response_model=List[AppointmentUserResponse] | dict,
 )
 @limiter.limit('6/minute')
 async def next_appoinments(request: Request, db: DBSession, user: CurrentUser):

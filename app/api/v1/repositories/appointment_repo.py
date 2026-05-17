@@ -77,6 +77,7 @@ async def get_all_user_appointment(
 ) -> List[Appointment] | None:
     stmt = (
         select(Appointment)
+        .options(joinedload(Appointment.psychologist), joinedload(Appointment.service))
         .where(
             Appointment.id_client == user.id,
         )
