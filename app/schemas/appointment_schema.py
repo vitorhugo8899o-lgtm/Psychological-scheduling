@@ -83,7 +83,9 @@ class AppointmentResponse(BaseModel):
 class AppointmentUserResponse(BaseModel):
     id: int
     date_time: datetime
-    status: AppointmentStatus
+    status: str
+    service: ServiceAppointment
+    psychologist: PsychologistSchema
 
     @computed_field
     @property
@@ -182,18 +184,3 @@ class ReschedulingAppointment(BaseModel):
 
 class CancelAppointment(BaseModel):
     id_appointment: int = Field(ge=1)
-
-
-class NextAppoiments(BaseModel):
-    id: int
-    date_time: datetime
-    status: str
-    service: ServiceAppointment
-    psychologist: PsychologistSchema
-
-    @computed_field
-    @property
-    def format_date(self) -> str:
-        return self.date_time.strftime('%d/%m/%Y às %Hh:%M')
-
-    model_config = ConfigDict(from_attributes=True)

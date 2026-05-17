@@ -195,10 +195,16 @@ async def test_get_appointment_user(
 
     appointments = 2
 
+    duration_minutes = 50
+
     assert req.status_code == status
     assert isinstance(response, list)
     assert len(response) == appointments
     assert response[0]['status'] == 'pending'
+    assert response[0]['service']['name'] == 'Terapia de casal'
+    assert response[0]['service']['duration_minutes'] == duration_minutes
+    assert response[0]['psychologist']['crp'] is not None
+    assert response[0]['psychologist']['user']['fullname'] is not None
 
 
 @pytest.mark.asyncio
@@ -552,7 +558,7 @@ async def test_try_get_the_next_user_appoimnets(
     assert response.json()[0]['service']['duration_minutes'] == duration_minutes
     assert response.json()[0]['psychologist']['crp'] == 'CRP 01/5596'
     assert response.json()[0]['psychologist']['user']['fullname'] == 'Full Name'
-    assert response.json()[0]['format_date'] == '11/05/2026 às 12h:30'
+    assert response.json()[0]['datetime_format'] == '11/05/2026 09:30'
 
 
 @pytest.mark.asyncio
