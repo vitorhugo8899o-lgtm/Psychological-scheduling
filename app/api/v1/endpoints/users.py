@@ -7,6 +7,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 
 from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
 from app.api.v1.services import appoint_service, auth_service, user_service
+from app.core.config import settings
 from app.redis.limiter import limiter
 from app.schemas.appointment_schema import AppointmentUserResponse, NextAppoiments
 from app.schemas.custom_schema import LoginSuccess
@@ -34,8 +35,9 @@ async def login_user(
         value=token.access_token,
         max_age=60 * 60,
         httponly=True,
-        secure=False,
-        samesite='lax',
+        secure=settings.ENV == 'production',
+        path='/',
+        samesite='none' if settings.ENV == 'production' else 'lax',
     )
 
     response.headers['Cache-Control'] = 'no-store'
@@ -45,7 +47,13 @@ async def login_user(
 
 @user_route.post('/logout', status_code=HTTPStatus.OK, response_model=str)
 async def user_logout(user: CurrentUser, response: Response):
-    response.delete_cookie('Login_info')
+    response.delete_cookie(
+        key='Login_info',
+        path='/',
+        httponly=True,
+        secure=settings.ENV == 'production',
+        samesite='none' if settings.ENV == 'production' else 'lax',
+    )
     return 'Usuário deslogado.'
 
 
@@ -77,7 +85,13 @@ async def uptade_user(  # noqa
 ):
     update = await user_service.update_user_data(db, r, user, user_data)
 
-    response.delete_cookie('Login_info')
+    response.delete_cookie(
+        key='Login_info',
+        path='/',
+        httponly=True,
+        secure=settings.ENV == 'production',
+        samesite='none' if settings.ENV == 'production' else 'lax',
+    )
 
     return update
 
@@ -87,7 +101,13 @@ async def desactive_user(
     db: DBSession, user: CurrentUser, r: rediscon, response: Response
 ):
     await user_service.desactive_account(db, user, r)
-    response.delete_cookie('Login_info')
+    response.delete_cookie(
+        key='Login_info',
+        path='/',
+        httponly=True,
+        secure=settings.ENV == 'production',
+        samesite='none' if settings.ENV == 'production' else 'lax',
+    )
 
 
 @user_route.get(
@@ -105,6 +125,20 @@ async def get_all_appointments(request: Request, db: DBSession, user: CurrentUse
     status_code=HTTPStatus.OK,
     response_model=List[NextAppoiments] | dict,
 )
-@limiter.limit('3/minute')
+@limiter.limit('6/minute')
 async def next_appoinments(request: Request, db: DBSession, user: CurrentUser):
     return await user_service.get_next_appoiments(db, user)
+
+
+@user_route.post(
+    '/validate-session', status_code=HTTPStatus.OK, response_model=LoginSuccess
+)
+@limiter.limit('6/minute')
+async def validate_cookie(request: Request, user: CurrentUser):
+    user_info = {
+        'email': f'{user.email}',
+        'fullname': f'{user.fullname}',
+        'role': f'{user.role}',
+    }
+
+    return {'status': 'success', 'user': user_info}

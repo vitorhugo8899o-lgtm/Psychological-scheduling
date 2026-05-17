@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     REDIS_URL: str
     API_KEY_MERCADO_PAGO: str
     TESTING: bool = False
+    ENV: str
 
 
 settings = Settings()
