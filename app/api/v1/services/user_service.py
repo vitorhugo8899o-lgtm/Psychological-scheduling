@@ -107,7 +107,7 @@ async def get_service_customized(db: DBSession, filter: ServiceQuery) -> List[Se
     service = await service_repo.filter_services(db, filter)
 
     if not service:
-        raise HTTPException(status_code=404, detail='Nenhum serviço encontrado!')
+        return {'message': 'Nenhum serviço encontrado com base nessas especificações.'}
 
     return service
 
