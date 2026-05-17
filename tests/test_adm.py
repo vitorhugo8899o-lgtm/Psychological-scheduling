@@ -2,7 +2,7 @@ import pytest
 
 
 @pytest.mark.asyncio
-async def test_user_logout(token_adm, user_client):
+async def test_create_psych(token_adm, user_client):
     payload = {
         'email': f'{user_client.email}',
         'region': '1',
@@ -154,7 +154,7 @@ async def test_get_financial_metrics(token_adm, service, Payment):
     assert response.status_code == status
     assert response.json()['by_service'][0]['service_name'] == 'Terapia de casal'
     assert response.json()['by_service'][0]['total_sales'] == total_sales
-    assert response.json()['total_general_revenue'] == total_general_revenue  #noqa
+    assert response.json()['total_general_revenue'] == total_general_revenue  # noqa
 
 
 @pytest.mark.asyncio

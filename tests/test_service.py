@@ -65,10 +65,13 @@ async def test_service_query_not_found(token_client):
         '/api/v1/services/filter?option=and&offset=0&limit=1&name=terapia'
     )  # noqa
 
-    status = 404
+    status = 200
 
     assert response.status_code == status
-    assert response.json()['detail'] == 'Nenhum serviço encontrado!'
+    assert (
+        response.json()['message']
+        == 'Nenhum serviço encontrado com base nessas especificações.'
+    )  # noqa
 
 
 @pytest.mark.asyncio

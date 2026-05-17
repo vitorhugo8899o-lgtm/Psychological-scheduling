@@ -562,7 +562,10 @@ async def test_exception_forbiden_get_the_next_appoimnets(token_adm):
     status = 403
 
     assert response.status_code == status
-    assert response.json()['detail'] == 'O usuário não tem permissão para realizar essa ação'  #noqa
+    assert (
+        response.json()['detail']
+        == 'O usuário não tem permissão para realizar essa ação'
+    )  # noqa
 
 
 @pytest.mark.asyncio
