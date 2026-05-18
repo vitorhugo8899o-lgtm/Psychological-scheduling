@@ -594,3 +594,69 @@ async def test_no_confirmed_appointments_status(
 
     assert response.status_code == status
     assert response.json()['message'] == 'Você não possui nenhuma consulta marcada.'
+
+
+@pytest.mark.asyncio
+async def test_get_appoiments_open(
+    db_session, availability, token_client, service, schedule
+):
+    response = await token_client.get('/api/v1/users/me/open-appoiments')
+
+    status = 200
+
+    assert response.status_code == status
+    assert response.json()[0]['status'] == 'pending'
+    assert isinstance(response.json(), list)
+
+
+@pytest.mark.asyncio
+async def test_forbiden_get_open_appoiments(token_adm):
+    response = await token_adm.get('/api/v1/users/me/open-appoiments')
+
+    status = 403
+
+    assert response.status_code == status
+    assert (
+        response.json()['detail']
+        == 'O usuário não tem permissão para realizar essa ação.'
+    )  # noqa
+
+
+@pytest.mark.asyncio
+async def test_user_has_no_appoiments_open_and_no_onde(token_client):
+    response = await token_client.get('/api/v1/users/me/open-appoiments')
+
+    status = 200
+
+    assert response.status_code == status
+    assert response.json()['message'] == 'Nenhuma consulta em aberto.'
+
+
+@pytest.mark.asyncio
+async def test_user_has_no_appoments_open(
+    db_session, availability, token_client, service, schedule
+):
+    schedule.status = 'confirmed'
+    await db_session.commit()
+
+    response = await token_client.get('/api/v1/users/me/open-appoiments')
+
+    status = 200
+
+    assert response.status_code == status
+    assert response.json()['message'] == 'Nenhuma consulta em aberto.'
+
+
+@pytest.mark.asyncio
+async def test_user_appoiment_only_past(
+    db_session, availability, token_client, service, schedule
+):
+    schedule.date_time = datetime(2026, 1, 11, 12, 30, tzinfo=timezone.utc)
+    await db_session.commit()
+
+    response = await token_client.get('/api/v1/users/me/open-appoiments')
+
+    status = 200
+
+    assert response.status_code == status
+    assert response.json()['message'] == 'Nenhuma consulta em aberto.'
