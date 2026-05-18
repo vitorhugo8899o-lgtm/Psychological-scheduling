@@ -220,3 +220,34 @@ async def get_records(db: DBSession, user: CurrentUser):
         list_records.append(entry)
 
     return list_records
+
+
+async def get_user_records(db: DBSession, user: CurrentUser, user_id: int):
+    if user.role != 'psychologist':
+        raise HTTPException(
+            status_code=403,
+            detail='O usuário não tem permissão para realizar essa ação.',
+        )
+
+    list_records = []
+
+    medical_records = await psych_repo.ger_medical_records_by_user(db, user, user_id)
+
+    if not medical_records:
+        return {'message': 'Nenhum Prontuário registrado.'}
+
+    for record in medical_records:
+        entry = MedicalResponseAll(
+            id=record.id,
+            id_psychologist=user.psychologist_profile.id,
+            id_client=record.id_client,
+            id_service=record.id_service,
+            description=record.description,
+            service_name=record.service.name,
+            psych_fullname=user.fullname,
+            client_name=record.client.fullname,
+            created_at=record.created_at,
+        )
+        list_records.append(entry)
+
+    return list_records

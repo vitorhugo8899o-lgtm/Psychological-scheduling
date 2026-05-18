@@ -223,9 +223,23 @@ async def get_medical_records(db: DBSession, user: CurrentUser):
         select(MedicalRecord)
         .options(joinedload(MedicalRecord.service), joinedload(MedicalRecord.client))
         .where(MedicalRecord.id_psychologist == user.psychologist_profile.id)
-        .order_by(desc(
-            MedicalRecord.created_at
-        ))
+        .order_by(desc(MedicalRecord.created_at))
+    )
+
+    result = await db.execute(stmt)
+
+    return result.scalars().all()
+
+
+async def ger_medical_records_by_user(db: DBSession, user: CurrentUser, user_id: int):
+    stmt = (
+        select(MedicalRecord)
+        .options(joinedload(MedicalRecord.service), joinedload(MedicalRecord.client))
+        .where(
+            MedicalRecord.id_psychologist == user.psychologist_profile.id,
+            MedicalRecord.id_client == user_id,
+        )
+        .order_by(desc(MedicalRecord.created_at))
     )
 
     result = await db.execute(stmt)

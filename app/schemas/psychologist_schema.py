@@ -259,3 +259,7 @@ class MedicalResponseAll(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class RequestMedicalRecord(BaseModel):
+    user_id: int
