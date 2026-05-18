@@ -142,3 +142,13 @@ async def validate_cookie(request: Request, user: CurrentUser):
     }
 
     return {'status': 'success', 'user': user_info}
+
+
+@user_route.get(
+    '/users/me/open-appoiments',
+    status_code=HTTPStatus.OK,
+    response_model=List[AppointmentUserResponse] | dict,
+)
+@limiter.limit('10/minute')
+async def open_appoiments(db: DBSession, user: CurrentUser):
+    return await user_service.get_open_appoiments(db, user)
