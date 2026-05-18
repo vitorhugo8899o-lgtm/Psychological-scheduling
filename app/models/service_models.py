@@ -7,6 +7,7 @@ from app.db.base import Base
 
 if TYPE_CHECKING:
     from app.models.appointments_models import Appointment
+    from app.models.medical_record_models import MedicalRecord
 
 
 class Service(Base):
@@ -19,3 +20,4 @@ class Service(Base):
     duration_minutes: Mapped[int] = mapped_column(Integer, nullable=False)
 
     appointments: Mapped[List['Appointment']] = relationship(back_populates='service')
+    medical_record: Mapped[List['MedicalRecord']] = relationship(back_populates='service')

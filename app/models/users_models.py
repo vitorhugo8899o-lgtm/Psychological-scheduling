@@ -10,6 +10,7 @@ from app.schemas.custom_schema import UserRole
 
 if TYPE_CHECKING:
     from app.models.appointments_models import Appointment
+    from app.models.medical_record_models import MedicalRecord
     from app.models.psychologist_models import Psychologist
 
 
@@ -38,4 +39,8 @@ class User(Base):
     )
     appointments_as_client: Mapped[List['Appointment']] = relationship(
         back_populates='client', foreign_keys='Appointment.id_client'
+    )
+
+    medical_record_user: Mapped[List['MedicalRecord']] = relationship(
+        back_populates='client', foreign_keys='MedicalRecord.id_client'
     )
