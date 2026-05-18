@@ -150,5 +150,5 @@ async def validate_cookie(request: Request, user: CurrentUser):
     response_model=List[AppointmentUserResponse] | dict,
 )
 @limiter.limit('10/minute')
-async def open_appoiments(db: DBSession, user: CurrentUser):
+async def open_appoiments(request: Request, db: DBSession, user: CurrentUser):
     return await user_service.get_open_appoiments(db, user)
