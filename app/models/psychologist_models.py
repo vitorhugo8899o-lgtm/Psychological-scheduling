@@ -8,6 +8,7 @@ from app.db.base import Base
 if TYPE_CHECKING:
     from app.models.appointments_models import Appointment
     from app.models.avaliabilites_models import Avaliabilite
+    from app.models.medical_record_models import MedicalRecord
     from app.models.users_models import User
 
 
@@ -26,4 +27,8 @@ class Psychologist(Base):
     )
     availabilities: Mapped[List['Avaliabilite']] = relationship(
         back_populates='psychologist', cascade='all, delete-orphan'
+    )
+
+    medical_records: Mapped[List['MedicalRecord']] = relationship(
+        back_populates='psychologist', cascade='all, delete-orphan', lazy='selectin'
     )
