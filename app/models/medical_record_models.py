@@ -20,9 +20,7 @@ class MedicalRecord(Base):
         ForeignKey('psychologists.id'), nullable=False
     )
     id_client: Mapped[int] = mapped_column(ForeignKey('users.id'), nullable=False)
-    id_service: Mapped[int] = mapped_column(
-        ForeignKey('services.id'), nullable=False
-    )
+    id_service: Mapped[int] = mapped_column(ForeignKey('services.id'), nullable=False)
     description: Mapped[str] = mapped_column(Text, nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(
@@ -33,9 +31,7 @@ class MedicalRecord(Base):
         back_populates='medical_record_user', foreign_keys=[id_client]
     )
 
-    service: Mapped['Service'] = relationship(
-        back_populates='medical_record'
-    )
+    service: Mapped['Service'] = relationship(back_populates='medical_record')
 
     psychologist: Mapped['Psychologist'] = relationship(
         back_populates='medical_records'

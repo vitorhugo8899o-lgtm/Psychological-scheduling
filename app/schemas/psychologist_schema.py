@@ -231,3 +231,31 @@ class MedicalRecordResponse(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class MedicalResponseAll(BaseModel):
+    id: int
+    id_psychologist: int
+    id_client: int
+    id_service: int
+    description: str
+    service_name: str
+    psych_fullname: str
+    client_name: str
+    created_at: datetime
+
+    @computed_field
+    @property
+    def format_date_br(self) -> str:
+        dt = self.created_at
+
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+
+        consult = dt.astimezone(ZoneInfo('America/Sao_Paulo')).replace(
+            second=0, microsecond=0
+        )
+        return consult.strftime('%d/%m/%Y %H:%M')
+
+    class Config:
+        from_attributes = True

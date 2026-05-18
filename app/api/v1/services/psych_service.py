@@ -7,6 +7,7 @@ from app.models.avaliabilites_models import Avaliabilite
 from app.schemas.psychologist_schema import (
     DeleteAvailabilySchema,
     MedicalRecordCreate,
+    MedicalResponseAll,
     PsychologistAvaliabiliteCreate,
     ResponseRate,
     SchemaMetrics,
@@ -167,7 +168,7 @@ async def medical_record(db: DBSession, user: CurrentUser, record: MedicalRecord
     if user.role != 'psychologist':
         raise HTTPException(
             status_code=403,
-            detail="O usuário não tem permissão para realizar essa ação."
+            detail='O usuário não tem permissão para realizar essa ação.',
         )
 
     exists_user = await user_repo.get_user_by_id(db, record.id_user)
@@ -175,17 +176,44 @@ async def medical_record(db: DBSession, user: CurrentUser, record: MedicalRecord
     if not exists_user:
         raise HTTPException(
             status_code=404,
-            detail="Usuário não encontrado, verifique se o id digitado está correto."
+            detail='O usuário não encontrado, verifique se o id digitado está correto.',
         )
 
     consulted = await psych_repo.consulted_user(db, user, record)
 
     if not consulted:
         raise HTTPException(
-            status_code=409,
-            detail="Você ainda não teve uma consulta com esse usuário."
+            status_code=409, detail='Você ainda não teve uma consulta com esse usuário.'
         )
 
     return await psych_repo.create_medical_record(
         db, user, record, consulted.id_service
     )
+
+
+async def get_records(db: DBSession, user: CurrentUser):
+    if user.role != 'psychologist':
+        raise HTTPException(
+            status_code=403,
+            detail='O usuário não tem permissão para realizar essa ação.',
+        )
+
+    list_records = []
+
+    medical_records = await psych_repo.get_medical_records(db, user)
+
+    for record in medical_records:
+        entry = MedicalResponseAll(
+            id=record.id,
+            id_psychologist=user.psychologist_profile.id,
+            id_client=record.id_client,
+            id_service=record.id_service,
+            description=record.description,
+            service_name=record.service.name,
+            psych_fullname=user.fullname,
+            client_name=record.client.fullname,
+            created_at=record.created_at,
+        )
+        list_records.append(entry)
+
+    return list_records
