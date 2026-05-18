@@ -446,7 +446,10 @@ async def test_forbiden_try_get_medical_record(token_client):
     status = 403
 
     assert response.status_code == status
-    assert response.json()['detail'] == 'O usuário não tem permissão para realizar essa ação.'  #noqa
+    assert (
+        response.json()['detail']
+        == 'O usuário não tem permissão para realizar essa ação.'
+    )  # noqa
 
 
 @pytest.mark.asyncio

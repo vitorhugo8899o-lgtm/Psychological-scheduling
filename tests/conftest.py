@@ -644,14 +644,12 @@ async def Payment(db_session, schedule_payment):
 
 
 @pytest_asyncio.fixture(scope='function')
-async def Record(
-    db_session, user_psych, user_client, service, schedule
-):
+async def Record(db_session, user_psych, user_client, service, schedule):
     new_record = models.MedicalRecord(
         id_psychologist=user_psych.psychologist_profile.id,
         id_client=user_client.id,
         id_service=service.id,
-        description="Descrição do prontuário",
+        description='Descrição do prontuário',
     )
 
     db_session.add(new_record)
