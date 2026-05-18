@@ -1,7 +1,7 @@
 from datetime import datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import and_, delete, exists, func, select
+from sqlalchemy import and_, delete, desc, exists, func, select
 from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.orm import joinedload
 
@@ -223,6 +223,9 @@ async def get_medical_records(db: DBSession, user: CurrentUser):
         select(MedicalRecord)
         .options(joinedload(MedicalRecord.service), joinedload(MedicalRecord.client))
         .where(MedicalRecord.id_psychologist == user.psychologist_profile.id)
+        .order_by(desc(
+            MedicalRecord.created_at
+        ))
     )
 
     result = await db.execute(stmt)

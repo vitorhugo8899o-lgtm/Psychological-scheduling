@@ -394,7 +394,7 @@ async def test_user_not_exists_in_medical_record(token_psych):
     assert response.status_code == status
     assert (
         response.json()['detail']
-        == 'Usuário não encontrado, verifique se o id digitado está correto.'
+        == 'O usuário não encontrado, verifique se o id digitado está correto.'
     )  # noqa
 
 
@@ -415,3 +415,45 @@ async def test_appoiment_not_found_in_medical_record(token_psych, user_client):
         response.json()['detail']
         == 'Você ainda não teve uma consulta com esse usuário.'
     )  # noqa
+
+
+@pytest.mark.asyncio
+async def test_get_all_medical_records(
+    token_psych, Record, user_client, service, schedule
+):
+    response = await token_psych.get('/api/v1/medical-records')
+
+    status = 200
+
+    id_record = 1
+
+    assert response.status_code == status
+    assert response.json()[0]['id'] == id_record
+    assert response.json()[0]['id_client'] == user_client.id
+    assert response.json()[0]['id_service'] == service.id
+    assert response.json()[0]['description'] == 'Descrição do prontuário'
+    assert response.json()[0]['service_name'] == service.name
+    assert 'psych_fullname' in response.json()[0]
+    assert 'client_name' in response.json()[0]
+    assert 'created_at' in response.json()[0]
+    assert 'format_date_br' in response.json()[0]
+
+
+@pytest.mark.asyncio
+async def test_forbiden_try_get_medical_record(token_client):
+    response = await token_client.get('/api/v1/medical-records')
+
+    status = 403
+
+    assert response.status_code == status
+    assert response.json()['detail'] == 'O usuário não tem permissão para realizar essa ação.'  #noqa
+
+
+@pytest.mark.asyncio
+async def test_no_one_medical_record(token_psych):
+    response = await token_psych.get('/api/v1/medical-records')
+
+    status = 200
+
+    assert response.status_code == status
+    assert response.json()['message'] == 'Nenhum Prontuário registrado.'

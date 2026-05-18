@@ -110,9 +110,9 @@ async def create_medical_record(
 
 
 @psych_router.get(
-    '/medical-record',
+    '/medical-records',
     status_code=HTTPStatus.OK,
-    response_model=List[MedicalResponseAll],
+    response_model=List[MedicalResponseAll] | dict,
 )
 @limiter.limit('4/minute')
 async def get_medical_records(request: Request, db: DBSession, user: CurrentUser):
