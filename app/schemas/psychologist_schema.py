@@ -263,3 +263,7 @@ class MedicalResponseAll(BaseModel):
 
 class RequestMedicalRecord(BaseModel):
     user_id: int
+
+
+class RequestidRecord(BaseModel):
+    record_id: int

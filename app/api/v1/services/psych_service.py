@@ -251,3 +251,19 @@ async def get_user_records(db: DBSession, user: CurrentUser, user_id: int):
         list_records.append(entry)
 
     return list_records
+
+
+async def delete_medical_redord(db: DBSession, user: CurrentUser, record_id: int):
+    if user.role != 'psychologist':
+        raise HTTPException(
+            status_code=403,
+            detail='O usuário não tem permissão para realizar essa ação.',
+        )
+
+    result = await psych_repo.delete_record(db, user, record_id)
+
+    if not result:
+        raise HTTPException(
+            status_code=404,
+            detail="Prontuário não encontrado."
+        )

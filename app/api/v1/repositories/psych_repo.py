@@ -245,3 +245,28 @@ async def ger_medical_records_by_user(db: DBSession, user: CurrentUser, user_id:
     result = await db.execute(stmt)
 
     return result.scalars().all()
+
+
+async def delete_record(db: DBSession, user: CurrentUser, record_id: int):
+    stmt = delete(MedicalRecord).where(
+        MedicalRecord.id_psychologist == user.psychologist_profile.id,
+        MedicalRecord.id == record_id
+    )
+
+    try:
+        result = await db.execute(stmt)
+        if result.rowcount == 0:
+            return None
+
+        await db.commit()
+        return {'message': 'Disponibilidade deletada'}
+
+    except IntegrityError as e:
+        await db.rollback()
+        raise f'Erro de integridade {e}'
+    except OperationalError as e:
+        await db.rollback()
+        raise f'Erro de operação: {e}'
+    except Exception as e:
+        await db.rollback()
+        raise f'Um erro inesperado ocorreu: {e}'
