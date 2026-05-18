@@ -74,7 +74,7 @@ async def user(
 
 
 @user_route.put('/users', status_code=HTTPStatus.OK, response_model=UserPublic)
-@limiter.limit('3/hour')
+@limiter.limit('3/minute')
 async def uptade_user(  # noqa
     request: Request,
     db: DBSession,
