@@ -20,4 +20,6 @@ class Service(Base):
     duration_minutes: Mapped[int] = mapped_column(Integer, nullable=False)
 
     appointments: Mapped[List['Appointment']] = relationship(back_populates='service')
-    medical_record: Mapped[List['MedicalRecord']] = relationship(back_populates='service')
+    medical_record: Mapped[List['MedicalRecord']] = relationship(
+        back_populates='service'
+    )

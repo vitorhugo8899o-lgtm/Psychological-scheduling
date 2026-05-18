@@ -7,10 +7,12 @@ from sqlalchemy.exc import IntegrityError, OperationalError
 from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
 from app.models.appointments_models import Appointment
 from app.models.avaliabilites_models import Avaliabilite
+from app.models.medical_record_models import MedicalRecord
 from app.models.psychologist_models import Psychologist
 from app.models.users_models import User
 from app.schemas.psychologist_schema import (
     DeleteAvailabilySchema,
+    MedicalRecordCreate,
     SchemaMetrics,
     availability_list_adapter,
 )
@@ -184,3 +186,35 @@ async def get_all_psych(db: DBSession):
     result = await db.execute(stmt)
 
     return result.scalars().all()
+
+
+async def consulted_user(db: DBSession, user: CurrentUser, record: MedicalRecordCreate):
+    stmt = select(Appointment).where(
+        Appointment.id_psychologist == user.psychologist_profile.id,
+        Appointment.id_client == record.id_user,
+        Appointment.id == record.id_appoiment
+    )
+
+    result = await db.execute(stmt)
+
+    return result.scalar_one_or_none()
+
+
+async def create_medical_record(
+    db: DBSession,
+    user: CurrentUser,
+    record: MedicalRecordCreate,
+    id_service: int
+):
+    new_record = MedicalRecord(
+        id_psychologist=user.psychologist_profile.id,
+        id_client=record.id_user,
+        id_service=id_service,
+        description=record.description
+    )
+
+    db.add(new_record)
+    await db.commit()
+    await db.refresh(new_record)
+
+    return new_record

@@ -1,5 +1,6 @@
-from datetime import date, datetime, time
+from datetime import date, datetime, time, timezone
 from typing import ClassVar, List, Set
+from zoneinfo import ZoneInfo
 
 from pydantic import (
     BaseModel,
@@ -200,6 +201,33 @@ class PsychologistSchema(BaseModel):
 class PsychResponse(BaseModel):
     id: int
     fullname: str
+
+    class Config:
+        from_attributes = True
+
+
+class MedicalRecordCreate(BaseModel):
+    id_user: int
+    id_appoiment: int
+    description: str
+
+
+class MedicalRecordResponse(BaseModel):
+    id: int
+    created_at: datetime
+
+    @computed_field
+    @property
+    def format_date_br(self) -> str:
+        dt = self.created_at
+
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+
+        consult = dt.astimezone(ZoneInfo('America/Sao_Paulo')).replace(
+            second=0, microsecond=0
+        )
+        return consult.strftime('%d/%m/%Y %H:%M')
 
     class Config:
         from_attributes = True

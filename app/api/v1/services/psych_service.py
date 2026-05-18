@@ -1,11 +1,12 @@
 from fastapi import HTTPException
 
 from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
-from app.api.v1.repositories import psych_repo
+from app.api.v1.repositories import psych_repo, user_repo
 from app.api.v1.util.util import cauculation_rate
 from app.models.avaliabilites_models import Avaliabilite
 from app.schemas.psychologist_schema import (
     DeleteAvailabilySchema,
+    MedicalRecordCreate,
     PsychologistAvaliabiliteCreate,
     ResponseRate,
     SchemaMetrics,
@@ -160,3 +161,31 @@ async def get_psych(db: DBSession):
         raise HTTPException(status_code=404, detail='Nenhum psicólogo encontrado.')
 
     return psychs
+
+
+async def medical_record(db: DBSession, user: CurrentUser, record: MedicalRecordCreate):
+    if user.role != 'psychologist':
+        raise HTTPException(
+            status_code=403,
+            detail="O usuário não tem permissão para realizar essa ação."
+        )
+
+    exists_user = await user_repo.get_user_by_id(db, record.id_user)
+
+    if not exists_user:
+        raise HTTPException(
+            status_code=404,
+            detail="Usuário não encontrado, verifique se o id digitado está correto."
+        )
+
+    consulted = await psych_repo.consulted_user(db, user, record)
+
+    if not consulted:
+        raise HTTPException(
+            status_code=409,
+            detail="Você ainda não teve uma consulta com esse usuário."
+        )
+
+    return await psych_repo.create_medical_record(
+        db, user, record, consulted.id_service
+    )
