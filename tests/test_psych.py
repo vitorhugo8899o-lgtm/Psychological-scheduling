@@ -460,3 +460,49 @@ async def test_no_one_medical_record(token_psych):
 
     assert response.status_code == status
     assert response.json()['message'] == 'Nenhum Prontuário registrado.'
+
+
+@pytest.mark.asyncio
+async def test_delete_medical_record(
+    token_psych, Record, user_client, service, schedule
+):
+    payload = {'record_id': f'{Record.id}'}
+
+    response = await token_psych.request(
+        "DELETE", '/api/v1/medical-record', json=payload
+    )
+
+    status = 204
+
+    assert response.status_code == status
+
+
+@pytest.mark.asyncio
+async def test_record_not_exists(token_psych):
+    payload = {'record_id': 20}
+
+    response = await token_psych.request(
+        "DELETE", '/api/v1/medical-record', json=payload
+    )
+
+    status = 404
+
+    assert response.status_code == status
+    assert response.json()['detail'] == 'Prontuário não encontrado.'
+
+
+@pytest.mark.asyncio
+async def test_user_try_delete_record(token_client):
+    payload = {'record_id': 20}
+
+    response = await token_client.request(
+        "DELETE", '/api/v1/medical-record', json=payload
+    )
+
+    status = 403
+
+    assert response.status_code == status
+    assert (
+        response.json()['detail']
+        == 'O usuário não tem permissão para realizar essa ação.'
+    )  # noqa

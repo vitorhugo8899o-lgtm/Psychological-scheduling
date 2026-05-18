@@ -263,7 +263,4 @@ async def delete_medical_redord(db: DBSession, user: CurrentUser, record_id: int
     result = await psych_repo.delete_record(db, user, record_id)
 
     if not result:
-        raise HTTPException(
-            status_code=404,
-            detail="Prontuário não encontrado."
-        )
+        raise HTTPException(status_code=404, detail='Prontuário não encontrado.')

@@ -250,7 +250,7 @@ async def ger_medical_records_by_user(db: DBSession, user: CurrentUser, user_id:
 async def delete_record(db: DBSession, user: CurrentUser, record_id: int):
     stmt = delete(MedicalRecord).where(
         MedicalRecord.id_psychologist == user.psychologist_profile.id,
-        MedicalRecord.id == record_id
+        MedicalRecord.id == record_id,
     )
 
     try:
