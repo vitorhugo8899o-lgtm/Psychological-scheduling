@@ -10,6 +10,8 @@ from app.schemas.appointment_schema import AppointmentUserResponse
 from app.schemas.psychologist_schema import (
     AvailabilityCacheSchema,
     DeleteAvailabilySchema,
+    MedicalRecordCreate,
+    MedicalRecordResponse,
     PsychologistAvaliabiliteCreate,
     PsychResponse,
     ResponseMetrics,
@@ -92,3 +94,18 @@ async def stats_rate(request: Request, db: DBSession, user: CurrentUser):
 @limiter.limit('6/minute')
 async def get_all_psych(request: Request, db: DBSession, user: CurrentUser):
     return await psych_service.get_psych(db)
+
+
+@psych_router.post(
+    '/medical-record',
+    status_code=HTTPStatus.CREATED,
+    response_model=MedicalRecordResponse
+)
+@limiter.limit('4/minute')
+async def create_medical_record(
+    request: Request,
+    db: DBSession,
+    user: CurrentUser,
+    record: MedicalRecordCreate
+):
+    return await psych_service.medical_record(db, user, record)
