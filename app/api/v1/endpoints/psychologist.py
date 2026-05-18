@@ -15,6 +15,7 @@ from app.schemas.psychologist_schema import (
     MedicalResponseAll,
     PsychologistAvaliabiliteCreate,
     PsychResponse,
+    RequestidRecord,
     RequestMedicalRecord,
     ResponseMetrics,
     ResponseRate,
@@ -130,3 +131,17 @@ async def get_user_medical_records(
     request: Request, db: DBSession, user: CurrentUser, user_id: RequestMedicalRecord
 ):
     return await psych_service.get_user_records(db, user, user_id.user_id)
+
+
+@psych_router.delete(
+    '/medical-record',
+    status_code=HTTPStatus.NO_CONTENT
+)
+@limiter.limit('4/minute')
+async def delete_record(
+    request: Request,
+    db: DBSession,
+    user: CurrentUser,
+    id_record: RequestidRecord
+):
+    return await psych_service.delete_medical_redord(db, user, id_record.record_id)
