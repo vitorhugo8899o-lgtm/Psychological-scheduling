@@ -129,3 +129,20 @@ async def user_next_appoiments(db: DBSession, user: CurrentUser):
     result = await db.execute(stmt)
 
     return result.scalars().all()
+
+
+async def open_appoiments(db: DBSession, user: CurrentUser):
+    stmt = (
+        select(Appointment)
+        .options(joinedload(Appointment.psychologist), joinedload(Appointment.service))
+        .where(
+            Appointment.id_client == user.id,
+            Appointment.status == AppointmentStatus.pending,
+            Appointment.date_time >= datetime.now(UTC),
+        )
+        .order_by(Appointment.date_time)
+    )
+
+    result = await db.execute(stmt)
+
+    return result.scalars().all()

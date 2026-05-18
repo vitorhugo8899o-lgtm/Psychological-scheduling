@@ -211,7 +211,7 @@ async def user_psych_desactive(db_session):
         email='userpsychdesactive@example.com',
         password=auth_repo.hash_password(raw_password),
         role='psychologist',
-        is_active=False
+        is_active=False,
     )
 
     db_session.add(user)

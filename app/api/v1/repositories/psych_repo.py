@@ -179,10 +179,7 @@ async def get_appoiment_rate(db: DBSession, user: CurrentUser):
 
 
 async def get_all_psych(db: DBSession):
-    stmt = select(User).where(
-        User.role == 'psychologist',
-        User.is_active
-    )
+    stmt = select(User).where(User.role == 'psychologist', User.is_active)
 
     result = await db.execute(stmt)
 

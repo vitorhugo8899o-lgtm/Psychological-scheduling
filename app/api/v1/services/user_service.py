@@ -125,3 +125,18 @@ async def get_next_appoiments(db: DBSession, user: CurrentUser):
         return {'message': 'Você não possui nenhuma consulta marcada.'}
 
     return appoiments
+
+
+async def get_open_appoiments(db: DBSession, user: CurrentUser):
+    if user.role != 'cliente':
+        raise HTTPException(
+            status_code=403,
+            detail='O usuário não tem permissão para realizar essa ação.',
+        )
+
+    appoiments = await user_repo.open_appoiments(db, user)
+
+    if not appoiments:
+        return {'message': 'Nenhuma consulta em aberto.'}
+
+    return appoiments
