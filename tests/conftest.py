@@ -641,3 +641,21 @@ async def Payment(db_session, schedule_payment):
     await db_session.refresh(new_payment)
 
     return new_payment
+
+
+@pytest_asyncio.fixture(scope='function')
+async def Record(
+    db_session, user_psych, user_client, service, schedule
+):
+    new_record = models.MedicalRecord(
+        id_psychologist=user_psych.psychologist_profile.id,
+        id_client=user_client.id,
+        id_service=service.id,
+        description="Descrição do prontuário",
+    )
+
+    db_session.add(new_record)
+    await db_session.commit()
+    await db_session.refresh(new_record)
+
+    return new_record
