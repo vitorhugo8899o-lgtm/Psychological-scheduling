@@ -202,6 +202,9 @@ async def get_records(db: DBSession, user: CurrentUser):
 
     medical_records = await psych_repo.get_medical_records(db, user)
 
+    if not medical_records:
+        return {'message': 'Nenhum Prontuário registrado.'}
+
     for record in medical_records:
         entry = MedicalResponseAll(
             id=record.id,
