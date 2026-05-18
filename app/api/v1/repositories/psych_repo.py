@@ -3,6 +3,7 @@ from zoneinfo import ZoneInfo
 
 from sqlalchemy import and_, delete, exists, func, select
 from sqlalchemy.exc import IntegrityError, OperationalError
+from sqlalchemy.orm import joinedload
 
 from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
 from app.models.appointments_models import Appointment
@@ -192,7 +193,7 @@ async def consulted_user(db: DBSession, user: CurrentUser, record: MedicalRecord
     stmt = select(Appointment).where(
         Appointment.id_psychologist == user.psychologist_profile.id,
         Appointment.id_client == record.id_user,
-        Appointment.id == record.id_appoiment
+        Appointment.id == record.id_appoiment,
     )
 
     result = await db.execute(stmt)
@@ -201,16 +202,13 @@ async def consulted_user(db: DBSession, user: CurrentUser, record: MedicalRecord
 
 
 async def create_medical_record(
-    db: DBSession,
-    user: CurrentUser,
-    record: MedicalRecordCreate,
-    id_service: int
+    db: DBSession, user: CurrentUser, record: MedicalRecordCreate, id_service: int
 ):
     new_record = MedicalRecord(
         id_psychologist=user.psychologist_profile.id,
         id_client=record.id_user,
         id_service=id_service,
-        description=record.description
+        description=record.description,
     )
 
     db.add(new_record)
@@ -218,3 +216,15 @@ async def create_medical_record(
     await db.refresh(new_record)
 
     return new_record
+
+
+async def get_medical_records(db: DBSession, user: CurrentUser):
+    stmt = (
+        select(MedicalRecord)
+        .options(joinedload(MedicalRecord.service), joinedload(MedicalRecord.client))
+        .where(MedicalRecord.id_psychologist == user.psychologist_profile.id)
+    )
+
+    result = await db.execute(stmt)
+
+    return result.scalars().all()

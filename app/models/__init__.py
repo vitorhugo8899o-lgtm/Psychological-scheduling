@@ -13,5 +13,5 @@ __all__ = [
     'Avaliabilite',
     'Appointment',
     'Payment',
-    'MedicalRecord'
+    'MedicalRecord',
 ]

@@ -12,6 +12,7 @@ from app.schemas.psychologist_schema import (
     DeleteAvailabilySchema,
     MedicalRecordCreate,
     MedicalRecordResponse,
+    MedicalResponseAll,
     PsychologistAvaliabiliteCreate,
     PsychResponse,
     ResponseMetrics,
@@ -99,13 +100,20 @@ async def get_all_psych(request: Request, db: DBSession, user: CurrentUser):
 @psych_router.post(
     '/medical-record',
     status_code=HTTPStatus.CREATED,
-    response_model=MedicalRecordResponse
+    response_model=MedicalRecordResponse,
 )
 @limiter.limit('4/minute')
 async def create_medical_record(
-    request: Request,
-    db: DBSession,
-    user: CurrentUser,
-    record: MedicalRecordCreate
+    request: Request, db: DBSession, user: CurrentUser, record: MedicalRecordCreate
 ):
     return await psych_service.medical_record(db, user, record)
+
+
+@psych_router.get(
+    '/medical-record',
+    status_code=HTTPStatus.OK,
+    response_model=List[MedicalResponseAll],
+)
+@limiter.limit('4/minute')
+async def get_medical_records(request: Request, db: DBSession, user: CurrentUser):
+    return await psych_service.get_records(db, user)
