@@ -337,3 +337,76 @@ async def test_try_get_psychs_desactive(token_client, user_psych_desactive):
 
     assert response.status_code == status
     assert response.json()['detail'] == 'Nenhum psicólogo encontrado.'
+
+
+@pytest.mark.asyncio
+async def test_create_record(
+    token_psych,
+    user_client,
+    service,
+    schedule_psych,
+    schedule
+):
+    payload = {
+        'id_user': f'{user_client.id}',
+        'id_appoiment': f'{schedule.id}',
+        'description': "Paciente mostrou uma melhora."
+    }
+
+    response = await token_psych.post('/api/v1/medical-record', json=payload)
+
+    status = 201
+
+    print(response.json())
+
+    assert response.status_code == status
+    assert response.json()['id'] == 1
+    assert 'format_date_br' in response.json()
+
+
+@pytest.mark.asyncio
+async def test_forbiden_create_record(token_client):
+    payload = {
+        'id_user': 1,
+        'id_appoiment': 5,
+        'description': "Paciente mostrou uma melhora."
+    }
+
+    response = await token_client.post('/api/v1/medical-record', json=payload)
+
+    status = 403
+
+    assert response.status_code == status
+    assert response.json()['detail'] == 'O usuário não tem permissão para realizar essa ação.'  #noqa
+
+
+@pytest.mark.asyncio
+async def test_user_not_exists_in_medical_record(token_psych):
+    payload = {
+        'id_user': 50,
+        'id_appoiment': 5,
+        'description': "Paciente mostrou uma melhora."
+    }
+
+    response = await token_psych.post('/api/v1/medical-record', json=payload)
+
+    status = 404
+
+    assert response.status_code == status
+    assert response.json()['detail'] == 'Usuário não encontrado, verifique se o id digitado está correto.'  #noqa
+
+
+@pytest.mark.asyncio
+async def test_appoiment_not_found_in_medical_record(token_psych, user_client):
+    payload = {
+        'id_user': f'{user_client.id}',
+        'id_appoiment': 5,
+        'description': "Paciente mostrou uma melhora."
+    }
+
+    response = await token_psych.post('/api/v1/medical-record', json=payload)
+
+    status = 409
+
+    assert response.status_code == status
+    assert response.json()['detail'] == 'Você ainda não teve uma consulta com esse usuário.'  #noqa
