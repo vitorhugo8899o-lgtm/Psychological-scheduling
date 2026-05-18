@@ -203,6 +203,30 @@ async def user_psych_payment(db_session):
 
 
 @pytest_asyncio.fixture(scope='function')
+async def user_psych_desactive(db_session):
+    raw_password = 'Senha12@#'
+
+    user = models.User(
+        fullname='Full Name',
+        email='userpsychdesactive@example.com',
+        password=auth_repo.hash_password(raw_password),
+        role='psychologist',
+        is_active=False
+    )
+
+    db_session.add(user)
+    await db_session.commit()
+    await db_session.refresh(user)
+
+    psych = models.Psychologist(user=user, crp='CRP 01/5596')
+
+    db_session.add(psych)
+    await db_session.commit()
+
+    return user
+
+
+@pytest_asyncio.fixture(scope='function')
 async def user_psych_refresh(db_session):
     raw_password = 'Senha12@#'
 

@@ -11,6 +11,7 @@ from app.schemas.psychologist_schema import (
     AvailabilityCacheSchema,
     DeleteAvailabilySchema,
     PsychologistAvaliabiliteCreate,
+    PsychResponse,
     ResponseMetrics,
     ResponseRate,
     SchemaMetrics,
@@ -68,7 +69,7 @@ async def delete_availbily(
     status_code=HTTPStatus.OK,
     response_model=ResponseMetrics,
 )
-@limiter.limit('3/minute')
+@limiter.limit('6/minute')
 async def stats_count_appointmnet(
     request: Request, db: DBSession, user: CurrentUser, date: SchemaMetrics
 ):
@@ -80,6 +81,14 @@ async def stats_count_appointmnet(
     status_code=HTTPStatus.OK,
     response_model=ResponseRate | dict,
 )
-@limiter.limit('3/minute')
+@limiter.limit('6/minute')
 async def stats_rate(request: Request, db: DBSession, user: CurrentUser):
     return await psych_service.get_rate(db, user)
+
+
+@psych_router.get(
+    '/psych', status_code=HTTPStatus.OK, response_model=List[PsychResponse]
+)
+@limiter.limit('6/minute')
+async def get_all_psych(request: Request, db: DBSession, user: CurrentUser):
+    return await psych_service.get_psych(db)

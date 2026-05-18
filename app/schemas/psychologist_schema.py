@@ -195,3 +195,11 @@ class ResponseRate(BaseModel):
 class PsychologistSchema(BaseModel):
     crp: str
     user: UserFullNameSchema
+
+
+class PsychResponse(BaseModel):
+    id: int
+    fullname: str
+
+    class Config:
+        from_attributes = True

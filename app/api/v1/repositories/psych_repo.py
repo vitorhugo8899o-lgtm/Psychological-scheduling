@@ -8,6 +8,7 @@ from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
 from app.models.appointments_models import Appointment
 from app.models.avaliabilites_models import Avaliabilite
 from app.models.psychologist_models import Psychologist
+from app.models.users_models import User
 from app.schemas.psychologist_schema import (
     DeleteAvailabilySchema,
     SchemaMetrics,
@@ -175,3 +176,14 @@ async def get_appoiment_rate(db: DBSession, user: CurrentUser):
     result = await db.execute(stmt)
 
     return result.one()
+
+
+async def get_all_psych(db: DBSession):
+    stmt = select(User).where(
+        User.role == 'psychologist',
+        User.is_active
+    )
+
+    result = await db.execute(stmt)
+
+    return result.scalars().all()

@@ -151,3 +151,12 @@ async def get_rate(db: DBSession, user: CurrentUser):
         cancelation_rate=f'{cancelation_rate}%',
         confirmed_rate=f'{confirmed_rate}%',
     )
+
+
+async def get_psych(db: DBSession):
+    psychs = await psych_repo.get_all_psych(db)
+
+    if not psychs:
+        raise HTTPException(status_code=404, detail='Nenhum psicólogo encontrado.')
+
+    return psychs

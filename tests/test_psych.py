@@ -306,3 +306,34 @@ async def test_psych_has_no_appoimnet_for_metrics(token_psych):
 
     assert response.status_code == status
     assert response.json()['message'] == 'Você não possui nenhum dado de consulta.'
+
+
+@pytest.mark.asyncio
+async def test_get_all_psych(token_client, user_psych):
+    response = await token_client.get('/api/v1/psych')
+
+    status = 200
+
+    assert response.status_code == status
+    assert response.json()[0]['id'] == user_psych.id
+    assert response.json()[0]['fullname'] == user_psych.fullname
+
+
+@pytest.mark.asyncio
+async def test_get_psychs_but_have_no_one(token_client):
+    response = await token_client.get('/api/v1/psych')
+
+    status = 404
+
+    assert response.status_code == status
+    assert response.json()['detail'] == 'Nenhum psicólogo encontrado.'
+
+
+@pytest.mark.asyncio
+async def test_try_get_psychs_desactive(token_client, user_psych_desactive):
+    response = await token_client.get('/api/v1/psych')
+
+    status = 404
+
+    assert response.status_code == status
+    assert response.json()['detail'] == 'Nenhum psicólogo encontrado.'
