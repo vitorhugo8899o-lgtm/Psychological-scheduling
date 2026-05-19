@@ -7,6 +7,7 @@ from app.api.v1.endpoints import (
     psychologist,
     services,
     users,
+    groq
 )
 
 api_router = APIRouter()
@@ -17,3 +18,4 @@ api_router.include_router(psychologist.psych_router, tags=['Psych'])
 api_router.include_router(services.service_route, tags=['Services'])
 api_router.include_router(appointment.appointment_route, tags=['Appointments'])
 api_router.include_router(payment.payment_route, tags=['Payments'])
+api_router.include_router(groq.groq_route, tags=['Groq'])
