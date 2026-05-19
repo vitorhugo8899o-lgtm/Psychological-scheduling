@@ -1,6 +1,6 @@
 from enum import Enum
 
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field, field_validator
 
 
 class UserRole(str, Enum):
@@ -40,3 +40,16 @@ class LoginSuccess(BaseModel):
 class ServiceOption(str, Enum):
     AND = 'and'
     OR = 'or'
+
+
+class MessagePrompt(BaseModel):
+    message: str = Field(min_length=7, max_length=250)
+
+    @field_validator('message')
+    @classmethod
+    def validate_message(cls, v: str) -> str:
+        if len(v.strip()) < 7:
+            raise ValueError(
+                'Digite uma mensagem valída.'
+            )
+        return v
