@@ -48,7 +48,8 @@ class MessagePrompt(BaseModel):
     @field_validator('message')
     @classmethod
     def validate_message(cls, v: str) -> str:
-        if len(v.strip()) < 7:
+        null_caracter = 0
+        if len(v.strip()) == null_caracter:
             raise ValueError(
                 'Digite uma mensagem valída.'
             )
