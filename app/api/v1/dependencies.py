@@ -10,6 +10,26 @@ from app.api.v1.services import auth_service
 from app.db.session import AsyncSessionLocal
 from app.models.users_models import User
 from app.redis.session import redis_client
+from app.core.config import settings
+
+from groq import Groq
+
+from pathlib import Path
+
+
+BASE_DIR = Path(__file__).resolve().parent.parent.parent
+
+CONTEXT_PATH = BASE_DIR / "groq" / "groq_context.md"
+
+client = Groq(api_key=settings.API_KEY_GROQ)
+
+
+try:
+    PROMPT_SYSTEM = CONTEXT_PATH.read_text(encoding="utf-8")
+except FileNotFoundError:
+    print(f"Erro: Arquivo não encontrado no caminho {CONTEXT_PATH}")
+    PROMPT_SYSTEM = "Você é um assistente prestativo."
+
 
 
 async def get_db():
@@ -37,6 +57,19 @@ async def get_current_user(request: Request, db: DBSession) -> User:
     request.state.user = user.id
 
     return user
+
+
+async def completion(client, message: str, context_agent: str):
+    completion = client.chat.completions.create(
+        model="llama-3.1-8b-instant",
+        messages=[
+            {"role": "system", "content": context_agent},
+            {"role": "user", "content": message}
+        ],
+        stream=True
+    )
+    
+    return completion
 
 
 DBSession = Annotated[AsyncSession, Depends(get_db)]

@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     API_KEY_MERCADO_PAGO: str
     TESTING: bool = False
     ENV: str
+    API_KEY_GROQ: str
 
 
 settings = Settings()
