@@ -1,0 +1,265 @@
+{
+    "respostas_predefinidas": {
+        "navegacao": {
+            "como_ver_historico": {
+                "pergunta": [
+                    "como ver histórico",
+                    "ver consultas anteriores",
+                    "histórico de consultas",
+                    "consultas passadas"
+                ],
+                "resposta": "Para ver seu histórico de consultas, clique no botão 'Histórico de Consultas' na tela inicial. Lá você encontrará todas as suas consultas anteriores com detalhes completos."
+            },
+            "como_simular_consulta": {
+                "pergunta": [
+                    "como agendar",
+                    "marcar consulta",
+                    "simular horário",
+                    "ver disponibilidade"
+                ],
+                "resposta": "Na tela inicial, clique em 'Simular Consulta'. Escolha a data e hora desejadas e o sistema mostrará todos os psicólogos disponíveis nesse horário. É simples e rápido!"
+            },
+            "proximas_consultas": {
+                "pergunta": [
+                    "minhas próximas consultas",
+                    "quando é minha consulta",
+                    "próximos agendamentos"
+                ],
+                "resposta": "Suas 3 próximas consultas estão sempre visíveis na tela inicial da aplicação. Role para baixo e você verá os detalhes de cada uma."
+            },
+            "busca_avancada": {
+                "pergunta": [
+                    "busca avançada",
+                    "filtrar serviços",
+                    "tipos de serviço",
+                    "buscar por especialidade"
+                ],
+                "resposta": "Acesse o menu lateral (☰) e clique em 'Busca Avançada de Serviços'. Lá você pode filtrar por tipo de terapia, especialidade do psicólogo, modalidade (presencial/online) e muito mais."
+            },
+            "configuracoes": {
+                "pergunta": [
+                    "configurações",
+                    "alterar dados",
+                    "editar perfil",
+                    "atualizar cadastro"
+                ],
+                "resposta": "Abra o menu lateral (☰) e selecione 'Configurações de Conta'. Ali você pode atualizar suas informações pessoais, alterar senha e gerenciar suas preferências."
+            }
+        },
+        "agendamento": {
+            "como_agendar": {
+                "pergunta": [
+                    "como marcar consulta",
+                    "agendar sessão",
+                    "marcar horário"
+                ],
+                "resposta": "1. Clique em 'Marcar Consulta' no menu lateral (☰) \n2. Escolha data e hora\n3. Selecione o psicólogo disponível\n4. Confirme o agendamento\n5. Escolha se pagará agora ou mais tarde."
+            },
+            "cancelar_consulta": {
+                "pergunta": [
+                    "cancelar consulta",
+                    "desmarcar",
+                    "não posso ir"
+                ],
+                "resposta": "Para cancelar uma consulta, acesse 'Histórico de Consultas', encontre a consulta desejada e clique em 'Cancelar'. Lembre-se: O cancelamento so pode ser feito após 24 horas da confirmação da consulta, após se desejar cancelar estará sujeito a multa conforme política da clínica"
+            },
+            "remarcar_consulta": {
+                "pergunta": [
+                    "remarcar",
+                    "mudar horário",
+                    "trocar data"
+                ],
+                "resposta": "Para remarcar: vá ao 'Histórico de Consultas', selecione a consulta, clique em 'Remarcar' e escolha uma nova data/hora disponível. Fácil e sem burocracia!"
+            },
+            "antecedencia_minima": {
+                "pergunta": [
+                    "quanto tempo antes",
+                    "antecedência",
+                    "avisar com antecedência"
+                ],
+                "resposta": "Recomendamos agendar com pelo menos 24 horas de antecedência. Para cancelamentos, o prazo mínimo é de 24 horas para evitar taxas."
+            }
+        },
+        "pagamento": {
+            "formas_pagamento": {
+                "pergunta": [
+                    "formas de pagamento",
+                    "como pagar",
+                    "aceita cartão",
+                    "pix"
+                ],
+                "resposta": "Aceitamos: Cartão de crédito/débito, PIX, transferência bancária e convênios médicos. O pagamento é processado de forma segura através da plataforma."
+            },
+            "valores": {
+                "pergunta": [
+                    "quanto custa",
+                    "preço",
+                    "valor consulta",
+                    "honorários"
+                ],
+                "resposta": "Os valores variam conforme o profissional e tipo de serviço. Você pode visualizar os valores ao simular uma consulta ou na seção 'Busca Avançada'. Entre em contato para informações sobre pacotes e convênios."
+            },
+            "reembolso": {
+                "pergunta": [
+                    "reembolso",
+                    "devolução",
+                    "estorno"
+                ],
+                "resposta": "Cancelamentos feitos com mais de 24h de antecedência têm reembolso total. O valor é processado em até 7 dias úteis. Para mais detalhes, consulte nossa política de cancelamento."
+            }
+        },
+        "conta": {
+            "alterar_senha": {
+                "pergunta": [
+                    "mudar senha",
+                    "esqueci senha",
+                    "redefinir senha"
+                ],
+                "resposta": "Acesse Menu (☰) > Configurações de Conta > Segurança > Alterar Senha. Se esqueceu sua senha, clique em 'Esqueci minha senha' na tela de login."
+            },
+            "desativar_conta": {
+                "pergunta": [
+                    "excluir conta",
+                    "deletar perfil",
+                    "desativar conta"
+                ],
+                "resposta": "Para desativar sua conta: Menu (☰) > Configurações de Conta > Desativar Conta. Atenção: essa ação não pode ser desfeita e você perderá seu histórico."
+            },
+            "atualizar_dados": {
+                "pergunta": [
+                    "mudar telefone",
+                    "atualizar email",
+                    "trocar endereço"
+                ],
+                "resposta": "Vá em Menu (☰) > Configurações de Conta e edite as informações desejadas. Não esqueça de salvar as alterações!"
+            }
+        },
+        "servicos": {
+            "tipos_terapia": {
+                "pergunta": [
+                    "que tipos de terapia",
+                    "modalidades",
+                    "abordagens"
+                ],
+                "resposta": "Oferecemos diversas abordagens terapêuticas: TCC (Terapia Cognitivo-Comportamental), Psicanálise, Terapia Humanista, EMDR, entre outras. Use a Busca Avançada para filtrar por especialidade."
+            },
+            "online_presencial": {
+                "pergunta": [
+                    "atendimento online",
+                    "presencial",
+                    "teleconsulta",
+                    "videochamada"
+                ],
+                "resposta": "Oferecemos atendimento presencial e online! Ao simular uma consulta, você pode escolher a modalidade preferida. As sessões online são realizadas por videochamada segura."
+            },
+            "primeira_consulta": {
+                "pergunta": [
+                    "primeira vez",
+                    "primeira consulta",
+                    "como funciona"
+                ],
+                "resposta": "Na primeira consulta, o psicólogo fará uma avaliação inicial para entender suas necessidades. É um momento de acolhimento e construção de vínculo. Duração média: 50 minutos."
+            },
+            "duracao_sessao": {
+                "pergunta": [
+                    "quanto tempo dura",
+                    "duração",
+                    "tempo de consulta"
+                ],
+                "resposta": "As sessões têm duração padrão de 50 minutos, mas alguns profissionais oferecem sessões estendidas. Verifique na descrição do psicólogo ao agendar."
+            }
+        },
+        "politicas": {
+            "privacidade": {
+                "pergunta": [
+                    "privacidade",
+                    "dados seguros",
+                    "confidencialidade",
+                    "lgpd"
+                ],
+                "resposta": "Sua privacidade é nossa prioridade! Todos os dados são criptografados e protegidos conforme a LGPD. O sigilo profissional é garantido em todas as consultas."
+            },
+            "cancelamento_24h": {
+                "pergunta": [
+                    "política de cancelamento",
+                    "prazo cancelamento",
+                    "taxa cancelamento"
+                ],
+                "resposta": "Cancelamentos com mais de 24h de antecedência: sem taxa. Menos de 24h: sujeito a cobrança de 50% do valor. Não comparecimento: cobrança integral."
+            },
+            "convenios": {
+                "pergunta": [
+                    "convênio",
+                    "plano de saúde",
+                    "aceita plano"
+                ],
+                "resposta": "Trabalhamos com diversos convênios! Consulte a lista completa na Busca Avançada ou entre em contato conosco para verificar se seu plano é aceito."
+            }
+        },
+        "suporte": {
+            "contato_emergencia": {
+                "pergunta": [
+                    "emergência",
+                    "urgente",
+                    "crise",
+                    "preciso de ajuda agora"
+                ],
+                "resposta": "⚠️ Se você está em crise ou emergência, ligue:\n• CVV: 188 (24h)\n• SAMU: 192\n• Emergência: 190\n\nNossa equipe também está disponível para atendimento de urgência pelo telefone: (XX) XXXX-XXXX"
+            },
+            "horario_atendimento": {
+                "pergunta": [
+                    "horário de funcionamento",
+                    "quando abre",
+                    "horário",
+                    "até que horas vocês funcionam?"
+                ],
+                "resposta": "Nossa clínica funciona:\n🕐 Segunda a Sexta: 24h\n🕐 Sábados: 8h às 14h\n⚠️ Domingos e feriados: fechado\nO agendamento online está disponível 24h!"
+            },
+            "falar_com_atendente": {
+                "pergunta": [
+                    "falar com humano",
+                    "atendente",
+                    "pessoa",
+                    "não é isso que quero"
+                ],
+                "resposta": "Entendo! Para falar diretamente com nossa equipe:\n📞 Telefonemock: (XX) XXXX-XXXX\n📧 E-mail: contatomock@equilibriomenta.com.br\n💬 WhatsAppmock: (XX) XXXXX-XXXX\nEstamos aqui para ajudar!"
+            }
+        },
+        "geral": {
+            "boas_vindas": {
+                "pergunta": [
+                    "oi",
+                    "olá",
+                    "ola",
+                    "bom dia",
+                    "boa tarde",
+                    "boa noite"
+                ],
+                "resposta": "Olá! Seja bem-vindo à Clínica Equilíbrio Mental! 😊\n\nComo posso ajudar você hoje?\n\n• Agendar uma consulta\n• Ver seu histórico\n• Tirar dúvidas sobre nossos serviços\n• Falar sobre pagamentos\n\nEstou aqui para o que precisar!"
+            },
+            "agradecimento": {
+                "pergunta": [
+                    "obrigado",
+                    "obrigada",
+                    "valeu",
+                    "agradeço"
+                ],
+                "resposta": "Por nada! Fico feliz em ajudar! 😊 Se precisar de mais alguma coisa, é só chamar. Cuide-se! 💙"
+            },
+            "despedida": {
+                "pergunta": [
+                    "tchau",
+                    "até logo",
+                    "bye",
+                    "adeus"
+                ],
+                "resposta": "Até logo! Tenha um ótimo dia e lembre-se: estamos aqui sempre que precisar. 💙✨"
+            }
+        }
+    },
+    "configuracao": {
+        "threshold_similaridade": 0.7,
+        "fallback_para_ia": true,
+        "log_perguntas_nao_respondidas": true
+    }
+}
