@@ -3,11 +3,11 @@ from fastapi import APIRouter
 from app.api.v1.endpoints import (
     administrator,
     appointment,
+    groq,
     payment,
     psychologist,
     services,
     users,
-    groq
 )
 
 api_router = APIRouter()

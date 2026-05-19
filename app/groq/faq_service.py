@@ -1,7 +1,7 @@
-from rapidfuzz import fuzz
 import json
 from pathlib import Path
 
+from rapidfuzz import fuzz
 
 BASE_DIR = Path(__file__).parent
 faq_path = BASE_DIR / 'faq.json'
@@ -61,4 +61,3 @@ def search_predefined_answer(user_message: str):
         'found': False,
         'response': None
     }
-

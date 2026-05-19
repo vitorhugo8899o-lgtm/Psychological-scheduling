@@ -1,21 +1,18 @@
+from pathlib import Path
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordBearer
+from groq import Groq
 from redis import asyncio as aioredis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.repositories import user_repo
 from app.api.v1.services import auth_service
+from app.core.config import settings
 from app.db.session import AsyncSessionLocal
 from app.models.users_models import User
 from app.redis.session import redis_client
-from app.core.config import settings
-
-from groq import Groq
-
-from pathlib import Path
-
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -29,7 +26,6 @@ try:
 except FileNotFoundError:
     print(f"Erro: Arquivo não encontrado no caminho {CONTEXT_PATH}")
     PROMPT_SYSTEM = "Você é um assistente prestativo."
-
 
 
 async def get_db():
@@ -68,7 +64,7 @@ async def completion(client, message: str, context_agent: str):
         ],
         stream=True
     )
-    
+
     return completion
 
 

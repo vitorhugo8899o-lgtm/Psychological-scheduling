@@ -59,7 +59,8 @@
                 "pergunta": [
                     "cancelar consulta",
                     "desmarcar",
-                    "não posso ir"
+                    "não posso ir",
+                    "Como faço para cancelar minha consulta?"
                 ],
                 "resposta": "Para cancelar uma consulta, acesse 'Histórico de Consultas', encontre a consulta desejada e clique em 'Cancelar'. Lembre-se: O cancelamento so pode ser feito após 24 horas da confirmação da consulta, após se desejar cancelar estará sujeito a multa conforme política da clínica"
             },
@@ -137,6 +138,7 @@
         "servicos": {
             "tipos_terapia": {
                 "pergunta": [
+                    "Quais serviços oferecidos?",
                     "que tipos de terapia",
                     "modalidades",
                     "abordagens"
