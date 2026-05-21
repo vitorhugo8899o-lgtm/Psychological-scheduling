@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     TESTING: bool = False
     ENV: str
     API_KEY_GROQ: str
+    LINK_FRONTEND: str
 
 
 settings = Settings()

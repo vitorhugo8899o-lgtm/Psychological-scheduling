@@ -22,11 +22,19 @@ def create_preference(data: PaymentePreference, id_appointment: int):
                 'currency_id': 'BRL',
             }
         ],
+        'back_urls': {
+            'success': 'https://stuffed-subsidize-remote.ngrok-free.dev/payment-confirm',
+            'failure': 'https://stuffed-subsidize-remote.ngrok-free.dev/payment-confirm',
+            'pending': 'https://stuffed-subsidize-remote.ngrok-free.dev/payment-confirm',
+        },
+        'auto_return': 'approved',
         'external_reference': f'Appointment:{id_appointment}',
         'notification_url': 'https://stuffed-subsidize-remote.ngrok-free.dev/api/v1/payments/webhook',
     }
 
     preference = sdk.preference().create(preference_data)
+
+    print('RESPOSTA DO MERCADO PAGO:', preference)
     return preference['response']['init_point']
 
 

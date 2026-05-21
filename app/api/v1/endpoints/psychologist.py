@@ -6,7 +6,7 @@ from fastapi import APIRouter, Request
 from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
 from app.api.v1.services import appoint_service, psych_service
 from app.redis.limiter import limiter
-from app.schemas.appointment_schema import AppointmentUserResponse
+from app.schemas.appointment_schema import AppoimentsPsychReponse
 from app.schemas.psychologist_schema import (
     AvailabilityCacheSchema,
     DeleteAvailabilySchema,
@@ -43,7 +43,7 @@ async def create_avaliabilite(
 @psych_router.get(
     '/psych/me/appointments',
     status_code=HTTPStatus.OK,
-    response_model=List[AppointmentUserResponse],
+    response_model=List[AppoimentsPsychReponse],
 )
 @limiter.limit('3/minute')
 async def get_appiontment(request: Request, db: DBSession, user: CurrentUser):

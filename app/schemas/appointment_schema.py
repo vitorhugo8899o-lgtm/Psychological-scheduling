@@ -6,6 +6,7 @@ from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validat
 from app.schemas.custom_schema import AppointmentStatus
 from app.schemas.psychologist_schema import PsychologistSchema
 from app.schemas.service_schema import ServiceAppointment
+from app.schemas.user_schema import UserPublic
 
 
 class AppointmentCreate(BaseModel):
@@ -184,3 +185,39 @@ class ReschedulingAppointment(BaseModel):
 
 class CancelAppointment(BaseModel):
     id_appointment: int = Field(ge=1)
+
+
+class AppoimentsPsychReponse(BaseModel):
+    id: int
+    date_time: datetime
+    status: str
+    service: ServiceAppointment
+    client: UserPublic
+
+    @computed_field
+    @property
+    def datetime_format(self) -> str:
+        dt = self.date_time
+
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+
+        consult = dt.astimezone(ZoneInfo('America/Sao_Paulo')).replace(
+            second=0, microsecond=0
+        )
+        return consult.strftime('%d/%m/%Y %H:%M')
+
+    @computed_field
+    @property
+    def datetime_format_user(self) -> str:
+        dt = self.client.created_at
+
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+
+        consult = dt.astimezone(ZoneInfo('America/Sao_Paulo')).replace(
+            second=0, microsecond=0
+        )
+        return consult.strftime('%d/%m/%Y %H:%M')
+
+    model_config = ConfigDict(from_attributes=True)
