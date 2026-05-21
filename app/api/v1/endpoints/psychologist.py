@@ -65,8 +65,8 @@ async def next_appoiments(request: Request, db: DBSession, user: CurrentUser):
     status_code=HTTPStatus.OK,
     response_model=List[AvailabilityCacheSchema],
 )
-@limiter.limit('3/minute')
-async def get_schedule(request: Request, db: DBSession, r: rediscon, user: CurrentUser):
+@limiter.limit('5/minute')
+async def get_work_hours(request: Request, db: DBSession, r: rediscon, user: CurrentUser):
     return await psych_service.get_avaliabilites(db, r, user)
 
 

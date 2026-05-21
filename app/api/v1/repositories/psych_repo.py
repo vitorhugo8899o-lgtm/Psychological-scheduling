@@ -1,7 +1,7 @@
 from datetime import UTC, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import and_, delete, desc, exists, func, select
+from sqlalchemy import and_, delete, desc, exists, func, select, case
 from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.orm import joinedload
 
@@ -90,7 +90,10 @@ async def cache_avaliabilites(db: DBSession, r: rediscon, psych_id: int):
     stmt = (
         select(Avaliabilite)
         .where(Avaliabilite.id_psychologist == psych_id)
-        .order_by(Avaliabilite.day_of_the_week)
+        .order_by(
+            Avaliabilite.day_of_the_week,
+            Avaliabilite.start_time
+        )
     )
 
     result = await db.execute(stmt)
