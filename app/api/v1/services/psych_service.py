@@ -264,3 +264,18 @@ async def delete_medical_redord(db: DBSession, user: CurrentUser, record_id: int
 
     if not result:
         raise HTTPException(status_code=404, detail='Prontuário não encontrado.')
+
+
+async def next_appoiments(db: DBSession, user: CurrentUser):
+    if not user.psychologist_profile:
+        raise HTTPException(
+            status_code=403,
+            detail="O usuário não tem permissõa para realizar essa ação"
+        )
+
+    appoiments = await psych_repo.get_next_appoiments(db, user)
+
+    if not appoiments:
+        return {'message': 'Nenhuma consulta confirmada.'}
+
+    return appoiments

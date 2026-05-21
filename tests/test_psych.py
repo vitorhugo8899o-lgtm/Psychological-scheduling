@@ -506,3 +506,39 @@ async def test_user_try_delete_record(token_client):
         response.json()['detail']
         == 'O usuário não tem permissão para realizar essa ação.'
     )  # noqa
+
+
+@pytest.mark.asyncio
+async def test_get_psych_next_appoiments(   #noqa
+    db_session, token_psych, schedule, service, availability, user_client,
+):
+    schedule.status = 'confirmed'
+    await db_session.commit()
+
+    response = await token_psych.get('/api/v1/psych/me/next-appoiments')
+
+    status = 200
+
+    assert response.status_code == status
+    assert isinstance(response.json(), list)
+    assert response.json()[0]['client'] is not None
+
+
+@pytest.mark.asyncio
+async def test_no_confirmed_appoiments(token_psych):
+    response = await token_psych.get('/api/v1/psych/me/next-appoiments')
+
+    status = 200
+
+    assert response.status_code == status
+    assert response.json()['message'] == 'Nenhuma consulta confirmada.'
+
+
+@pytest.mark.asyncio
+async def test_forbiden_get_next_psych_appoiments(token_client):
+    response = await token_client.get('/api/v1/psych/me/next-appoiments')
+
+    status = 403
+
+    assert response.status_code == status
+    assert response.json()['detail'] == 'O usuário não tem permissõa para realizar essa ação'  #noqa

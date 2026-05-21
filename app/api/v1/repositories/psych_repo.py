@@ -1,4 +1,4 @@
-from datetime import datetime, time, timedelta
+from datetime import UTC, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
 from sqlalchemy import and_, delete, desc, exists, func, select
@@ -11,6 +11,7 @@ from app.models.avaliabilites_models import Avaliabilite
 from app.models.medical_record_models import MedicalRecord
 from app.models.psychologist_models import Psychologist
 from app.models.users_models import User
+from app.schemas.custom_schema import AppointmentStatus
 from app.schemas.psychologist_schema import (
     DeleteAvailabilySchema,
     MedicalRecordCreate,
@@ -270,3 +271,20 @@ async def delete_record(db: DBSession, user: CurrentUser, record_id: int):
     except Exception as e:
         await db.rollback()
         raise f'Um erro inesperado ocorreu: {e}'
+
+
+async def get_next_appoiments(db: DBSession, user: CurrentUser):
+    stmt = (
+        select(Appointment)
+        .options(joinedload(Appointment.client), joinedload(Appointment.service))
+        .where(
+            Appointment.id_psychologist == user.psychologist_profile.id,
+            Appointment.status == AppointmentStatus.confirmed,
+            Appointment.date_time >= datetime.now(UTC),
+        )
+        .order_by(Appointment.date_time)
+    )
+
+    result = await db.execute(stmt)
+
+    return result.scalars().all()

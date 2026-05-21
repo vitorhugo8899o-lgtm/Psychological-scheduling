@@ -51,6 +51,16 @@ async def get_appiontment(request: Request, db: DBSession, user: CurrentUser):
 
 
 @psych_router.get(
+    '/psych/me/next-appoiments',
+    status_code=HTTPStatus.OK,
+    response_model=List[AppoimentsPsychReponse] | dict,
+)
+@limiter.limit('3/minute')
+async def next_appoiments(request: Request, db: DBSession, user: CurrentUser):
+    return await psych_service.next_appoiments(db, user)
+
+
+@psych_router.get(
     '/psych/me/availability',
     status_code=HTTPStatus.OK,
     response_model=List[AvailabilityCacheSchema],
