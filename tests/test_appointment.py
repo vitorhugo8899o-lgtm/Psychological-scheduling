@@ -233,6 +233,7 @@ async def test_get_appointment_psych(
     assert isinstance(response, list)
     assert len(response) == appointments
     assert response[0]['status'] == 'pending'
+    assert response[0]['client']['fullname'] is not None
 
 
 @pytest.mark.asyncio

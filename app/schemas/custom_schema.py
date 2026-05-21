@@ -43,14 +43,12 @@ class ServiceOption(str, Enum):
 
 
 class MessagePrompt(BaseModel):
-    message: str = Field(min_length=7, max_length=250)
+    message: str = Field(max_length=250)
 
     @field_validator('message')
     @classmethod
     def validate_message(cls, v: str) -> str:
         null_caracter = 0
         if len(v.strip()) == null_caracter:
-            raise ValueError(
-                'Digite uma mensagem valída.'
-            )
+            raise ValueError('Digite uma mensagem valída.')
         return v

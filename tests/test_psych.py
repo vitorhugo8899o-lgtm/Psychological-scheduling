@@ -469,7 +469,7 @@ async def test_delete_medical_record(
     payload = {'record_id': f'{Record.id}'}
 
     response = await token_psych.request(
-        "DELETE", '/api/v1/medical-record', json=payload
+        'DELETE', '/api/v1/medical-record', json=payload
     )
 
     status = 204
@@ -482,7 +482,7 @@ async def test_record_not_exists(token_psych):
     payload = {'record_id': 20}
 
     response = await token_psych.request(
-        "DELETE", '/api/v1/medical-record', json=payload
+        'DELETE', '/api/v1/medical-record', json=payload
     )
 
     status = 404
@@ -496,7 +496,7 @@ async def test_user_try_delete_record(token_client):
     payload = {'record_id': 20}
 
     response = await token_client.request(
-        "DELETE", '/api/v1/medical-record', json=payload
+        'DELETE', '/api/v1/medical-record', json=payload
     )
 
     status = 403
