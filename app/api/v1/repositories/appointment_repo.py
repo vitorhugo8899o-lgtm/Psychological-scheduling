@@ -100,8 +100,9 @@ async def get_all_psych_appointment(
 ) -> List[Appointment] | None:
     stmt = (
         select(Appointment)
+        .options(joinedload(Appointment.client), joinedload(Appointment.service))
         .where(
-            Appointment.psychologist == user.psychologist_profile,
+            Appointment.id_psychologist == user.psychologist_profile.id,
         )
         .order_by(
             case(
@@ -209,3 +210,7 @@ async def update_cancel_appointment(db: DBSession, appoinment: Appointment):
     await db.refresh(appoinment)
 
     return appoinment
+
+
+async def get_next_schedule(db: DBSession, user: CurrentUser):
+    pass

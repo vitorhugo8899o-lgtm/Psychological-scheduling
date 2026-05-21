@@ -31,17 +31,13 @@ def search_predefined_answer(user_message: str):
     best_response = None
 
     for category in FAQ.values():
-
         for item in category.values():
-
             questions = item['pergunta']
             response = item['resposta']
 
             for question in questions:
-
                 similarity = calculate_similarity(
-                    user_message,
-                    normalize_text(question)
+                    user_message, normalize_text(question)
                 )
 
                 if similarity > best_similarity:
@@ -54,10 +50,7 @@ def search_predefined_answer(user_message: str):
             'found': True,
             'similarity': best_similarity,
             'matched_question': best_match,
-            'response': best_response
+            'response': best_response,
         }
 
-    return {
-        'found': False,
-        'response': None
-    }
+    return {'found': False, 'response': None}

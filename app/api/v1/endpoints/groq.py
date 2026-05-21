@@ -13,9 +13,6 @@ groq_route = APIRouter()
 @groq_route.post('/chat-user', status_code=HTTPStatus.OK)
 @limiter.limit('3/minute')
 async def chat_user(
-    request: Request,
-    user: CurrentUser,
-    user_message: MessagePrompt,
-    r: rediscon
+    request: Request, user: CurrentUser, user_message: MessagePrompt, r: rediscon
 ):
     return await send_message(client, user_message.message, PROMPT_SYSTEM, r, user)

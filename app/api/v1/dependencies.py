@@ -16,16 +16,16 @@ from app.redis.session import redis_client
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-CONTEXT_PATH = BASE_DIR / "groq" / "groq_context.md"
+CONTEXT_PATH = BASE_DIR / 'groq' / 'groq_context.md'
 
 client = Groq(api_key=settings.API_KEY_GROQ)
 
 
 try:
-    PROMPT_SYSTEM = CONTEXT_PATH.read_text(encoding="utf-8")
+    PROMPT_SYSTEM = CONTEXT_PATH.read_text(encoding='utf-8')
 except FileNotFoundError:
-    print(f"Erro: Arquivo não encontrado no caminho {CONTEXT_PATH}")
-    PROMPT_SYSTEM = "Você é um assistente prestativo."
+    print(f'Erro: Arquivo não encontrado no caminho {CONTEXT_PATH}')
+    PROMPT_SYSTEM = 'Você é um assistente prestativo.'
 
 
 async def get_db():
@@ -57,12 +57,12 @@ async def get_current_user(request: Request, db: DBSession) -> User:
 
 async def completion(client, message: str, context_agent: str):
     completion = client.chat.completions.create(
-        model="llama-3.1-8b-instant",
+        model='llama-3.1-8b-instant',
         messages=[
-            {"role": "system", "content": context_agent},
-            {"role": "user", "content": message}
+            {'role': 'system', 'content': context_agent},
+            {'role': 'user', 'content': message},
         ],
-        stream=True
+        stream=True,
     )
 
     return completion
