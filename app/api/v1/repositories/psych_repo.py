@@ -1,7 +1,7 @@
 from datetime import UTC, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import and_, delete, desc, exists, func, select, case
+from sqlalchemy import and_, delete, desc, exists, func, select
 from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.orm import joinedload
 
@@ -15,7 +15,6 @@ from app.schemas.custom_schema import AppointmentStatus
 from app.schemas.psychologist_schema import (
     DeleteAvailabilySchema,
     MedicalRecordCreate,
-    SchemaMetrics,
     availability_list_adapter,
 )
 
@@ -145,14 +144,17 @@ async def delete_availbilty(
         raise f'Um erro inesperado ocorreu: {e}'
 
 
-async def get_count_appoinment(db: DBSession, user: CurrentUser, date: SchemaMetrics):
+async def get_count_appoinment(db: DBSession, user: CurrentUser):
+    date_end = datetime.today()
+    date_start = date_end - timedelta(days=30)
+
     stmt = (
         select(func.count())
         .select_from(Appointment)
         .where(
             Appointment.id_psychologist == user.psychologist_profile.id,
-            Appointment.created_at >= date.start_date,
-            Appointment.created_at < date.end_date,
+            Appointment.date_time >= date_start,
+            Appointment.date_time < date_end,
         )
     )
 

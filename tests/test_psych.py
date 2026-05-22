@@ -1,3 +1,5 @@
+from datetime import datetime, timezone
+
 import pytest
 
 
@@ -215,11 +217,12 @@ async def test_trying_to_delete_an_availability_without_usin_psych(token_client)
 
 
 @pytest.mark.asyncio
-async def test_get_appooinment_in_time_period(token_psych, schedule_psych):
-    payload = {'start_date': '2026-05-11', 'end_date': '2026-05-30'}
+async def test_get_appooinment_in_time_period(token_psych, db_session, schedule_psych):
+    schedule_psych.date_time = datetime(2026, 5, 5, 12, 30, tzinfo=timezone.utc)
+    await db_session.commit()
 
-    response = await token_psych.post(
-        '/api/v1/psych/me/stats/appoinment-count', json=payload
+    response = await token_psych.get(
+        '/api/v1/psych/me/stats/appoinment-count'
     )
 
     status = 200
@@ -228,16 +231,14 @@ async def test_get_appooinment_in_time_period(token_psych, schedule_psych):
     assert response.json()['total'] == 1
     assert (
         response.json()['message']
-        == 'Total de consultas realizadas entre 2026-05-11 a 2026-05-30'
+        == 'Total de consultas encontradas no período de 30 dias'
     )  # noqa
 
 
 @pytest.mark.asyncio
 async def test_get_count_appoinment_but_no_one(token_psych):
-    payload = {'start_date': '2026-05-11', 'end_date': '2026-05-30'}
-
-    response = await token_psych.post(
-        '/api/v1/psych/me/stats/appoinment-count', json=payload
+    response = await token_psych.get(
+        '/api/v1/psych/me/stats/appoinment-count'
     )
 
     status = 200
@@ -246,16 +247,14 @@ async def test_get_count_appoinment_but_no_one(token_psych):
     assert response.json()['total'] == 0
     assert (
         response.json()['message']
-        == 'Nenhum dado encontrado no período de 2026-05-11 a 2026-05-30'
+        == 'Nenhum dado encontrado no período de 30 dias'
     )  # noqa
 
 
 @pytest.mark.asyncio
 async def test_user_try_get_metrics_appoinment(token_client):
-    payload = {'start_date': '2026-05-11', 'end_date': '2026-05-30'}
-
-    response = await token_client.post(
-        '/api/v1/psych/me/stats/appoinment-count', json=payload
+    response = await token_client.get(
+        '/api/v1/psych/me/stats/appoinment-count',
     )
 
     status = 403
