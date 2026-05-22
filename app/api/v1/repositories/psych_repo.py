@@ -15,7 +15,6 @@ from app.schemas.custom_schema import AppointmentStatus
 from app.schemas.psychologist_schema import (
     DeleteAvailabilySchema,
     MedicalRecordCreate,
-    SchemaMetrics,
     availability_list_adapter,
 )
 
@@ -90,7 +89,10 @@ async def cache_avaliabilites(db: DBSession, r: rediscon, psych_id: int):
     stmt = (
         select(Avaliabilite)
         .where(Avaliabilite.id_psychologist == psych_id)
-        .order_by(Avaliabilite.day_of_the_week)
+        .order_by(
+            Avaliabilite.day_of_the_week,
+            Avaliabilite.start_time
+        )
     )
 
     result = await db.execute(stmt)
@@ -142,14 +144,17 @@ async def delete_availbilty(
         raise f'Um erro inesperado ocorreu: {e}'
 
 
-async def get_count_appoinment(db: DBSession, user: CurrentUser, date: SchemaMetrics):
+async def get_count_appoinment(db: DBSession, user: CurrentUser):
+    date_end = datetime.today()
+    date_start = date_end - timedelta(days=30)
+
     stmt = (
         select(func.count())
         .select_from(Appointment)
         .where(
             Appointment.id_psychologist == user.psychologist_profile.id,
-            Appointment.created_at >= date.start_date,
-            Appointment.created_at < date.end_date,
+            Appointment.date_time >= date_start,
+            Appointment.date_time < date_end,
         )
     )
 

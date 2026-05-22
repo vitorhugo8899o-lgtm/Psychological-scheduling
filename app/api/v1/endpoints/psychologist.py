@@ -19,7 +19,6 @@ from app.schemas.psychologist_schema import (
     RequestMedicalRecord,
     ResponseMetrics,
     ResponseRate,
-    SchemaMetrics,
 )
 
 psych_router = APIRouter()
@@ -65,8 +64,13 @@ async def next_appoiments(request: Request, db: DBSession, user: CurrentUser):
     status_code=HTTPStatus.OK,
     response_model=List[AvailabilityCacheSchema],
 )
-@limiter.limit('3/minute')
-async def get_schedule(request: Request, db: DBSession, r: rediscon, user: CurrentUser):
+@limiter.limit('5/minute')
+async def get_work_hours(
+    request: Request,
+    db: DBSession,
+    r: rediscon,
+    user: CurrentUser
+):
     return await psych_service.get_avaliabilites(db, r, user)
 
 
@@ -79,16 +83,16 @@ async def delete_availbily(
     return await psych_service.delete_availbility_psych(db, user, availability)
 
 
-@psych_router.post(
+@psych_router.get(
     '/psych/me/stats/appoinment-count',
     status_code=HTTPStatus.OK,
     response_model=ResponseMetrics,
 )
 @limiter.limit('6/minute')
 async def stats_count_appointmnet(
-    request: Request, db: DBSession, user: CurrentUser, date: SchemaMetrics
+    request: Request, db: DBSession, user: CurrentUser
 ):
-    return await psych_service.get_appoinment_count(db, user, date)
+    return await psych_service.get_appoinment_count(db, user)
 
 
 @psych_router.get(

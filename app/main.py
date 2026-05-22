@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse, JSONResponse
+from fastapi.responses import JSONResponse
 from slowapi.errors import RateLimitExceeded
 from sqlalchemy import text
 
@@ -39,10 +39,9 @@ app.include_router(api_router, prefix='/api/v1')
 
 
 origins = [
-    'http://127.0.0.1:5500',
-    'http://localhost:5500',
-    'http://127.0.0.1:5173',
-    'http://localhost:5173',
+    'frontend-psychological-scheduling.vercel.app',
+    'frontend-psychological-git-3268ea-vitor-hugos-projects-411fbd87.vercel.app',
+    'frontend-psychological-scheduling-iz0cwtiu3.vercel.app',
 ]
 
 app.add_middleware(
@@ -59,8 +58,3 @@ async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
     return JSONResponse(
         status_code=429, content={'detail': 'Você atingiu o limite de requisições'}
     )
-
-
-@app.get('/')
-async def home():
-    return FileResponse('index.html')

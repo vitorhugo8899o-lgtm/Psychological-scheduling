@@ -10,7 +10,6 @@ from app.schemas.psychologist_schema import (
     MedicalResponseAll,
     PsychologistAvaliabiliteCreate,
     ResponseRate,
-    SchemaMetrics,
 )
 
 
@@ -105,24 +104,24 @@ async def delete_availbility_psych(
     return result
 
 
-async def get_appoinment_count(db: DBSession, user: CurrentUser, date: SchemaMetrics):
+async def get_appoinment_count(db: DBSession, user: CurrentUser):
     if not user.psychologist_profile:
         raise HTTPException(
             status_code=403,
             detail='O usuário não tem permissõa para realizar essa ação.',
         )
 
-    metrics = await psych_repo.get_count_appoinment(db, user, date)
+    metrics = await psych_repo.get_count_appoinment(db, user)
 
     if not metrics:
         return {
             'total': 0,
-            'message': f'Nenhum dado encontrado no período de {date.start_date} a {date.end_date}',  # noqa
+            'message': f'Nenhum dado encontrado no período de 30 dias',  # noqa
         }
 
     return {
         'total': f'{metrics}',
-        'message': f'Total de consultas realizadas entre {date.start_date} a {date.end_date}',  # noqa
+        'message': f'Total de consultas encontradas no período de 30 dias',  # noqa
     }
 
 
