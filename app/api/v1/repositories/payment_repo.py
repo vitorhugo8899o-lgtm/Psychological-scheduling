@@ -23,9 +23,9 @@ def create_preference(data: PaymentePreference, id_appointment: int):
             }
         ],
         'back_urls': {
-            'success': 'https://stuffed-subsidize-remote.ngrok-free.dev/payment-confirm',
-            'failure': 'https://stuffed-subsidize-remote.ngrok-free.dev/payment-confirm',
-            'pending': 'https://stuffed-subsidize-remote.ngrok-free.dev/payment-confirm',
+            'success': 'https://frontend-psychological-scheduling-iz0cwtiu3.vercel.app/payment-confirm',
+            'failure': 'https://frontend-psychological-scheduling-iz0cwtiu3.vercel.app/',
+            'pending': 'https://frontend-psychological-scheduling-iz0cwtiu3.vercel.app/',
         },
         'auto_return': 'approved',
         'external_reference': f'Appointment:{id_appointment}',

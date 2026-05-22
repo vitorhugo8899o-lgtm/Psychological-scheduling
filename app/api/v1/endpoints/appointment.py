@@ -37,7 +37,7 @@ async def schedule_an_appointment(
     status_code=HTTPStatus.OK,
     response_model=List[PsychSearchResponse],
 )
-@limiter.limit('3/minute')
+@limiter.limit('6/minute')
 async def get_simulation_appointment(
     request: Request,
     db: DBSession,
@@ -52,7 +52,7 @@ async def get_simulation_appointment(
     status_code=HTTPStatus.OK,
     response_model=AppointmentResponse,
 )
-@limiter.limit('3/hour')
+@limiter.limit('6/hour')
 async def rescheduling(
     request: Request,
     user: CurrentUser,
@@ -67,7 +67,7 @@ async def rescheduling(
     status_code=HTTPStatus.OK,
     response_model=AppointmentResponse,
 )
-@limiter.limit('3/minute')
+@limiter.limit('6/minute')
 async def cancel_appointment(
     request: Request, db: DBSession, user: CurrentUser, appointmnet: CancelAppointment
 ):

@@ -1,0 +1,14 @@
+.git
+.gitignore
+__pycache__/
+*.pyc
+.env
+.env.*
+Dockerfile
+Docker-compose.yml
+tests/
+README.md
+*.log
+.coverage
+htmlcov
+index.html 
