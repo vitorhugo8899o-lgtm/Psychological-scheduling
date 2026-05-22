@@ -39,10 +39,10 @@ app.include_router(api_router, prefix='/api/v1')
 
 
 origins = [
-    'https://frontend-psychological-scheduling-o21c5ujfl.vercel.app/',
-    'https://frontend-psychological-scheduling.vercel.app/',
-    'https://frontend-psychological-scheduling-o21c5ujfl.vercel.app/',
-    'https://frontend-psychological-scheduling-vitor-hugos-projects-411fbd87.vercel.app/'
+    'https://frontend-psychological-scheduling-o21c5ujfl.vercel.app',
+    'https://frontend-psychological-scheduling.vercel.app',
+    'https://frontend-psychological-scheduling-o21c5ujfl.vercel.app',
+    'https://frontend-psychological-scheduling-vitor-hugos-projects-411fbd87.vercel.app'
 ]
 
 app.add_middleware(
