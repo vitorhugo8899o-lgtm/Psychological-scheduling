@@ -38,7 +38,14 @@ app = FastAPI(lifespan=lifespan)
 app.include_router(api_router, prefix='/api/v1')
 
 
-origins = [
+
+origins_test = [
+    'http://localhost:5173',
+    'http://127.0.0.1:5173'
+]
+
+
+origins_production = [
     'https://frontend-psychological-scheduling-o21c5ujfl.vercel.app',
     'https://frontend-psychological-scheduling.vercel.app',
     'https://frontend-psychological-scheduling-o21c5ujfl.vercel.app',
@@ -47,7 +54,7 @@ origins = [
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=origins_production,
     allow_credentials=True,
     allow_methods=['*'],
     allow_headers=['*'],
