@@ -85,6 +85,11 @@ class PsychologistAvaliabiliteBlock(BaseModel):
     @field_validator('days_of_the_week')
     @classmethod
     def validate_days_range(cls, values: List[int]) -> List[int]:
+        if len(values) == 0:
+            raise ValueError(
+                'Selecione pelo menos 1 dia da semana'
+            )
+        
         for day in values:
             monday = 0
             sunday = 6
