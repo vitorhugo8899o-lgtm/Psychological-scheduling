@@ -23,9 +23,9 @@ def create_preference(data: PaymentePreference, id_appointment: int):
             }
         ],
         'back_urls': {
-            'success': 'https://frontend-psychological-scheduling-iz0cwtiu3.vercel.app/payment-confirm',
-            'failure': 'https://frontend-psychological-scheduling-iz0cwtiu3.vercel.app/',
-            'pending': 'https://frontend-psychological-scheduling-iz0cwtiu3.vercel.app/',
+            'success': f'{settings.LINK_FRONTEND}payment-confirm',
+            'failure': f'{settings.LINK_FRONTEND}',
+            'pending': f'{settings.LINK_FRONTEND}',
         },
         'auto_return': 'approved',
         'external_reference': f'Appointment:{id_appointment}',
