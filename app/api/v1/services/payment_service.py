@@ -55,7 +55,7 @@ async def process_update_payment(db: DBSession, data_id, event_type):
         if not external_reference or not external_reference.startswith('Appointment:'):
             return {'success': True, 'detail': 'Não é um pagamento de consulta'}
         appointment_id = int(external_reference.split(':')[1])
-    except IndexError, ValueError:
+    except (IndexError, ValueError):
         return {'success': True, 'detail': 'Formato de external_reference inválido'}
 
     if status == 'approved':
