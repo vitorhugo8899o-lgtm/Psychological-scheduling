@@ -8,7 +8,7 @@ from app.core.config import settings
 
 engine = create_async_engine(
     settings.DATABASE_URL,
-    echo=True,
+    echo=False,
     pool_timeout=30,
     pool_recycle=3600,
 )
