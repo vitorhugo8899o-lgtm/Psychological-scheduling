@@ -34,7 +34,6 @@ def create_preference(data: PaymentePreference, id_appointment: int):
 
     preference = sdk.preference().create(preference_data)
 
-    print('RESPOSTA DO MERCADO PAGO:', preference)
     return preference['response']['init_point']
 
 
