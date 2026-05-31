@@ -1,5 +1,7 @@
 from datetime import UTC, datetime, timedelta, timezone
 from zoneinfo import ZoneInfo
+from time import perf_counter
+from functools import wraps
 
 
 def ensure_utc(dt: datetime) -> datetime:
@@ -31,3 +33,19 @@ def cauculation_rate(total_appoinments: int, total_compared: int):
     rate = (total_compared / total_appoinments) * 100
 
     return f'{rate:.2f}'.replace('.', ',')
+
+
+
+def measure_time(func):
+    @wraps(func)
+    async def wrapper(*args, **kwargs):
+        init = perf_counter()
+
+        result = await func(*args, **kwargs)
+
+        end = perf_counter()
+        print(f"{func.__name__} executou em {(end - init):.6f}s")
+
+        return result
+
+    return wrapper
