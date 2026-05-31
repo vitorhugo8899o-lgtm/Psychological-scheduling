@@ -29,11 +29,7 @@ async def get_users(db: DBSession, user: CurrentUser) -> List[UserPublic]:
             detail='Usuário não tem permissão para realizar essa ação.',
         )
 
-    stmt = select(User).limit(100).order_by(User.id)
-
-    result = await db.execute(stmt)
-
-    return result.scalars().all()
+    return await user_repo.get_all_users(db)
 
 
 async def get_user(

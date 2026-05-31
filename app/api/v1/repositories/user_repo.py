@@ -83,6 +83,14 @@ async def desactive_user(db: DBSession, user: CurrentUser):
     await db.commit()
 
 
+async def get_all_users(db:DBSession):
+    stmt = select(User).limit(100).order_by(User.id)
+
+    result = await db.execute(stmt)
+
+    return result.scalars().all()
+
+
 async def cache_user(db: DBSession, r: rediscon, id_user: int) -> UserPublic | None:
 
     cache_key = f'user:{id_user}'
