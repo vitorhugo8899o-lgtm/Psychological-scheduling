@@ -1,0 +1,13 @@
+execução da rota de login sem otimização(com cache):
+get_user_by_email executou em 0.078979s
+login executou em 0.197515s
+
+
+execução da rota de login após otimização(com cache):
+get_user_by_email executou em 0.005527s
+login executou em 0.089827s
+
+
+get_user_by_email ganhou uma redução de tempo de 93,0%
+login ganhou uma redução de tempo de 54,5%
+

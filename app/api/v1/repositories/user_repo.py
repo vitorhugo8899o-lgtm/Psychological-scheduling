@@ -16,6 +16,7 @@ from app.models.users_models import User
 from app.schemas.custom_schema import AppointmentStatus
 from app.schemas.user_schema import UserCreate, UserPublic, UserUpdate
 
+
 if TYPE_CHECKING:
     from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
 
