@@ -76,9 +76,3 @@ async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
     return JSONResponse(
         status_code=429, content={'detail': 'Você atingiu o limite de requisições'}
     )
-
-
-@app.get("/teste-sentry")
-def zero_divisor():
-    divisor_zero = 1 / 0
-    return {"status": "ok"}
