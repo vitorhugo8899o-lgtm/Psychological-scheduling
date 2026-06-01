@@ -1,7 +1,6 @@
 from typing import List
 
 from fastapi import HTTPException
-from sqlalchemy import select
 
 from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
 from app.api.v1.repositories import service_repo, user_repo

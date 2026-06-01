@@ -89,7 +89,7 @@ class PsychologistAvaliabiliteBlock(BaseModel):
             raise ValueError(
                 'Selecione pelo menos 1 dia da semana'
             )
-        
+
         for day in values:
             monday = 0
             sunday = 6

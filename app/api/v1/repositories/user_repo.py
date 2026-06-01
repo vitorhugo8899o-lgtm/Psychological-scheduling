@@ -11,14 +11,17 @@ from sqlalchemy.exc import (
 from sqlalchemy.orm import joinedload
 
 from app.api.v1.repositories import auth_repo
+from app.api.v1.util.util import CacheManager
 from app.models.appointments_models import Appointment
 from app.models.users_models import User
 from app.schemas.custom_schema import AppointmentStatus
 from app.schemas.user_schema import UserCreate, UserPublic, UserUpdate
 
-
 if TYPE_CHECKING:
     from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
+
+
+user_cache_manager = CacheManager(model_class=UserPublic, prefix="user", ttl=600)
 
 
 async def new_user(db: DBSession, user_data: UserCreate) -> User:
@@ -83,7 +86,7 @@ async def desactive_user(db: DBSession, user: CurrentUser):
     await db.commit()
 
 
-async def get_all_users(db:DBSession):
+async def get_all_users(db: DBSession):
     stmt = select(User).limit(100).order_by(User.id)
 
     result = await db.execute(stmt)
@@ -92,35 +95,22 @@ async def get_all_users(db:DBSession):
 
 
 async def cache_user(db: DBSession, r: rediscon, id_user: int) -> UserPublic | None:
+    user_cache = await user_cache_manager.get_or_set(
+        r=r,
+        identifier=id_user,
+        db_fallback=lambda: get_user_by_id(db, id_user)
+    )
 
-    cache_key = f'user:{id_user}'
-    user_cached = await r.get(cache_key)
-
-    if user_cached:
-        return UserPublic.model_validate_json(user_cached)
-
-    user_obj = await get_user_by_id(db, id_user)
-
-    if user_obj:
-        user_schema = UserPublic.model_validate(user_obj)
-
-        await r.set(cache_key, user_schema.model_dump_json(), ex=600)
-
-        return user_schema
-
-    return None
+    return user_cache
 
 
 async def cache_delete(r: rediscon, id_user: int) -> str | None:
-    cache_key = f'user:{id_user}'
-    user_cached = await r.exists(cache_key)
+    user_cache = await user_cache_manager.delete_cache(
+        r=r,
+        identifier=id_user
+    )
 
-    if not user_cached:
-        return None
-
-    await r.delete(cache_key)
-
-    return 'Cache deletado!'
+    return user_cache
 
 
 async def user_next_appoiments(db: DBSession, user: CurrentUser):
