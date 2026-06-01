@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     ENV: str
     API_KEY_GROQ: str
     LINK_FRONTEND: str
+    SENTRY_DSN: str
 
 
 settings = Settings()
