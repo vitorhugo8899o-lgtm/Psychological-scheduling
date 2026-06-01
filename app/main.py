@@ -10,6 +10,17 @@ from sqlalchemy import text
 from app.api.v1.router import api_router
 from app.db.session import engine
 
+from app.core.config import settings
+
+import sentry_sdk
+
+
+sentry_sdk.init(
+    dsn=settings.SENTRY_DSN,
+    send_default_pii=False,
+    traces_sample_rate=0.1
+)
+
 
 async def check_database_connection():
     try:
@@ -36,7 +47,6 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 app.include_router(api_router, prefix='/api/v1')
-
 
 
 origins_test = [
@@ -66,3 +76,9 @@ async def rate_limit_handler(request: Request, exc: RateLimitExceeded):
     return JSONResponse(
         status_code=429, content={'detail': 'Você atingiu o limite de requisições'}
     )
+
+
+@app.get("/teste-sentry")
+def zero_divisor():
+    divisor_zero = 1 / 0
+    return {"status": "ok"}
