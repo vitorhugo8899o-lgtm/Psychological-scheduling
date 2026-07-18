@@ -37,12 +37,11 @@ def time_passed(date_compare: datetime) -> bool:
     return datetime.now(UTC) >= date_compare + timedelta(hours=24)
 
 
-def cauculation_rate(total_appoinments: int, total_compared: int):
-    if total_appoinments | total_compared == 0:
-        return
-
-    rate = (total_compared / total_appoinments) * 100
-
+def cauculation_rate(total_appointments: int, total_compared: int):
+    if total_appointments == 0 or total_compared == 0:
+        return None
+    
+    rate = (total_compared / total_appointments) * 100
     return f'{rate:.2f}'.replace('.', ',')
 
 
