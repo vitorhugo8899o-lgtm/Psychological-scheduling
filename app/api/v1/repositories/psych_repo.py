@@ -89,10 +89,7 @@ async def cache_avaliabilites(db: DBSession, r: rediscon, psych_id: int):
     stmt = (
         select(Avaliabilite)
         .where(Avaliabilite.id_psychologist == psych_id)
-        .order_by(
-            Avaliabilite.day_of_the_week,
-            Avaliabilite.start_time
-        )
+        .order_by(Avaliabilite.day_of_the_week, Avaliabilite.start_time)
     )
 
     result = await db.execute(stmt)

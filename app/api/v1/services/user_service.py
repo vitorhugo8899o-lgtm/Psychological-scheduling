@@ -6,6 +6,7 @@ from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
 from app.api.v1.repositories import service_repo, user_repo
 from app.models.service_models import Service
 from app.models.users_models import User
+from app.schemas.custom_schema import UserRole
 from app.schemas.service_schema import ServiceQuery, ServiceResponse
 from app.schemas.user_schema import UserCreate, UserPublic, UserUpdate
 
@@ -22,7 +23,7 @@ async def create_user_service(db: DBSession, user_data: UserCreate) -> User:
 
 
 async def get_users(db: DBSession, user: CurrentUser) -> List[UserPublic]:
-    if user.role != 'adm':
+    if user.role != UserRole.adm:
         raise HTTPException(
             status_code=403,
             detail='Usuário não tem permissão para realizar essa ação.',
@@ -34,7 +35,7 @@ async def get_users(db: DBSession, user: CurrentUser) -> List[UserPublic]:
 async def get_user(
     db: DBSession, r: rediscon, user: CurrentUser, id_user: int
 ) -> UserPublic:
-    if user.role == 'cliente':
+    if user.role == UserRole.client:
         raise HTTPException(
             status_code=403,
             detail='Usuário não tem permissão para realizar essa ação',
@@ -71,7 +72,7 @@ async def update_user_data(
 
 
 async def desactive_account(db: DBSession, user: CurrentUser, r: rediscon):
-    if user.role != 'cliente':
+    if user.role != UserRole.client:
         raise HTTPException(
             status_code=403, detail='Somente clientes podem utilizar essa função.'
         )
@@ -108,7 +109,7 @@ async def get_service_customized(db: DBSession, filter: ServiceQuery) -> List[Se
 
 
 async def get_next_appoiments(db: DBSession, user: CurrentUser):
-    if user.role != 'cliente':
+    if user.role != UserRole.client:
         raise HTTPException(
             status_code=403,
             detail='O usuário não tem permissão para realizar essa ação',
@@ -123,7 +124,7 @@ async def get_next_appoiments(db: DBSession, user: CurrentUser):
 
 
 async def get_open_appoiments(db: DBSession, user: CurrentUser):
-    if user.role != 'cliente':
+    if user.role != UserRole.client:
         raise HTTPException(
             status_code=403,
             detail='O usuário não tem permissão para realizar essa ação.',

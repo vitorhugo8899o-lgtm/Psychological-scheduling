@@ -30,25 +30,13 @@ async def login(
     user = await user_repo.get_user_by_email(db, user_data.username)
 
     if not user:
-        raise HTTPException(
-            status_code=401,
-            detail="Email ou senha incorretos!"
-        )
+        raise HTTPException(status_code=401, detail='Email ou senha incorretos!')
 
     if user.is_active is False:
-        raise HTTPException(
-            status_code=403,
-            detail="Esta conta se encontra desativa."
-        )
+        raise HTTPException(status_code=403, detail='Esta conta se encontra desativa.')
 
-    if not auth_repo.verify_password(
-        user_data.password,
-        user.password
-    ):
-        raise HTTPException(
-            status_code=401,
-            detail="Email ou senha incorretos!"
-        )
+    if not auth_repo.verify_password(user_data.password, user.password):
+        raise HTTPException(status_code=401, detail='Email ou senha incorretos!')
 
     access_token = auth_repo.create_token(data={'sub': f'{user.email}'})
 

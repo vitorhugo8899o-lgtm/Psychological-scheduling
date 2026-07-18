@@ -12,7 +12,7 @@ from app.schemas.service_schema import FinancialSchema, ServiceSchema
 async def create_psychologist_service(
     db: DBSession, user: CurrentUser, psych: PsychologistCreate
 ) -> Psychologist:
-    if user.role != 'adm':
+    if user.role != UserRole.adm:
         raise HTTPException(
             status_code=403,
             detail='Usuário não possui permissão para realizar essa ação',
@@ -41,7 +41,7 @@ async def create_psychologist_service(
 async def create_service(
     db: DBSession, user_role: str, service_db: ServiceSchema
 ) -> Service:
-    if user_role != 'adm':
+    if user_role != UserRole.adm:
         raise HTTPException(
             status_code=403,
             detail='Usuário não tem permissão para realizar essa ação',
@@ -60,7 +60,7 @@ async def create_service(
 async def get_financial_report(
     db: DBSession, user: CurrentUser, report: FinancialSchema
 ):
-    if user.role != 'adm':
+    if user.role != UserRole.adm:
         raise HTTPException(
             status_code=403,
             detail='O usuário não tem permissão para realizar essa ação',

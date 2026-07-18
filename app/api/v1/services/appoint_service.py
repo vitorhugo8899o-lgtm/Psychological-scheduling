@@ -22,13 +22,14 @@ from app.schemas.appointment_schema import (
     AppointmentSimulation,
     ReschedulingAppointment,
 )
+from app.schemas.custom_schema import UserRole
 
 
 async def check_for_conflict(
     db: DBSession, payload: AppointmentCreate, user: CurrentUser
 ) -> Appointment:
 
-    if user.role != 'cliente':
+    if user.role != UserRole.client:
         raise HTTPException(
             status_code=403,
             detail='É proibido marcar consultas em contas administrativas da clinica, se desejar marcar uma consulta entre com uma conta normal.',  # noqa
@@ -50,7 +51,7 @@ async def check_for_conflict(
         date = format_hour_br(user_appointment.date_time)
         raise HTTPException(
             status_code=409,
-            detail=f'Você já possui uma consulta marcada neste período. Consulta:{date}'
+            detail=f'Você já possui uma consulta marcada neste período. Consulta:{date}',
         )
 
     psych = await get_psych(db, payload.id_psychologist)
@@ -166,7 +167,7 @@ async def rescheduling_appointmnet(
         date = format_hour_br(conflit_user.date_time)
         raise HTTPException(
             status_code=409,
-            detail=f'Você já possui uma consulta marcada neste período. Consulta:{date}'
+            detail=f'Você já possui uma consulta marcada neste período. Consulta:{date}',
         )
 
     avaliabilites = await avaliabilite_exists(
