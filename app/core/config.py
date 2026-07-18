@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     API_KEY_GROQ: str
     LINK_FRONTEND: str
     SENTRY_DSN: str
+    MERCADO_PAGO_SECRET: str
 
 
 settings = Settings()

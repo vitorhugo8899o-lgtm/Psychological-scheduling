@@ -10,7 +10,8 @@ async def send_message(
 ):
     if user.role != 'cliente':
         raise HTTPException(
-            status_code='O usuário não tem permissão para realizar essa ação.'
+            status_code=403,
+            detail="O usuário não tem permissão para realizar essa ação."
         )
 
     result = search_predefined_answer(context_user)

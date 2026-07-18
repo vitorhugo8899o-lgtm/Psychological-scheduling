@@ -177,3 +177,5 @@ pyrightconfig.json
 
 #HTML para testar API do mercao pago
 index.html
+
+.vscode
