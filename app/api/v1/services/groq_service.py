@@ -3,15 +3,16 @@ from fastapi import HTTPException
 from app.api.v1.dependencies import CurrentUser, completion, rediscon
 from app.groq.faq_service import search_predefined_answer
 from app.groq.groq_cache import cache_respost, create_cache_response
+from app.schemas.custom_schema import UserRole
 
 
 async def send_message(
     client, context_user: str, context_system: str, r: rediscon, user: CurrentUser
 ):
-    if user.role != 'cliente':
+    if user.role != UserRole.client:
         raise HTTPException(
             status_code=403,
-            detail="O usuário não tem permissão para realizar essa ação."
+            detail='O usuário não tem permissão para realizar essa ação.',
         )
 
     result = search_predefined_answer(context_user)

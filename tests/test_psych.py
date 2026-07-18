@@ -221,9 +221,7 @@ async def test_get_appooinment_in_time_period(token_psych, db_session, schedule_
     schedule_psych.date_time = datetime(2026, 5, 5, 12, 30, tzinfo=timezone.utc)
     await db_session.commit()
 
-    response = await token_psych.get(
-        '/api/v1/psych/me/stats/appoinment-count'
-    )
+    response = await token_psych.get('/api/v1/psych/me/stats/appoinment-count')
 
     status = 200
 
@@ -237,18 +235,13 @@ async def test_get_appooinment_in_time_period(token_psych, db_session, schedule_
 
 @pytest.mark.asyncio
 async def test_get_count_appoinment_but_no_one(token_psych):
-    response = await token_psych.get(
-        '/api/v1/psych/me/stats/appoinment-count'
-    )
+    response = await token_psych.get('/api/v1/psych/me/stats/appoinment-count')
 
     status = 200
 
     assert response.status_code == status
     assert response.json()['total'] == 0
-    assert (
-        response.json()['message']
-        == 'Nenhum dado encontrado no período de 30 dias'
-    )  # noqa
+    assert response.json()['message'] == 'Nenhum dado encontrado no período de 30 dias'  # noqa
 
 
 @pytest.mark.asyncio
@@ -508,8 +501,13 @@ async def test_user_try_delete_record(token_client):
 
 
 @pytest.mark.asyncio
-async def test_get_psych_next_appoiments(   #noqa
-    db_session, token_psych, schedule, service, availability, user_client,
+async def test_get_psych_next_appoiments(  # noqa
+    db_session,
+    token_psych,
+    schedule,
+    service,
+    availability,
+    user_client,
 ):
     schedule.status = 'confirmed'
     await db_session.commit()
@@ -540,4 +538,7 @@ async def test_forbiden_get_next_psych_appoiments(token_client):
     status = 403
 
     assert response.status_code == status
-    assert response.json()['detail'] == 'O usuário não tem permissõa para realizar essa ação'  #noqa
+    assert (
+        response.json()['detail']
+        == 'O usuário não tem permissõa para realizar essa ação'
+    )  # noqa

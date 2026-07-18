@@ -37,12 +37,11 @@ def time_passed(date_compare: datetime) -> bool:
     return datetime.now(UTC) >= date_compare + timedelta(hours=24)
 
 
-def cauculation_rate(total_appoinments: int, total_compared: int):
-    if total_appoinments | total_compared == 0:
-        return
+def cauculation_rate(total_appointments: int, total_compared: int):
+    if total_appointments == 0 or total_compared == 0:
+        return None
 
-    rate = (total_compared / total_appoinments) * 100
-
+    rate = (total_compared / total_appointments) * 100
     return f'{rate:.2f}'.replace('.', ',')
 
 
@@ -54,7 +53,7 @@ def measure_time(func):
         result = await func(*args, **kwargs)
 
         end = perf_counter()
-        print(f"{func.__name__} executou em {(end - init):.6f}s")
+        print(f'{func.__name__} executou em {(end - init):.6f}s')
 
         return result
 
@@ -69,13 +68,10 @@ class CacheManager(Generic[T]):
         self._lock = asyncio.Lock()
 
     def _get_key(self, identifier: Any) -> str:
-        return f"{self.prefix}:{identifier}"
+        return f'{self.prefix}:{identifier}'
 
     async def get_or_set(
-        self,
-        r: rediscon,
-        identifier: Any,
-        db_fallback: Callable[[], Awaitable[Any]]
+        self, r: rediscon, identifier: Any, db_fallback: Callable[[], Awaitable[Any]]
     ) -> T | None:
         """
         Busca no Redis. Se não achar, usa a função db_fallback para buscar no banco,
@@ -88,7 +84,7 @@ class CacheManager(Generic[T]):
             if cached_data:
                 return self.model_class.model_validate_json(cached_data)
         except RedisError as e:
-            logging.error(f"[Cache] Erro de leitura no Redis ({cache_key}): {e}")
+            logging.error(f'[Cache] Erro de leitura no Redis ({cache_key}): {e}')
             cached_data = None
 
         async with self._lock:
@@ -109,18 +105,14 @@ class CacheManager(Generic[T]):
                     await r.set(cache_key, schema_obj.model_dump_json(), ex=self.ttl)
                 except RedisError as e:
                     logging.error(
-                        f"[Cache] Erro de escrita no Redis ({cache_key}): {e}"
+                        f'[Cache] Erro de escrita no Redis ({cache_key}): {e}'
                     )
 
                 return schema_obj
 
         return None
 
-    async def delete_cache(
-        self,
-        r: rediscon,
-        identifier: Any
-    ):
+    async def delete_cache(self, r: rediscon, identifier: Any):
         cache_key = self._get_key(identifier)
         try:
             user_cached = await r.exists(cache_key)
@@ -130,6 +122,4 @@ class CacheManager(Generic[T]):
             await r.delete(cache_key)
             return 'Cache deletado!'
         except RedisError as e:
-            logging.error(
-                f"[Cache] Erro ao deletar cache no Redis ({cache_key}): {e}"
-            )
+            logging.error(f'[Cache] Erro ao deletar cache no Redis ({cache_key}): {e}')

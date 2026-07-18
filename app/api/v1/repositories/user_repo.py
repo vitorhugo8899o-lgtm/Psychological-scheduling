@@ -21,7 +21,7 @@ if TYPE_CHECKING:
     from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
 
 
-user_cache_manager = CacheManager(model_class=UserPublic, prefix="user", ttl=600)
+user_cache_manager = CacheManager(model_class=UserPublic, prefix='user', ttl=600)
 
 
 async def new_user(db: DBSession, user_data: UserCreate) -> User:
@@ -96,19 +96,14 @@ async def get_all_users(db: DBSession):
 
 async def cache_user(db: DBSession, r: rediscon, id_user: int) -> UserPublic | None:
     user_cache = await user_cache_manager.get_or_set(
-        r=r,
-        identifier=id_user,
-        db_fallback=lambda: get_user_by_id(db, id_user)
+        r=r, identifier=id_user, db_fallback=lambda: get_user_by_id(db, id_user)
     )
 
     return user_cache
 
 
 async def cache_delete(r: rediscon, id_user: int) -> str | None:
-    user_cache = await user_cache_manager.delete_cache(
-        r=r,
-        identifier=id_user
-    )
+    user_cache = await user_cache_manager.delete_cache(r=r, identifier=id_user)
 
     return user_cache
 

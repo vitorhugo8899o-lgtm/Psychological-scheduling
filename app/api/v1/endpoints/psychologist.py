@@ -66,10 +66,7 @@ async def next_appoiments(request: Request, db: DBSession, user: CurrentUser):
 )
 @limiter.limit('5/minute')
 async def get_work_hours(
-    request: Request,
-    db: DBSession,
-    r: rediscon,
-    user: CurrentUser
+    request: Request, db: DBSession, r: rediscon, user: CurrentUser
 ):
     return await psych_service.get_avaliabilites(db, r, user)
 
@@ -89,9 +86,7 @@ async def delete_availbily(
     response_model=ResponseMetrics,
 )
 @limiter.limit('6/minute')
-async def stats_count_appointmnet(
-    request: Request, db: DBSession, user: CurrentUser
-):
+async def stats_count_appointmnet(request: Request, db: DBSession, user: CurrentUser):
     return await psych_service.get_appoinment_count(db, user)
 
 

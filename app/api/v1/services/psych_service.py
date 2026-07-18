@@ -4,6 +4,7 @@ from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
 from app.api.v1.repositories import psych_repo, user_repo
 from app.api.v1.util.util import cauculation_rate
 from app.models.avaliabilites_models import Avaliabilite
+from app.schemas.custom_schema import UserRole
 from app.schemas.psychologist_schema import (
     DeleteAvailabilySchema,
     MedicalRecordCreate,
@@ -19,7 +20,7 @@ async def create_avaliabilite(
     user: CurrentUser,
     payload: PsychologistAvaliabiliteCreate,
 ) -> dict:
-    if user.role != 'psychologist':
+    if user.role != UserRole.psychologist:
         raise HTTPException(
             status_code=403,
             detail='O Usuário não tem permissão para realizar essa ação',
@@ -269,7 +270,7 @@ async def next_appoiments(db: DBSession, user: CurrentUser):
     if not user.psychologist_profile:
         raise HTTPException(
             status_code=403,
-            detail="O usuário não tem permissõa para realizar essa ação"
+            detail='O usuário não tem permissõa para realizar essa ação',
         )
 
     appoiments = await psych_repo.get_next_appoiments(db, user)

@@ -1,10 +1,9 @@
 from http import HTTPStatus
 
-from fastapi import APIRouter, Request, HTTPException
-
+from fastapi import APIRouter, HTTPException, Request
 from mercadopago.webhook import (
-    WebhookSignatureValidator,
     InvalidWebhookSignatureError,
+    WebhookSignatureValidator,
 )
 
 from app.api.v1.dependencies import CurrentUser, DBSession
@@ -12,9 +11,8 @@ from app.api.v1.services.payment_service import (
     prepare_data_for_payment,
     process_update_payment,
 )
-from app.schemas.payment_schema import PaymentCreate, PaymentResponse
-
 from app.core.config import settings
+from app.schemas.payment_schema import PaymentCreate, PaymentResponse
 
 payment_route = APIRouter()
 
@@ -30,16 +28,16 @@ async def create_payment(db: DBSession, user: CurrentUser, appointment: PaymentC
 async def mercado_pago_webhook(request: Request, db: DBSession):
     try:
         WebhookSignatureValidator.validate(
-            request.headers.get("x-signature"),
-            request.headers.get("x-request-id"),
-            request.query_params.get("data.id"),
+            request.headers.get('x-signature'),
+            request.headers.get('x-request-id'),
+            request.query_params.get('data.id'),
             settings.MERCADO_PAGO_SECRET,
         )
     except InvalidWebhookSignatureError:
         raise HTTPException(
-        status_code=401,
-        detail="Invalid webhook signature",
-    )
+            status_code=401,
+            detail='Invalid webhook signature',
+        )
 
     body = await request.json()
 
