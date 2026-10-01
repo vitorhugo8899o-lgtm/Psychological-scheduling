@@ -56,7 +56,10 @@ async def check_appointment_conflict(
 
 
 async def create_appointment(
-    db: DBSession, payload: AppointmentCreate, user: CurrentUser, id_psych: int
+    db: DBSession,
+    payload: AppointmentCreate,
+    user: CurrentUser,
+    id_psych: int,
 ) -> Appointment:
     new_appointment = Appointment(
         id_client=user.id,
@@ -66,10 +69,25 @@ async def create_appointment(
     )
 
     db.add(new_appointment)
-    await db.commit()
+
+    await db.flush()
     await db.refresh(new_appointment)
 
     return new_appointment
+
+
+async def lock_psychologist(
+    db: DBSession,
+    id_psychologist: int,
+) -> Psychologist | None:
+    stmt = (
+        select(Psychologist)
+        .where(Psychologist.id == id_psychologist)
+        .with_for_update()
+    )
+
+    result = await db.execute(stmt)
+    return result.scalar_one_or_none()
 
 
 async def get_all_user_appointment(
@@ -193,14 +211,17 @@ async def get_appointment_by_id(db: DBSession, appoinment_id: int, user_id: int)
 
 
 async def update_appoinment_datetime(
-    db: DBSession, appoinment: Appointment, new_date: datetime
-):
-    appoinment.date_time = new_date
+    db: DBSession,
+    appointment: Appointment,
+    new_date,
+) -> Appointment:
 
-    await db.commit()
-    await db.refresh(appoinment)
+    appointment.date_time = new_date
 
-    return appoinment
+    await db.flush()
+    await db.refresh(appointment)
+
+    return appointment
 
 
 async def update_cancel_appointment(db: DBSession, appoinment: Appointment):
