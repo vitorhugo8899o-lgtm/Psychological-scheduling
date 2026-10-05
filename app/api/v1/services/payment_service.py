@@ -74,6 +74,7 @@ async def process_update_payment(db: DBSession, data_id, event_type):
 
     if db_payment:
         db_payment.status = new_payment_status
+        result = db_payment
     else:
         data_payment = PaymentDB(
             id_mercado_pago=str(data_id),
