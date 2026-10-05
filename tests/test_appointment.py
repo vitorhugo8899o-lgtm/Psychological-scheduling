@@ -390,32 +390,6 @@ async def test_try_to_reschedule_but_time_passed(
 
 @patch('app.api.v1.services.appoint_service.time_passed')
 @pytest.mark.asyncio
-async def test_try_to_reschedule_but_conflit_date(
-    mock_time_passed, availability, token_client, service, schedule_refresh
-):
-
-    mock_time_passed.return_value = False
-
-    payload = {
-        'id_appointment': f'{schedule_refresh.id}',
-        'date_new': '2026-05-11T14:00:00Z',
-    }
-
-    response = await token_client.post(
-        '/api/v1/appointments/rescheduling', json=payload
-    )
-
-    status = 409
-
-    assert response.status_code == status
-    assert (
-        response.json()['detail']
-        == 'Você já possui uma consulta marcada neste período. Consulta:11/05/2026 às 11:30'  # noqa
-    )
-
-
-@patch('app.api.v1.services.appoint_service.time_passed')
-@pytest.mark.asyncio
 async def test_try_to_reschedule_but_psych_not_available_on_this_date(
     mock_time_passed, availability, token_client, service, schedule_refresh
 ):

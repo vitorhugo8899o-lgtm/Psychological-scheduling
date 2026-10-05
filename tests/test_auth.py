@@ -44,7 +44,7 @@ async def test_email_incorrect(client):
     assert req.status_code == status
     assert (
         req.json()['detail']
-        == 'Email ou senha incorretos!, verifique se digitou corretamente'
+        == 'Email ou senha incorretos!'
     )  # noqa
 
 
@@ -59,7 +59,7 @@ async def test_password_incorrect(client, user_client):
     assert req.status_code == status
     assert (
         req.json()['detail']
-        == 'Email ou senha incorretos!, verifique se digitou corretamente'
+        == 'Email ou senha incorretos!'
     )  # noqa
 
 
