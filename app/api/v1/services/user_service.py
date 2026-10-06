@@ -35,7 +35,7 @@ async def get_users(db: DBSession, user: CurrentUser) -> List[UserPublic]:
 async def get_user(
     db: DBSession, r: rediscon, user: CurrentUser, id_user: int
 ) -> UserPublic:
-    if user.role == UserRole.client:
+    if user.role != UserRole.adm:
         raise HTTPException(
             status_code=403,
             detail='Usuário não tem permissão para realizar essa ação',
