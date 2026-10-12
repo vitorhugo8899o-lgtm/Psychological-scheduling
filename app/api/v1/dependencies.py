@@ -57,7 +57,7 @@ async def get_current_user(request: Request, db: DBSession) -> User:
 
 async def completion(client, message: str, context_agent: str):
     completion = client.chat.completions.create(
-        model='llama-3.1-8b-instant',
+        model='openai/gpt-oss-20b',
         messages=[
             {'role': 'system', 'content': context_agent},
             {'role': 'user', 'content': message},
