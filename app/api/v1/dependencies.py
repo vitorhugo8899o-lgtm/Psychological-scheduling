@@ -3,7 +3,7 @@ from typing import Annotated
 
 from fastapi import Depends, HTTPException, Request
 from fastapi.security import OAuth2PasswordBearer
-from groq import Groq
+from groq import AsyncGroq
 from redis import asyncio as aioredis
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -18,7 +18,15 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 CONTEXT_PATH = BASE_DIR / 'groq' / 'groq_context.md'
 
-client = Groq(api_key=settings.API_KEY_GROQ)
+# Cliente ASSÍNCRONO: o `Groq` síncrono bloqueava o event loop durante toda a geração
+# (a API inteira ficava parada enquanto um usuário esperava a resposta da IA).
+client = AsyncGroq(
+    api_key=settings.API_KEY_GROQ,
+    timeout=settings.GROQ_TIMEOUT_SECONDS,
+    max_retries=1,
+)
+
+GROQ_TEMPERATURE = 0.4
 
 
 try:
@@ -67,17 +75,30 @@ async def get_current_user(request: Request, db: DBSession, r: rediscon) -> User
     return user
 
 
-async def completion(client, message: str, context_agent: str):
-    completion = client.chat.completions.create(
-        model='openai/gpt-oss-20b',
-        messages=[
+async def completion(
+    client, message: str, context_agent: str, user_ref: str | None = None
+):
+    params = {
+        'model': settings.GROQ_MODEL,
+        'messages': [
             {'role': 'system', 'content': context_agent},
             {'role': 'user', 'content': message},
         ],
-        stream=True,
-    )
+        'temperature': GROQ_TEMPERATURE,
+        # Teto de saída: sem ele uma "injeção" que ignore o limite de 2 frases do
+        # prompt gera respostas enormes (custo e abuso do modelo como chat livre).
+        'max_completion_tokens': settings.GROQ_MAX_COMPLETION_TOKENS,
+        'stream': False,
+    }
 
-    return completion
+    if 'gpt-oss' in settings.GROQ_MODEL:
+        params['reasoning_effort'] = 'low'
+
+    if user_ref:
+        # Identificador opaco do usuário final (permite à Groq rastrear abuso).
+        params['user'] = user_ref
+
+    return await client.chat.completions.create(**params)
 
 
 DBSession = Annotated[AsyncSession, Depends(get_db)]
