@@ -615,6 +615,28 @@ async def schedule_payment(
 
 
 @pytest_asyncio.fixture(scope='function')
+async def schedule_payment_pending(
+    db_session,
+    service,
+    availability_paymenttest,
+    user_client,
+):
+    appointment = models.Appointment(
+        id_client=user_client.id,
+        id_psychologist=availability_paymenttest.id,
+        id_service=service.id,
+        status=AppointmentStatus.pending,
+        date_time=datetime(2026, 5, 11, 14, 30, tzinfo=timezone.utc),
+    )
+
+    db_session.add(appointment)
+    await db_session.commit()
+    await db_session.refresh(appointment)
+
+    return appointment
+
+
+@pytest_asyncio.fixture(scope='function')
 async def schedule_refresh(
     db_session,
     service,

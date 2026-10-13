@@ -37,6 +37,11 @@ def time_passed(date_compare: datetime) -> bool:
     return datetime.now(UTC) >= date_compare + timedelta(hours=24)
 
 
+def pending_expired(created_at: datetime, ttl_minutes: int) -> bool:
+    """True quando uma consulta pendente passou do prazo para ser paga."""
+    return datetime.now(UTC) >= ensure_utc(created_at) + timedelta(minutes=ttl_minutes)
+
+
 def cauculation_rate(total_appointments: int, total_compared: int):
     if total_appointments == 0 or total_compared == 0:
         return None

@@ -3,15 +3,16 @@ from typing import List
 from zoneinfo import ZoneInfo
 
 from fastapi import HTTPException
-from sqlalchemy import and_, case, delete, exists, not_, select
+from sqlalchemy import and_, case, delete, exists, func, not_, select
 from sqlalchemy.exc import IntegrityError, OperationalError
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 
 from app.api.v1.dependencies import CurrentUser, DBSession
 from app.api.v1.util.util import ensure_utc
 from app.models.appointments_models import Appointment
 from app.models.avaliabilites_models import Avaliabilite
 from app.models.psychologist_models import Psychologist
+from app.models.service_models import Service
 from app.models.users_models import User
 from app.schemas.appointment_schema import AppointmentCreate
 from app.schemas.custom_schema import AppointmentStatus
@@ -196,6 +197,54 @@ async def search_available_psychologists(
         available_data.append({'id': psych.id, 'fullname': fullname, 'crp': psych.crp})
 
     return available_data
+
+
+async def get_appointment_for_update(
+    db: DBSession, appointment_id: int
+) -> Appointment | None:
+    """Busca a consulta travando a linha (SELECT ... FOR UPDATE).
+
+    Serializa webhooks concorrentes do mesmo pagamento/consulta.
+    """
+    stmt = (
+        select(Appointment)
+        .options(selectinload(Appointment.service))
+        .where(Appointment.id == appointment_id)
+        .with_for_update()
+    )
+
+    result = await db.execute(stmt)
+
+    return result.scalar_one_or_none()
+
+
+async def find_confirmed_overlap(
+    db: DBSession, appointment: Appointment
+) -> Appointment | None:
+    """Outra consulta CONFIRMADA do mesmo psicólogo que colide com esta."""
+    start = ensure_utc(appointment.date_time)
+    end = start + timedelta(minutes=appointment.service.duration_minutes)
+
+    other_end = Appointment.date_time + func.make_interval(
+        0, 0, 0, 0, 0, Service.duration_minutes
+    )
+
+    stmt = (
+        select(Appointment)
+        .join(Service, Appointment.id_service == Service.id)
+        .where(
+            Appointment.id_psychologist == appointment.id_psychologist,
+            Appointment.id != appointment.id,
+            Appointment.status == AppointmentStatus.confirmed,
+            Appointment.date_time < end,
+            other_end > start,
+        )
+        .limit(1)
+    )
+
+    result = await db.execute(stmt)
+
+    return result.scalar_one_or_none()
 
 
 async def get_appointment_by_id(db: DBSession, appoinment_id: int, user_id: int):
