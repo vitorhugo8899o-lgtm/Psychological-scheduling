@@ -10,7 +10,7 @@ from app.api.v1.services.appoint_service import (
     rescheduling_appointmnet,
     simulation_available_psychologists,
 )
-from app.redis.limiter import limiter
+from app.redis.limiter import limiter, user_or_ip_key
 from app.schemas.appointment_schema import (
     AppointmentCreate,
     AppointmentResponse,
@@ -26,7 +26,7 @@ appointment_route = APIRouter()
 @appointment_route.post(
     '/appointments', status_code=HTTPStatus.CREATED, response_model=AppointmentResponse
 )
-@limiter.limit('1/minute')
+@limiter.limit('1/minute', key_func=user_or_ip_key)
 async def schedule_an_appointment(
     request: Request, db: DBSession, user: CurrentUser, payload: AppointmentCreate
 ):
@@ -38,7 +38,7 @@ async def schedule_an_appointment(
     status_code=HTTPStatus.OK,
     response_model=List[PsychSearchResponse],
 )
-@limiter.limit('6/minute')
+@limiter.limit('6/minute', key_func=user_or_ip_key)
 async def get_simulation_appointment(
     request: Request,
     db: DBSession,
@@ -53,7 +53,7 @@ async def get_simulation_appointment(
     status_code=HTTPStatus.OK,
     response_model=AppointmentResponse,
 )
-@limiter.limit('6/hour')
+@limiter.limit('6/hour', key_func=user_or_ip_key)
 async def rescheduling(
     request: Request,
     user: CurrentUser,
@@ -68,7 +68,7 @@ async def rescheduling(
     status_code=HTTPStatus.OK,
     response_model=AppointmentResponse,
 )
-@limiter.limit('6/minute')
+@limiter.limit('6/minute', key_func=user_or_ip_key)
 async def cancel_appointment(
     request: Request, db: DBSession, user: CurrentUser, appointmnet: CancelAppointment
 ):

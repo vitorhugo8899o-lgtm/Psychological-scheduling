@@ -12,14 +12,14 @@ from app.api.v1.services.payment_service import (
     process_update_payment,
 )
 from app.core.config import settings
-from app.redis.limiter import limiter
+from app.redis.limiter import limiter, user_or_ip_key
 from app.schemas.payment_schema import PaymentCreate, PaymentResponse
 
 payment_route = APIRouter()
 
 
 @payment_route.post('/payments', status_code=HTTPStatus.CREATED)
-@limiter.limit('6/minute')
+@limiter.limit('6/minute', key_func=user_or_ip_key)
 async def create_payment(
     request: Request, db: DBSession, user: CurrentUser, appointment: PaymentCreate
 ):
