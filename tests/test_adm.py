@@ -140,7 +140,11 @@ async def test_service_already_exists(token_adm, service):
 
 
 @pytest.mark.asyncio
-async def test_get_financial_metrics(token_adm, service, Payment):
+async def test_get_financial_metrics(db_session, token_adm, service, Payment):
+    # Só pagamento APROVADO entra na receita (a fixture nasce 'pending').
+    Payment.status = 'approved'
+    await db_session.commit()
+
     payload = {'start_date': '2026-05-10', 'end_date': '2026-05-20'}
 
     response = await token_adm.post('/api/v1/financial-report', json=payload)

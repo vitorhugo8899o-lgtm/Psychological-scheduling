@@ -5,6 +5,7 @@ from app.models.appointments_models import Appointment
 from app.models.paymentes_models import Payment
 from app.models.psychologist_models import Psychologist
 from app.models.service_models import Service
+from app.schemas.custom_schema import PaymentStatus
 from app.schemas.service_schema import FinancialSchema, ServiceSchema
 
 
@@ -51,6 +52,9 @@ async def total_collected_metrics(db: DBSession, report: FinancialSchema):
         .join(Appointment, Payment.id_appointment == Appointment.id)
         .join(Service, Appointment.id_service == Service.id)
         .where(
+            # Só dinheiro que realmente entrou: pagamentos pendentes/recusados
+            # inflavam a receita do relatório.
+            Payment.status == PaymentStatus.approved,
             Payment.created_at >= report.start_date,
             Payment.created_at < report.end_date,
         )
