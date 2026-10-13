@@ -42,6 +42,8 @@ class Settings(BaseSettings):
     # Bloqueio de login por conta após N falhas dentro da janela.
     LOGIN_MAX_FAILURES: int = 10
     LOGIN_FAILURE_WINDOW_SECONDS: int = 900
+    # Tamanho máximo do corpo da requisição (o maior payload legítimo: prontuário).
+    MAX_REQUEST_BODY_BYTES: int = 1_000_000
     # Assistente de IA
     GROQ_MODEL: str = 'openai/gpt-oss-20b'
     GROQ_MAX_COMPLETION_TOKENS: int = 512

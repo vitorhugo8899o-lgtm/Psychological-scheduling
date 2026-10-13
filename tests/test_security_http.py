@@ -17,6 +17,19 @@ from app.main import allowed_origins, docs_kwargs
 from app.redis.limiter import client_ip, user_or_ip_key
 
 EVIL = 'https://evil.example'
+
+
+@pytest.fixture(autouse=True)
+def frozen_time():
+    """Sobrescreve o freeze_time global deste módulo.
+
+    O armazenamento em memória do rate limit expira chaves num thread (Timer) e o
+    freezegun devolve a hora REAL para código chamado de `threading`: com o relógio
+    congelado, as chaves expiravam em momentos aleatórios (teste intermitente).
+    """
+    return
+
+
 FRONT = 'http://localhost:5173'  # permitido fora de produção
 LOGOUT = '/api/v1/logout'
 

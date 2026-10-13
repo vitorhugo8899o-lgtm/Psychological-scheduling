@@ -83,7 +83,7 @@ async def get_avaliabilites(db: DBSession, r: rediscon, psych: CurrentUser):
     if not schedule:
         raise HTTPException(
             status_code=404,
-            detail=f'Nenhum horário encontrado.:{schedule} and {psych.id}',
+            detail='Nenhum horário encontrado.',
         )
 
     return schedule

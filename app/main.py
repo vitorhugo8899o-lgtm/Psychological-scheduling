@@ -77,6 +77,23 @@ def allowed_origins() -> list[str]:
 UNSAFE_METHODS = {'POST', 'PUT', 'PATCH', 'DELETE'}
 
 
+@app.middleware('http')
+async def limit_body_size(request: Request, call_next):
+    """Recusa corpos gigantes antes de lê-los (nem uvicorn nem FastAPI limitam)."""
+    declared = request.headers.get('content-length')
+
+    if (
+        declared
+        and declared.isdigit()
+        and int(declared) > settings.MAX_REQUEST_BODY_BYTES
+    ):
+        return JSONResponse(
+            status_code=413, content={'detail': 'Corpo da requisição grande demais.'}
+        )
+
+    return await call_next(request)
+
+
 def _origin_from_referer(referer: str | None) -> str | None:
     if not referer:
         return None

@@ -39,6 +39,19 @@ def time_passed(date_compare: datetime) -> bool:
     return datetime.now(UTC) >= date_compare + timedelta(hours=24)
 
 
+LIKE_ESCAPE = '\\'
+
+
+def escape_like(value: str) -> str:
+    """Escapa `%` e `_` (curingas do LIKE) para busca literal por texto digitado."""
+    return (
+        value
+        .replace(LIKE_ESCAPE, LIKE_ESCAPE * 2)
+        .replace('%', f'{LIKE_ESCAPE}%')
+        .replace('_', f'{LIKE_ESCAPE}_')
+    )
+
+
 def cancellation_window_closed(
     date_time: datetime, min_hours: int | None = None
 ) -> bool:
