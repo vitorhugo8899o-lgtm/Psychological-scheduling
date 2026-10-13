@@ -9,6 +9,8 @@ from zoneinfo import ZoneInfo
 from pydantic import BaseModel
 from redis.exceptions import RedisError
 
+from app.core.config import settings
+
 if TYPE_CHECKING:
     from app.api.v1.dependencies import rediscon
 
@@ -35,6 +37,17 @@ def format_hour_br(date: datetime):
 
 def time_passed(date_compare: datetime) -> bool:
     return datetime.now(UTC) >= date_compare + timedelta(hours=24)
+
+
+def cancellation_window_closed(
+    date_time: datetime, min_hours: int | None = None
+) -> bool:
+    """True quando faltam menos de `min_hours` horas para a consulta (ou ela já
+    passou). Antes a conta era feita 24h DEPOIS da consulta, permitindo cancelar ou
+    remarcar uma sessão que já aconteceu."""
+    hours = settings.CANCEL_MIN_HOURS_BEFORE if min_hours is None else min_hours
+
+    return ensure_utc(date_time) - datetime.now(UTC) < timedelta(hours=hours)
 
 
 def pending_expired(created_at: datetime, ttl_minutes: int) -> bool:

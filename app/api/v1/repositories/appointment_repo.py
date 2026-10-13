@@ -1,14 +1,15 @@
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import List
 from zoneinfo import ZoneInfo
 
 from fastapi import HTTPException
-from sqlalchemy import and_, case, delete, exists, func, not_, select
+from sqlalchemy import and_, case, delete, exists, func, not_, or_, select
 from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.orm import joinedload, selectinload
 
 from app.api.v1.dependencies import CurrentUser, DBSession
 from app.api.v1.util.util import ensure_utc
+from app.core.config import settings
 from app.models.appointments_models import Appointment
 from app.models.avaliabilites_models import Avaliabilite
 from app.models.psychologist_models import Psychologist
@@ -16,6 +17,44 @@ from app.models.service_models import Service
 from app.models.users_models import User
 from app.schemas.appointment_schema import AppointmentCreate
 from app.schemas.custom_schema import AppointmentStatus
+
+
+def active_appointment_condition():
+    """Consultas que ocupam a agenda: confirmadas OU pendentes ainda dentro do
+    prazo de pagamento. Pendente expirada NÃO bloqueia mais o horário (antes uma
+    consulta nunca paga travava a agenda para sempre)."""
+    cutoff = datetime.now(UTC) - timedelta(
+        minutes=settings.PENDING_APPOINTMENT_TTL_MINUTES
+    )
+
+    return or_(
+        Appointment.status == AppointmentStatus.confirmed,
+        and_(
+            Appointment.status == AppointmentStatus.pending,
+            Appointment.created_at >= cutoff,
+        ),
+    )
+
+
+async def count_open_pending_appointments(db: DBSession, user_id: int) -> int:
+    """Consultas futuras do cliente aguardando pagamento (dentro do prazo)."""
+    now = datetime.now(UTC)
+    cutoff = now - timedelta(minutes=settings.PENDING_APPOINTMENT_TTL_MINUTES)
+
+    stmt = (
+        select(func.count())
+        .select_from(Appointment)
+        .where(
+            Appointment.id_client == user_id,
+            Appointment.status == AppointmentStatus.pending,
+            Appointment.created_at >= cutoff,
+            Appointment.date_time > now,
+        )
+    )
+
+    result = await db.execute(stmt)
+
+    return result.scalar_one()
 
 
 async def check_appointment_conflict(
@@ -32,7 +71,7 @@ async def check_appointment_conflict(
     stmt = (
         select(Appointment)
         .options(joinedload(Appointment.service))
-        .where(Appointment.status != AppointmentStatus.canceled)
+        .where(active_appointment_condition())
     )
 
     if id_psychologist:
@@ -179,12 +218,21 @@ async def search_available_psychologists(
             )
         )
     ).where(
+        # Ocupado = existe consulta ATIVA que SOBREPÕE [search_date, search_date+dur).
+        # Antes só se comparava o início (`date_time < fim`), então qualquer consulta
+        # passada ou anterior excluía o psicólogo de todas as buscas futuras.
         not_(
-            exists().where(
-                and_(
+            exists(
+                select(1)
+                .select_from(Appointment)
+                .join(Service, Appointment.id_service == Service.id)
+                .where(
                     Appointment.id_psychologist == Psychologist.id,
-                    Appointment.status != AppointmentStatus.canceled,
+                    active_appointment_condition(),
                     Appointment.date_time < (search_date + duration),
+                    Appointment.date_time
+                    + func.make_interval(0, 0, 0, 0, 0, Service.duration_minutes)
+                    > search_date,
                 )
             )
         )
