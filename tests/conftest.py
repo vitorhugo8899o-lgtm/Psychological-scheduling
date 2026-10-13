@@ -104,6 +104,52 @@ async def client(db_session):
     app.dependency_overrides.clear()
 
 
+class FakeRedis:
+    """Redis em memória (apenas os comandos usados pela aplicação) para testes
+    que precisam de estado: revogação de token, bloqueio de login, cache."""
+
+    def __init__(self):
+        self.store: dict[str, str] = {}
+        self.ttl: dict[str, int] = {}
+
+    async def get(self, key):
+        return self.store.get(key)
+
+    async def set(self, key, value, ex=None, nx=False):
+        if nx and key in self.store:
+            return None
+        self.store[key] = str(value)
+        if ex:
+            self.ttl[key] = ex
+        return True
+
+    async def incr(self, key):
+        self.store[key] = str(int(self.store.get(key, 0)) + 1)
+        return int(self.store[key])
+
+    async def exists(self, key):
+        return int(key in self.store)
+
+    async def delete(self, *keys):
+        return sum(1 for k in keys if self.store.pop(k, None) is not None)
+
+    async def expire(self, key, seconds):
+        self.ttl[key] = seconds
+        return True
+
+
+@pytest_asyncio.fixture(scope='function')
+async def fake_redis(client):
+    fake = FakeRedis()
+
+    async def override_get_redis():
+        yield fake
+
+    app.dependency_overrides[get_redis] = override_get_redis
+
+    return fake
+
+
 @pytest_asyncio.fixture(scope='function')
 async def user_client(db_session):
     raw_password = 'Senha12@#'
@@ -466,7 +512,10 @@ async def not_token(client):
 
 @pytest_asyncio.fixture(scope='function')
 async def not_exists_user_token(client):
-    payload = {'sub': 'user@example.com'}
+    payload = {
+        'sub': 'user@example.com',
+        'exp': datetime.now(timezone.utc) + timedelta(hours=1),
+    }
 
     token = jwt.encode(
         payload,

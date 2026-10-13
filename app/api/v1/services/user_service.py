@@ -3,7 +3,7 @@ from typing import List
 from fastapi import HTTPException
 
 from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
-from app.api.v1.repositories import service_repo, user_repo
+from app.api.v1.repositories import auth_repo, service_repo, user_repo
 from app.models.service_models import Service
 from app.models.users_models import User
 from app.schemas.custom_schema import UserRole
@@ -55,6 +55,9 @@ async def get_user(
 async def update_user_data(
     db: DBSession, r: rediscon, user: CurrentUser, uptade: UserUpdate
 ) -> UserPublic | None:
+    if not auth_repo.verify_password(uptade.current_password, user.password):
+        raise HTTPException(status_code=403, detail='Senha atual incorreta.')
+
     email_exist = await user_repo.get_user_by_email(db, uptade.email)
 
     if email_exist and email_exist.id != user.id:

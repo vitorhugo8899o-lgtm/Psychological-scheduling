@@ -54,6 +54,8 @@ class UserPublic(BaseModel):
 
 class UserUpdate(BaseModel):
     email: EmailStr = Field(max_length=50)
+    # Reautenticação: trocar e-mail/senha exige a senha atual.
+    current_password: str = Field(min_length=1, max_length=128)
     password: str = Field(max_length=128)
 
     @field_validator('password')

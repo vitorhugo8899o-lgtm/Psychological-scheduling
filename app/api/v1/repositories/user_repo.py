@@ -1,13 +1,10 @@
+import logging
 from datetime import UTC, datetime
 from typing import TYPE_CHECKING
 
 from fastapi import HTTPException
 from sqlalchemy import select
-from sqlalchemy.exc import (
-    IntegrityError,
-    InvalidRequestError,
-    OperationalError,
-)
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload
 
 from app.api.v1.repositories import auth_repo
@@ -35,11 +32,17 @@ async def new_user(db: DBSession, user_data: UserCreate) -> User:
         await db.commit()
         await db.refresh(user)
         return user
-    except Exception as e:
+    except IntegrityError:
         await db.rollback()
         raise HTTPException(
-            status_code=500,
-            detail={'message': 'Error  inesperado', 'contexto': str(e)},
+            status_code=409, detail='Esse endereço de Email já está em uso!'
+        )
+    except Exception:
+        await db.rollback()
+        # O detalhe técnico (SQL, parâmetros, hash) vai só para o log/Sentry.
+        logging.exception('[Users] Falha inesperada ao criar usuário')
+        raise HTTPException(
+            status_code=500, detail='Erro inesperado ao criar o usuário.'
         )
 
 
@@ -62,27 +65,30 @@ async def update_data(db: DBSession, user: CurrentUser, update: UserUpdate) -> U
     try:
         user.email = update.email
         user.password = auth_repo.hash_password(update.password)
+        # Invalida todos os tokens emitidos antes da troca de e-mail/senha.
+        user.token_version += 1
 
         await db.commit()
         await db.refresh(user)
 
         return user
 
-    except IntegrityError as e:
+    except IntegrityError:
         await db.rollback()
-        raise HTTPException(status_code=500, detail=f'{e}')
-    except OperationalError as e:
+        raise HTTPException(
+            status_code=409, detail='Esse endereço de Email já está em uso!'
+        )
+    except Exception:
         await db.rollback()
-        raise HTTPException(status_code=500, detail=f'{e}')
-    except InvalidRequestError as e:
-        raise HTTPException(status_code=500, detail=f'{e}')
-    except Exception as e:
-        await db.rollback()
-        raise HTTPException(status_code=500, detail=f'{e}')
+        logging.exception('[Users] Falha inesperada ao atualizar usuário %s', user.id)
+        raise HTTPException(
+            status_code=500, detail='Não foi possível atualizar os dados.'
+        )
 
 
 async def desactive_user(db: DBSession, user: CurrentUser):
     user.is_active = False
+    user.token_version += 1
     await db.commit()
 
 
