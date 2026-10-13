@@ -1,34 +1,43 @@
+# ATENÇÃO: este compose é SOMENTE para desenvolvimento local.
+# As portas ficam presas a 127.0.0.1 (antes ficavam abertas em 0.0.0.0, deixando
+# Postgres e Redis acessíveis a qualquer máquina da rede com credenciais fracas).
+# Nunca use este arquivo em servidor: em produção use banco/Redis gerenciados, com
+# senha forte e rede privada.
 services:
   db:
     image: postgres:15-alpine
     container_name: container_agendamento
     environment:
-      POSTGRES_USER: teste
-      POSTGRES_PASSWORD: senha
-      POSTGRES_DB: db_name
+      POSTGRES_USER: ${POSTGRES_USER:-teste}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-senha}
+      POSTGRES_DB: ${POSTGRES_DB:-db_name}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    restart: always
+    restart: unless-stopped
 
   redis:
     image: redis:alpine
     container_name: container_redis
+    # Preso a 127.0.0.1 (sem senha, só para dev). Se quiser senha local, acrescente
+    # `command: ["redis-server", "--requirepass", "SUA_SENHA"]` e use
+    # REDIS_URL=redis://:SUA_SENHA@localhost:6379/0
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - redis_data:/data
+
   postgres_test:
     image: postgres:16
     container_name: postgres_test
-    restart: always
+    restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: test_db
     ports:
-      - "5433:5432"
+      - "127.0.0.1:5433:5432"
 
 volumes:
   postgres_data:

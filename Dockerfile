@@ -16,10 +16,17 @@ COPY pyproject.toml poetry.lock* ./
 
 RUN poetry install --no-interaction --no-ansi --without dev --no-root
 
-COPY . .
+# Roda como usuário SEM privilégios: se a aplicação for comprometida, o atacante
+# não é root dentro do container.
+RUN useradd --create-home --uid 10001 appuser
+
+COPY --chown=appuser:appuser . .
+
+USER appuser
 
 EXPOSE 8000
 
-RUN find .
-
-CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+# `exec` repassa SIGTERM ao uvicorn (encerramento limpo). Não defina
+# FORWARDED_ALLOW_IPS='*': o IP do cliente é tratado em app/redis/limiter.py
+# (TRUSTED_PROXY_HOPS).
+CMD ["sh", "-c", "alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --no-server-header"]
