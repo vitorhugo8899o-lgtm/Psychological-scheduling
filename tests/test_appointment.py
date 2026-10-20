@@ -316,7 +316,7 @@ async def test_no_psychologists_available_on_that_date(
     )  # noqa
 
 
-@patch('app.api.v1.services.appoint_service.time_passed')
+@patch('app.api.v1.services.appoint_service.cancellation_window_closed')
 @pytest.mark.asyncio
 async def test_reschedule_an_appointment(
     mock_time_passed, availability, token_client, service, schedule_refresh
@@ -362,7 +362,7 @@ async def test_try_to_reschedule_an_appointment_but_any_available_dates(token_cl
     assert response.json()['detail'] == 'Consulta não encontrada.'
 
 
-@patch('app.api.v1.services.appoint_service.time_passed')
+@patch('app.api.v1.services.appoint_service.cancellation_window_closed')
 @pytest.mark.asyncio
 async def test_try_to_reschedule_but_time_passed(
     mock_time_passed, availability, token_client, service, schedule_refresh
@@ -384,11 +384,11 @@ async def test_try_to_reschedule_but_time_passed(
     assert response.status_code == status
     assert (
         response.json()['detail']
-        == 'Já se passaram 24 horas desde o momento em que a consulta foi marcada.'
+        == 'O prazo para remarcar esta consulta já passou: é preciso pelo menos 24 horas de antecedência.'  # noqa
     )  # noqa
 
 
-@patch('app.api.v1.services.appoint_service.time_passed')
+@patch('app.api.v1.services.appoint_service.cancellation_window_closed')
 @pytest.mark.asyncio
 async def test_try_to_reschedule_but_psych_not_available_on_this_date(
     mock_time_passed, availability, token_client, service, schedule_refresh
@@ -414,7 +414,7 @@ async def test_try_to_reschedule_but_psych_not_available_on_this_date(
     )
 
 
-@patch('app.api.v1.services.appoint_service.time_passed')
+@patch('app.api.v1.services.appoint_service.cancellation_window_closed')
 @pytest.mark.asyncio
 async def test_try_to_reschedule_but_psych_has_appointments_available(  # noqa
     mock_time_passed,
@@ -446,7 +446,13 @@ async def test_try_to_reschedule_but_psych_has_appointments_available(  # noqa
 
 
 @pytest.mark.asyncio
-async def test_cancel_appoinment(availability, token_client, service, schedule):
+async def test_cancel_appoinment(
+    db_session, availability, token_client, service, schedule
+):
+    # Com pelo menos 24h de antecedência (a fixture marca para o mesmo dia).
+    schedule.date_time = datetime(2026, 5, 14, 12, 30, tzinfo=timezone.utc)
+    await db_session.commit()
+
     payload = {'id_appointment': f'{schedule.id}'}
 
     response = await token_client.post('/api/v1/appointments/cancel', json=payload)

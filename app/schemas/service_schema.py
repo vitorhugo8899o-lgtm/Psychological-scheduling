@@ -7,8 +7,8 @@ from app.schemas.custom_schema import ServiceOption
 
 
 class ServiceSchema(BaseModel):
-    name: str = Field(min_length=7)
-    description: str = Field(min_length=10)
+    name: str = Field(min_length=7, max_length=200)
+    description: str = Field(min_length=10, max_length=2000)
     price: float = Field(ge=50)
     duration_minutes: int = Field(ge=30)
 
@@ -49,9 +49,9 @@ class ServiceResponse(BaseModel):
 
 class ServiceQuery(BaseModel):
     option: ServiceOption = Field(default=ServiceOption.AND)
-    offset: int = Field(ge=0, default=0)
-    limit: int = Field(ge=0, default=5)
-    name: str | None = Field(default=None)
+    offset: int = Field(ge=0, le=10_000, default=0)
+    limit: int = Field(ge=0, le=100, default=5)
+    name: str | None = Field(default=None, max_length=100)
     price: float | None = Field(ge=50, default=None)
     duration_minutes: int | None = Field(ge=30, default=None)
 

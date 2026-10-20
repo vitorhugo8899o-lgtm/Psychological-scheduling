@@ -9,10 +9,14 @@ from zoneinfo import ZoneInfo
 from pydantic import BaseModel
 from redis.exceptions import RedisError
 
+from app.core.config import settings
+
 if TYPE_CHECKING:
     from app.api.v1.dependencies import rediscon
 
 T = TypeVar('T', bound=BaseModel)
+
+LIKE_ESCAPE = '\\'
 
 
 def ensure_utc(dt: datetime) -> datetime:
@@ -35,6 +39,28 @@ def format_hour_br(date: datetime):
 
 def time_passed(date_compare: datetime) -> bool:
     return datetime.now(UTC) >= date_compare + timedelta(hours=24)
+
+
+def escape_like(value: str) -> str:
+    return (
+        value
+        .replace(LIKE_ESCAPE, LIKE_ESCAPE * 2)
+        .replace('%', f'{LIKE_ESCAPE}%')
+        .replace('_', f'{LIKE_ESCAPE}_')
+    )
+
+
+def cancellation_window_closed(
+    date_time: datetime, min_hours: int | None = None
+) -> bool:
+    hours = settings.CANCEL_MIN_HOURS_BEFORE if min_hours is None else min_hours
+
+    return ensure_utc(date_time) - datetime.now(UTC) < timedelta(hours=hours)
+
+
+def pending_expired(created_at: datetime, ttl_minutes: int) -> bool:
+    """True quando uma consulta pendente passou do prazo para ser paga."""
+    return datetime.now(UTC) >= ensure_utc(created_at) + timedelta(minutes=ttl_minutes)
 
 
 def cauculation_rate(total_appointments: int, total_compared: int):
@@ -73,10 +99,6 @@ class CacheManager(Generic[T]):
     async def get_or_set(
         self, r: rediscon, identifier: Any, db_fallback: Callable[[], Awaitable[Any]]
     ) -> T | None:
-        """
-        Busca no Redis. Se não achar, usa a função db_fallback para buscar no banco,
-        salva no Redis e retorna o objeto tipado.
-        """
         cache_key = self._get_key(identifier)
 
         try:

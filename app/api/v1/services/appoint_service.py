@@ -5,6 +5,7 @@ from fastapi import HTTPException
 from app.api.v1.dependencies import CurrentUser, DBSession
 from app.api.v1.repositories.appointment_repo import (
     check_appointment_conflict,
+    count_open_pending_appointments,
     create_appointment,
     get_all_psych_appointment,
     get_all_user_appointment,
@@ -16,14 +17,15 @@ from app.api.v1.repositories.appointment_repo import (
 )
 from app.api.v1.repositories.psych_repo import avaliabilite_exists, get_psych
 from app.api.v1.repositories.service_repo import get_service_by_id
-from app.api.v1.util.util import format_hour_br, time_passed
+from app.api.v1.util.util import cancellation_window_closed, format_hour_br
+from app.core.config import settings
 from app.models.appointments_models import Appointment
 from app.schemas.appointment_schema import (
     AppointmentCreate,
     AppointmentSimulation,
     ReschedulingAppointment,
 )
-from app.schemas.custom_schema import UserRole
+from app.schemas.custom_schema import AppointmentStatus, UserRole
 
 
 async def check_for_conflict(
@@ -47,6 +49,19 @@ async def check_for_conflict(
         raise HTTPException(
             status_code=409,
             detail='Serviço não encontrado, verifique se digitou corretamente.',
+        )
+
+    # Limite de consultas "reservadas e não pagas": sem isso uma única conta pode
+    # segurar toda a agenda de todos os psicólogos sem pagar nada.
+    open_pending = await count_open_pending_appointments(db, user.id)
+
+    if open_pending >= settings.MAX_PENDING_APPOINTMENTS_PER_USER:
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                f'Você já possui {open_pending} consulta(s) aguardando pagamento. '
+                'Conclua o pagamento ou cancele uma delas antes de agendar outra.'
+            ),
         )
 
     user_appointment = await check_appointment_conflict(
@@ -186,14 +201,19 @@ async def rescheduling_appointmnet(
             detail='Consulta não encontrada.',
         )
 
-    passed = time_passed(appointment.date_time)
+    if appointment.status == AppointmentStatus.canceled:
+        raise HTTPException(
+            status_code=409,
+            detail='Esta consulta foi cancelada e não pode ser remarcada.',
+        )
 
-    if passed:
+    if cancellation_window_closed(appointment.date_time):
         raise HTTPException(
             status_code=400,
             detail=(
-                'Já se passaram 24 horas desde o momento em que a consulta foi marcada.'
-            )
+                'O prazo para remarcar esta consulta já passou: é preciso '
+                f'pelo menos {settings.CANCEL_MIN_HOURS_BEFORE} horas de antecedência.'
+            ),
         )
 
     locked_psych = await lock_psychologist(
@@ -287,9 +307,7 @@ async def cancel_service(db: DBSession, user: CurrentUser, id_appoinment: int):
             detail='Esta consulta já foi cancelada, verifique na sua Aba de consultas.',
         )
 
-    passed = time_passed(appoinment.date_time)
-
-    if passed:
+    if cancellation_window_closed(appoinment.date_time):
         raise HTTPException(
             status_code=400,
             detail='O tempo para cancelamento da consulta já passou, se desejar um reembolso busque na aba de consulta ao lado',  # noqa

@@ -1,8 +1,9 @@
+import logging
 from datetime import UTC, datetime, time, timedelta
 from zoneinfo import ZoneInfo
 
+from fastapi import HTTPException
 from sqlalchemy import and_, delete, desc, exists, func, select
-from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.orm import joinedload
 
 from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
@@ -17,6 +18,15 @@ from app.schemas.psychologist_schema import (
     MedicalRecordCreate,
     availability_list_adapter,
 )
+
+
+def _raise_db_error() -> None:
+    """Detalhe técnico (SQL, parâmetros) só no log; o cliente recebe mensagem fixa."""
+    logging.exception('[Psicólogos] Falha de banco de dados')
+    raise HTTPException(
+        status_code=500,
+        detail='Não foi possível concluir a operação. Tente novamente.',
+    )
 
 
 async def get_psych(db: DBSession, id_psych: int) -> Psychologist | None:
@@ -130,15 +140,9 @@ async def delete_availbilty(
         await db.commit()
         return {'message': 'Disponibilidade deletada'}
 
-    except IntegrityError as e:
+    except Exception:
         await db.rollback()
-        raise f'Erro de integridade {e}'
-    except OperationalError as e:
-        await db.rollback()
-        raise f'Erro de operação: {e}'
-    except Exception as e:
-        await db.rollback()
-        raise f'Um erro inesperado ocorreu: {e}'
+        _raise_db_error()
 
 
 async def get_count_appoinment(db: DBSession, user: CurrentUser):
@@ -264,15 +268,9 @@ async def delete_record(db: DBSession, user: CurrentUser, record_id: int):
         await db.commit()
         return {'message': 'Disponibilidade deletada'}
 
-    except IntegrityError as e:
+    except Exception:
         await db.rollback()
-        raise f'Erro de integridade {e}'
-    except OperationalError as e:
-        await db.rollback()
-        raise f'Erro de operação: {e}'
-    except Exception as e:
-        await db.rollback()
-        raise f'Um erro inesperado ocorreu: {e}'
+        _raise_db_error()
 
 
 async def get_next_appoiments(db: DBSession, user: CurrentUser):

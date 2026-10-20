@@ -3,6 +3,7 @@ from typing import List
 from sqlalchemy import or_, select
 
 from app.api.v1.dependencies import DBSession, rediscon
+from app.api.v1.util.util import LIKE_ESCAPE, escape_like
 from app.models.service_models import Service
 from app.schemas.service_schema import ServiceQuery, ServiceResponse
 
@@ -57,7 +58,9 @@ async def filter_services(
 
     for field, value in filter_data.items():
         if field == 'name':
-            conditions.append(Service.name.ilike(f'%{value}%'))
+            conditions.append(
+                Service.name.ilike(f'%{escape_like(value)}%', escape=LIKE_ESCAPE)
+            )
         elif hasattr(Service, field):
             db_attribute = getattr(Service, field)
             conditions.append(db_attribute == value)

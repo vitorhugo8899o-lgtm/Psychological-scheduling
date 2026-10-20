@@ -1,20 +1,56 @@
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from typing import List
 from zoneinfo import ZoneInfo
 
 from fastapi import HTTPException
-from sqlalchemy import and_, case, delete, exists, not_, select
+from sqlalchemy import and_, case, delete, exists, func, not_, or_, select
 from sqlalchemy.exc import IntegrityError, OperationalError
-from sqlalchemy.orm import joinedload
+from sqlalchemy.orm import joinedload, selectinload
 
 from app.api.v1.dependencies import CurrentUser, DBSession
 from app.api.v1.util.util import ensure_utc
+from app.core.config import settings
 from app.models.appointments_models import Appointment
 from app.models.avaliabilites_models import Avaliabilite
 from app.models.psychologist_models import Psychologist
+from app.models.service_models import Service
 from app.models.users_models import User
 from app.schemas.appointment_schema import AppointmentCreate
 from app.schemas.custom_schema import AppointmentStatus
+
+
+def active_appointment_condition():
+    cutoff = datetime.now(UTC) - timedelta(
+        minutes=settings.PENDING_APPOINTMENT_TTL_MINUTES
+    )
+
+    return or_(
+        Appointment.status == AppointmentStatus.confirmed,
+        and_(
+            Appointment.status == AppointmentStatus.pending,
+            Appointment.created_at >= cutoff,
+        ),
+    )
+
+
+async def count_open_pending_appointments(db: DBSession, user_id: int) -> int:
+    now = datetime.now(UTC)
+    cutoff = now - timedelta(minutes=settings.PENDING_APPOINTMENT_TTL_MINUTES)
+
+    stmt = (
+        select(func.count())
+        .select_from(Appointment)
+        .where(
+            Appointment.id_client == user_id,
+            Appointment.status == AppointmentStatus.pending,
+            Appointment.created_at >= cutoff,
+            Appointment.date_time > now,
+        )
+    )
+
+    result = await db.execute(stmt)
+
+    return result.scalar_one()
 
 
 async def check_appointment_conflict(
@@ -31,7 +67,7 @@ async def check_appointment_conflict(
     stmt = (
         select(Appointment)
         .options(joinedload(Appointment.service))
-        .where(Appointment.status != AppointmentStatus.canceled)
+        .where(active_appointment_condition())
     )
 
     if id_psychologist:
@@ -179,11 +215,17 @@ async def search_available_psychologists(
         )
     ).where(
         not_(
-            exists().where(
-                and_(
+            exists(
+                select(1)
+                .select_from(Appointment)
+                .join(Service, Appointment.id_service == Service.id)
+                .where(
                     Appointment.id_psychologist == Psychologist.id,
-                    Appointment.status != AppointmentStatus.canceled,
+                    active_appointment_condition(),
                     Appointment.date_time < (search_date + duration),
+                    Appointment.date_time
+                    + func.make_interval(0, 0, 0, 0, 0, Service.duration_minutes)
+                    > search_date,
                 )
             )
         )
@@ -196,6 +238,49 @@ async def search_available_psychologists(
         available_data.append({'id': psych.id, 'fullname': fullname, 'crp': psych.crp})
 
     return available_data
+
+
+async def get_appointment_for_update(
+    db: DBSession, appointment_id: int
+) -> Appointment | None:
+    stmt = (
+        select(Appointment)
+        .options(selectinload(Appointment.service))
+        .where(Appointment.id == appointment_id)
+        .with_for_update()
+    )
+
+    result = await db.execute(stmt)
+
+    return result.scalar_one_or_none()
+
+
+async def find_confirmed_overlap(
+    db: DBSession, appointment: Appointment
+) -> Appointment | None:
+    start = ensure_utc(appointment.date_time)
+    end = start + timedelta(minutes=appointment.service.duration_minutes)
+
+    other_end = Appointment.date_time + func.make_interval(
+        0, 0, 0, 0, 0, Service.duration_minutes
+    )
+
+    stmt = (
+        select(Appointment)
+        .join(Service, Appointment.id_service == Service.id)
+        .where(
+            Appointment.id_psychologist == appointment.id_psychologist,
+            Appointment.id != appointment.id,
+            Appointment.status == AppointmentStatus.confirmed,
+            Appointment.date_time < end,
+            other_end > start,
+        )
+        .limit(1)
+    )
+
+    result = await db.execute(stmt)
+
+    return result.scalar_one_or_none()
 
 
 async def get_appointment_by_id(db: DBSession, appoinment_id: int, user_id: int):

@@ -113,7 +113,11 @@ async def test_password_field_does_not_have_number(client):
 
 @pytest.mark.asyncio
 async def test_update_field_not_has_enough_characters(token_client):
-    new_info = {'email': 'new@email.com', 'password': 'Senha12'}
+    new_info = {
+        'email': 'new@email.com',
+        'current_password': 'Senha12@#',
+        'password': 'Senha12',
+    }
 
     req = await token_client.put('/api/v1/users', json=new_info)
 
@@ -127,7 +131,11 @@ async def test_update_field_not_has_enough_characters(token_client):
 
 @pytest.mark.asyncio
 async def test_update_field_does_not_have_uppercase_letter(token_client):
-    new_info = {'email': 'new@email.com', 'password': 'senha12@#'}
+    new_info = {
+        'email': 'new@email.com',
+        'current_password': 'Senha12@#',
+        'password': 'senha12@#',
+    }
 
     req = await token_client.put('/api/v1/users', json=new_info)
 
@@ -141,7 +149,11 @@ async def test_update_field_does_not_have_uppercase_letter(token_client):
 
 @pytest.mark.asyncio
 async def test_update_field_does_not_have_lowercase_letter(token_client):
-    new_info = {'email': 'new@email.com', 'password': 'SENHA12@#'}
+    new_info = {
+        'email': 'new@email.com',
+        'current_password': 'Senha12@#',
+        'password': 'SENHA12@#',
+    }
 
     req = await token_client.put('/api/v1/users', json=new_info)
 
@@ -155,7 +167,11 @@ async def test_update_field_does_not_have_lowercase_letter(token_client):
 
 @pytest.mark.asyncio
 async def test_field_update_not_has_numbers(token_client):
-    new_info = {'email': 'new@email.com', 'password': 'Senhaaa@#'}
+    new_info = {
+        'email': 'new@email.com',
+        'current_password': 'Senha12@#',
+        'password': 'Senhaaa@#',
+    }
 
     req = await token_client.put('/api/v1/users', json=new_info)
 
@@ -169,7 +185,11 @@ async def test_field_update_not_has_numbers(token_client):
 
 @pytest.mark.asyncio
 async def test_update_field_not_special_character(token_client):
-    new_info = {'email': 'new@email.com', 'password': 'Senha1234'}
+    new_info = {
+        'email': 'new@email.com',
+        'current_password': 'Senha12@#',
+        'password': 'Senha1234',
+    }
 
     req = await token_client.put('/api/v1/users', json=new_info)
 

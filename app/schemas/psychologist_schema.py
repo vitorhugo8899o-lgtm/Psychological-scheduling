@@ -11,6 +11,7 @@ from pydantic import (
     computed_field,
     field_serializer,
     field_validator,
+    model_validator,
 )
 
 from app.schemas.user_schema import UserFullNameSchema, UserPublic
@@ -78,9 +79,18 @@ class PsychologistPublic(BaseModel):
 
 
 class PsychologistAvaliabiliteBlock(BaseModel):
-    days_of_the_week: List[int] = Field(description='0 para segunda e 6 para domingo')  # noqa
+    days_of_the_week: List[int] = Field(
+        description='0 para segunda e 6 para domingo', max_length=7
+    )
     start_time: time
     end_time: time
+
+    @model_validator(mode='after')
+    def validate_time_order(self):
+        if self.end_time <= self.start_time:
+            raise ValueError('O horário final deve ser depois do horário inicial.')
+
+        return self
 
     @field_validator('days_of_the_week')
     @classmethod
@@ -95,14 +105,17 @@ class PsychologistAvaliabiliteBlock(BaseModel):
                 raise ValueError(
                     'O dia da semana deve estar entre 0 (Segunda) e 6 (Domingo)'  # noqa
                 )
-        return values
+
+        return list(dict.fromkeys(values))
 
     class Config:
         from_attributes = True
 
 
 class PsychologistAvaliabiliteCreate(BaseModel):
-    availabilities: List[PsychologistAvaliabiliteBlock]
+    availabilities: List[PsychologistAvaliabiliteBlock] = Field(
+        min_length=1, max_length=20
+    )
 
 
 class AvailabilityCacheSchema(BaseModel):
@@ -148,7 +161,7 @@ class DeleteAvailabilySchema(BaseModel):
         monday = 0
         sunday = 6
         if v < monday or v > sunday:
-            return ValueError('Digite um dia valido da semana.')
+            raise ValueError('Digite um dia valido da semana.')
         return v
 
     @field_validator('start_time', 'end_time', mode='before')
@@ -191,7 +204,7 @@ class PsychResponse(BaseModel):
 class MedicalRecordCreate(BaseModel):
     id_user: int
     id_appoiment: int
-    description: str
+    description: str = Field(min_length=1, max_length=10_000)
 
 
 class MedicalRecordResponse(BaseModel):

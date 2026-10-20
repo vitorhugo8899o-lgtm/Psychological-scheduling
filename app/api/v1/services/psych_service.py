@@ -1,10 +1,13 @@
+from datetime import UTC, datetime
+
 from fastapi import HTTPException
 
 from app.api.v1.dependencies import CurrentUser, DBSession, rediscon
 from app.api.v1.repositories import psych_repo, user_repo
-from app.api.v1.util.util import cauculation_rate
+from app.api.v1.util.util import cauculation_rate, ensure_utc
+from app.core.audit import audit
 from app.models.avaliabilites_models import Avaliabilite
-from app.schemas.custom_schema import UserRole
+from app.schemas.custom_schema import AppointmentStatus, UserRole
 from app.schemas.psychologist_schema import (
     DeleteAvailabilySchema,
     MedicalRecordCreate,
@@ -80,7 +83,7 @@ async def get_avaliabilites(db: DBSession, r: rediscon, psych: CurrentUser):
     if not schedule:
         raise HTTPException(
             status_code=404,
-            detail=f'Nenhum horário encontrado.:{schedule} and {psych.id}',
+            detail='Nenhum horário encontrado.',
         )
 
     return schedule
@@ -182,13 +185,48 @@ async def medical_record(db: DBSession, user: CurrentUser, record: MedicalRecord
     consulted = await psych_repo.consulted_user(db, user, record)
 
     if not consulted:
+        audit(
+            'medical_record.create_denied',
+            user.id,
+            client=record.id_user,
+            appointment=record.id_appoiment,
+        )
         raise HTTPException(
             status_code=409, detail='Você ainda não teve uma consulta com esse usuário.'
         )
 
-    return await psych_repo.create_medical_record(
+    if (
+        consulted.status != AppointmentStatus.confirmed
+        or ensure_utc(consulted.date_time) > datetime.now(UTC)
+    ):
+        audit(
+            'medical_record.create_denied',
+            user.id,
+            client=record.id_user,
+            appointment=consulted.id,
+            reason='appointment_not_confirmed_or_not_started',
+        )
+        raise HTTPException(
+            status_code=409,
+            detail=(
+                'Só é possível registrar prontuário de uma consulta confirmada '
+                'que já começou.'
+            ),
+        )
+
+    created = await psych_repo.create_medical_record(
         db, user, record, consulted.id_service
     )
+
+    audit(
+        'medical_record.create',
+        user.id,
+        record=created.id,
+        client=record.id_user,
+        appointment=consulted.id,
+    )
+
+    return created
 
 
 async def get_records(db: DBSession, user: CurrentUser):
@@ -201,6 +239,8 @@ async def get_records(db: DBSession, user: CurrentUser):
     list_records = []
 
     medical_records = await psych_repo.get_medical_records(db, user)
+
+    audit('medical_record.list', user.id, count=len(medical_records))
 
     if not medical_records:
         return {'message': 'Nenhum Prontuário registrado.'}
@@ -233,6 +273,13 @@ async def get_user_records(db: DBSession, user: CurrentUser, user_id: int):
 
     medical_records = await psych_repo.ger_medical_records_by_user(db, user, user_id)
 
+    audit(
+        'medical_record.list_by_client',
+        user.id,
+        client=user_id,
+        count=len(medical_records),
+    )
+
     if not medical_records:
         return {'message': 'Nenhum Prontuário registrado.'}
 
@@ -263,7 +310,10 @@ async def delete_medical_redord(db: DBSession, user: CurrentUser, record_id: int
     result = await psych_repo.delete_record(db, user, record_id)
 
     if not result:
+        audit('medical_record.delete_denied', user.id, record=record_id)
         raise HTTPException(status_code=404, detail='Prontuário não encontrado.')
+
+    audit('medical_record.delete', user.id, record=record_id)
 
 
 async def next_appoiments(db: DBSession, user: CurrentUser):

@@ -3,16 +3,23 @@ from unittest.mock import patch
 import pytest
 
 
+@patch('app.api.v1.repositories.payment_repo.sdk.preference')
 @pytest.mark.asyncio
-async def test_create_payment(token_client, availability_paymenttest, schedule_payment):
-    payload = {'appointment_id': f'{schedule_payment.id}'}
+async def test_create_payment(
+    mock_preference, token_client, availability_paymenttest, schedule_payment_pending
+):
+    mock_preference.return_value.create.return_value = {
+        'status': 201,
+        'response': {'init_point': 'https://checkout-fake.com'},
+    }
+    payload = {'appointment_id': f'{schedule_payment_pending.id}'}
 
     response = await token_client.post('/api/v1/payments', json=payload)
 
     status = 201
 
     assert response.status_code == status
-    assert 'checkout_url' in response.json()
+    assert response.json() == {'checkout_url': 'https://checkout-fake.com'}
 
 
 @pytest.mark.asyncio
@@ -76,6 +83,7 @@ async def test_webhook(
     response = await token_client.post(
         '/api/v1/payments/webhook',
         json=payload,
+        params={'data.id': '123'},
         headers={
             'x-signature': 'mock-signature',
             'x-request-id': 'mock-request-id',
@@ -118,6 +126,7 @@ async def test_webhook_is_not_a_payment_event(
     response = await token_client.post(
             '/api/v1/payments/webhook',
             json=payload,
+            params={'data.id': '123'},
             headers={
                 'x-signature': 'mock-signature',
                 'x-request-id': 'mock-request-id',
@@ -156,6 +165,7 @@ async def test_external_reference_invalid(
     response = await token_client.post(
                 '/api/v1/payments/webhook',
                 json=payload,
+                params={'data.id': '123'},
                 headers={
                     'x-signature': 'mock-signature',
                     'x-request-id': 'mock-request-id',
@@ -194,6 +204,7 @@ async def test_payment_cancelled(
     response = await token_client.post(
                     '/api/v1/payments/webhook',
                     json=payload,
+                    params={'data.id': '123'},
                     headers={
                         'x-signature': 'mock-signature',
                         'x-request-id': 'mock-request-id',
@@ -235,6 +246,7 @@ async def test_payment_pending(
     response = await token_client.post(
             '/api/v1/payments/webhook',
             json=payload,
+            params={'data.id': '123'},
             headers={
                 'x-signature': 'mock-signature',
                 'x-request-id': 'mock-request-id',

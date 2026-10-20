@@ -41,7 +41,11 @@ async def test_email_alredy_in_use(client, user_client):
 
 @pytest.mark.asyncio
 async def test_update_user(token_client):
-    new_info = {'email': 'new@email.com', 'password': 'Senha12@#'}
+    new_info = {
+        'email': 'new@email.com',
+        'current_password': 'Senha12@#',
+        'password': 'Senha12@#',
+    }
 
     req = await token_client.put('/api/v1/users', json=new_info)
 
@@ -59,7 +63,11 @@ async def test_update_user(token_client):
 
 @pytest.mark.asyncio
 async def test_update_in_use_email(token_client, user_client2):
-    payload = {'email': 'user2@example.com', 'password': 'Senha12@#'}
+    payload = {
+        'email': 'user2@example.com',
+        'current_password': 'Senha12@#',
+        'password': 'Senha12@#',
+    }
 
     req = await token_client.put('/api/v1/users', json=payload)
 

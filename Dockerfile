@@ -16,10 +16,12 @@ COPY pyproject.toml poetry.lock* ./
 
 RUN poetry install --no-interaction --no-ansi --without dev --no-root
 
-COPY . .
+RUN useradd --create-home --uid 10001 appuser
+
+COPY --chown=appuser:appuser . .
+
+USER appuser
 
 EXPOSE 8000
 
-RUN find .
-
-CMD ["sh", "-c", "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000"]
+CMD ["sh", "-c", "alembic upgrade head && exec uvicorn app.main:app --host 0.0.0.0 --port 8000 --no-server-header"]

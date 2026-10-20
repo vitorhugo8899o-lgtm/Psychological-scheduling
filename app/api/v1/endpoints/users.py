@@ -26,9 +26,13 @@ async def user_create(request: Request, db: DBSession, user_data: UserCreate):
 @user_route.post('/login', status_code=HTTPStatus.OK, response_model=LoginSuccess)
 @limiter.limit('5/minute')
 async def login_user(
-    request: Request, db: DBSession, user: Form_data, response: Response
+    request: Request,
+    db: DBSession,
+    user: Form_data,
+    response: Response,
+    r: rediscon,
 ):
-    token, user_info = await auth_service.login(db, user)
+    token, user_info = await auth_service.login(db, user, r)
 
     response.set_cookie(
         key='Login_info',
@@ -46,7 +50,12 @@ async def login_user(
 
 
 @user_route.post('/logout', status_code=HTTPStatus.OK, response_model=str)
-async def user_logout(user: CurrentUser, response: Response):
+@limiter.limit('10/minute')
+async def user_logout(
+    request: Request, user: CurrentUser, response: Response, r: rediscon
+):
+    await auth_service.revoke_token(r, getattr(request.state, 'token_payload', {}))
+
     response.delete_cookie(
         key='Login_info',
         path='/',
@@ -97,8 +106,13 @@ async def uptade_user(  # noqa
 
 
 @user_route.delete('/users', status_code=HTTPStatus.NO_CONTENT)
+@limiter.limit('3/minute')
 async def desactive_user(
-    db: DBSession, user: CurrentUser, r: rediscon, response: Response
+    request: Request,
+    db: DBSession,
+    user: CurrentUser,
+    r: rediscon,
+    response: Response,
 ):
     await user_service.desactive_account(db, user, r)
     response.delete_cookie(
