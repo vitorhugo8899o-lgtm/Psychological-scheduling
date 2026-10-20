@@ -39,8 +39,6 @@ async def lifespan(app: FastAPI):
 
 
 def docs_kwargs() -> dict:
-    """/docs, /redoc e /openapi.json entregam o mapa completo da API a quem estiver
-    procurando falhas: ficam desligados em produção (ENABLE_DOCS=true reativa)."""
     if settings.is_production and not settings.ENABLE_DOCS:
         return {'docs_url': None, 'redoc_url': None, 'openapi_url': None}
 
@@ -79,7 +77,6 @@ UNSAFE_METHODS = {'POST', 'PUT', 'PATCH', 'DELETE'}
 
 @app.middleware('http')
 async def limit_body_size(request: Request, call_next):
-    """Recusa corpos gigantes antes de lê-los (nem uvicorn nem FastAPI limitam)."""
     declared = request.headers.get('content-length')
 
     if (
@@ -108,13 +105,6 @@ def _origin_from_referer(referer: str | None) -> str | None:
 
 @app.middleware('http')
 async def csrf_origin_guard(request: Request, call_next):
-    """Defesa contra CSRF (o cookie de sessão é SameSite=None em produção).
-
-    Navegadores SEMPRE enviam `Origin` (ou `Referer`) em requisições que alteram
-    estado vindas de outro site. Se vier uma origem que não é a do front-end, a
-    requisição é recusada ANTES de chegar na rota. Clientes que não são navegadores
-    (curl, app mobile, webhook do Mercado Pago) não enviam Origin e seguem normal.
-    """
     if request.method in UNSAFE_METHODS:
         origin = request.headers.get('origin') or _origin_from_referer(
             request.headers.get('referer')
@@ -149,8 +139,6 @@ async def security_headers(request: Request, call_next):
     response.headers.setdefault('X-Frame-Options', 'DENY')
 
     if request.url.path.startswith('/api/'):
-        # Respostas autenticadas (prontuários, dados pessoais) não podem ser
-        # guardadas por proxies/CDNs/navegadores compartilhados.
         response.headers.setdefault('Cache-Control', 'no-store')
         response.headers.setdefault(
             'Content-Security-Policy', "default-src 'none'; frame-ancestors 'none'"

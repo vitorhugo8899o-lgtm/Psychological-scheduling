@@ -52,8 +52,6 @@ async def total_collected_metrics(db: DBSession, report: FinancialSchema):
         .join(Appointment, Payment.id_appointment == Appointment.id)
         .join(Service, Appointment.id_service == Service.id)
         .where(
-            # Só dinheiro que realmente entrou: pagamentos pendentes/recusados
-            # inflavam a receita do relatório.
             Payment.status == PaymentStatus.approved,
             Payment.created_at >= report.start_date,
             Payment.created_at < report.end_date,

@@ -27,8 +27,7 @@ class User(Base):
         nullable=False,
     )
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    # Incrementado em troca de senha/e-mail e desativação: invalida todos os JWTs
-    # emitidos antes (o claim 'tv' do token precisa ser igual a este valor).
+
     token_version: Mapped[int] = mapped_column(
         Integer, default=0, server_default='0', nullable=False
     )

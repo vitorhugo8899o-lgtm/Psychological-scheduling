@@ -35,9 +35,6 @@ async def prepare_data_for_payment(
             detail='Erro ao tentar encontrar a consulta, tente novamente.',
         )
 
-    # Só se paga uma consulta que está aguardando pagamento e ainda vai acontecer:
-    # evita pagar duas vezes, pagar consulta cancelada (e "ressuscitá-la" depois)
-    # e abrir checkout de consulta que já passou.
     if result.status != AppointmentStatus.pending:
         raise HTTPException(
             status_code=409, detail='Esta consulta não está aguardando pagamento.'
@@ -63,7 +60,6 @@ async def prepare_data_for_payment(
         unit_price=result.service.price,
     )
 
-    # O SDK do Mercado Pago é síncrono: roda em thread para não travar a API toda.
     checkout_url = await asyncio.to_thread(
         payment_repo.create_preference, data, appointment.appointment_id
     )
@@ -72,7 +68,6 @@ async def prepare_data_for_payment(
 
 
 def _flag_for_review(appointment_id: int, mp_payment_id: str, reason: str) -> None:
-    """Dinheiro recebido que NÃO confirmou a consulta: precisa de ação manual."""
     message = (
         f'[Pagamento] Revisão manual/reembolso: {reason} '
         f'(consulta={appointment_id}, pagamento_mp={mp_payment_id})'
@@ -106,7 +101,6 @@ async def _apply_approved(
             appointment.status = AppointmentStatus.confirmed
 
     elif appointment.status == AppointmentStatus.canceled:
-        # Nunca reativa consulta cancelada: o horário pode já ter sido reservado.
         _flag_for_review(
             appointment.id, mp_payment_id, 'pagamento aprovado de consulta cancelada'
         )
@@ -117,7 +111,6 @@ IGNORED = {'success': True, 'detail': 'Evento ignorado'}
 
 
 async def _fetch_mp_payment(data_id) -> dict:
-    # Chamada síncrona do SDK -> thread (não bloqueia o event loop).
     payment_response = await asyncio.to_thread(lambda: sdk.payment().get(data_id))
     payment = payment_response.get('response')
 
@@ -171,13 +164,6 @@ async def _apply_transition(
     amount_ok: bool,
     mp_payment_id: str,
 ) -> None:
-    """Máquina de estados da consulta.
-
-    - aprovado  -> confirma SOMENTE se pendente, valor correto e horário livre;
-    - recusado  -> só registra o pagamento (o cliente pode tentar de novo no mesmo
-                   checkout; a consulta pendente expira sozinha);
-    - estornado -> cancela a consulta que estava confirmada.
-    """
     if _map_status(mp_status) == PaymentStatus.approved:
         await _apply_approved(db, appointment, amount_ok, mp_payment_id)
     elif mp_status in MP_REVERSED and appointment.status == AppointmentStatus.confirmed:
@@ -191,7 +177,6 @@ async def _commit_payment(
     try:
         await db.commit()
     except IntegrityError:
-        # Entrega concorrente do mesmo webhook já gravou o pagamento.
         await db.rollback()
         existing = await get_payment(db, mp_payment_id)
         if existing:
@@ -215,7 +200,6 @@ async def process_update_payment(db: DBSession, data_id, event_type):
 
     mp_payment_id = str(data_id)
 
-    # Trava a consulta: dois webhooks do mesmo pagamento/consulta não correm juntos.
     appointment = await appointment_repo.get_appointment_for_update(db, appointment_id)
 
     if not appointment:
@@ -225,7 +209,6 @@ async def process_update_payment(db: DBSession, data_id, event_type):
     db_payment = await get_payment(db, mp_payment_id)
 
     if db_payment and db_payment.id_appointment != appointment.id:
-        # Um mesmo pagamento nunca muda de consulta.
         _flag_for_review(
             appointment.id, mp_payment_id, 'pagamento já vinculado a outra consulta'
         )

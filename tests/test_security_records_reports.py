@@ -10,13 +10,12 @@ from app import models
 from app.core.audit import audit_logger
 from app.schemas.custom_schema import AppointmentStatus, PaymentStatus
 
-NOW = datetime(2026, 5, 11, 0, 0, tzinfo=timezone.utc)  # relógio congelado nos testes
+NOW = datetime(2026, 5, 11, 0, 0, tzinfo=timezone.utc)
 NOTE = 'Texto clínico confidencial que NUNCA pode ir para o log.'
 
 
 @pytest.fixture
 def audit_log(caplog):
-    # o logger 'audit' não propaga para o root: anexa o handler do caplog nele
     audit_logger.addHandler(caplog.handler)
     caplog.set_level(logging.INFO, logger='audit')
     yield caplog
@@ -36,9 +35,9 @@ def _payload(user_client, schedule):
 @pytest.mark.parametrize(
     ('status', 'when'),
     [
-        (AppointmentStatus.pending, NOW - timedelta(days=1)),  # nunca foi paga
+        (AppointmentStatus.pending, NOW - timedelta(days=1)),
         (AppointmentStatus.canceled, NOW - timedelta(days=1)),
-        (AppointmentStatus.confirmed, NOW + timedelta(days=1)),  # ainda não ocorreu
+        (AppointmentStatus.confirmed, NOW + timedelta(days=1)),
     ],
 )
 async def test_record_requires_a_confirmed_session_that_already_started(  # noqa: PLR0913, PLR0917
@@ -75,8 +74,7 @@ async def test_record_for_a_realized_session_is_created_and_audited(
     assert 'action=medical_record.create ' in audit_log.text
     assert 'action=medical_record.list ' in audit_log.text
     assert f'appointment={schedule.id}' in audit_log.text
-    assert NOTE not in audit_log.text  # auditoria nunca grava conteúdo clínico
-
+    assert NOTE not in audit_log.text
 
 @pytest.mark.asyncio
 async def test_denied_access_attempts_are_audited(
@@ -131,7 +129,6 @@ async def test_financial_report_counts_only_approved_payments(
 async def test_financial_report_without_approved_payments_is_empty(
     db_session, token_adm, service, Payment
 ):
-    # a fixture `Payment` nasce 'pending': nada foi arrecadado ainda
     response = await token_adm.post(
         '/api/v1/financial-report',
         json={'start_date': '2026-05-10', 'end_date': '2026-05-20'},

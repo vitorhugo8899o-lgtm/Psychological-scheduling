@@ -19,8 +19,6 @@ if TYPE_CHECKING:
 
 email_validator = TypeAdapter(EmailStr)
 
-# Hash descartável: quando o e-mail não existe, ainda executamos uma verificação
-# Argon2 para que o tempo de resposta não revele se a conta existe.
 DUMMY_PASSWORD_HASH = auth_repo.hash_password('senha-descartavel-tempo-constante')
 
 CLOCK_SKEW_LEEWAY_SECONDS = 10
@@ -47,8 +45,6 @@ async def _ensure_login_not_blocked(r: rediscon, key: str) -> None:
 
 async def _register_login_failure(r: rediscon, key: str) -> None:
     try:
-        # SET NX EX cria o contador já com TTL (evita chave eterna se o processo cair
-        # entre INCR e EXPIRE); INCR preserva o TTL.
         await r.set(key, 0, ex=settings.LOGIN_FAILURE_WINDOW_SECONDS, nx=True)
         await r.incr(key)
     except RedisError:
@@ -78,9 +74,6 @@ async def login(
 
     user = await user_repo.get_user_by_email(db, user_data.username)
 
-    # A senha é SEMPRE verificada antes de qualquer outra checagem: assim "conta
-    # inexistente", "senha errada" e "conta desativada" não são distinguíveis por
-    # quem não conhece a senha (nem pelo tempo de resposta).
     password_ok = auth_repo.verify_password(
         user_data.password, user.password if user else DUMMY_PASSWORD_HASH
     )
@@ -149,7 +142,6 @@ def _revoked_key(jti: str) -> str:
 
 
 async def revoke_token(r: rediscon, payload: dict) -> None:
-    """Revoga o jti do token até o momento em que ele expiraria."""
     jti = payload.get('jti')
     exp = payload.get('exp')
 
@@ -173,6 +165,5 @@ async def is_token_revoked(r: rediscon, payload: dict) -> bool:
     try:
         return bool(await r.exists(_revoked_key(jti)))
     except RedisError:
-        # Falha aberta: o token continua limitado por exp e por token_version.
         logging.exception('[Auth] Redis indisponível ao checar revogação de token')
         return False

@@ -33,8 +33,6 @@ def create_preference(data: PaymentePreference, id_appointment: int):
         'notification_url': 'https://psychological-scheduling.onrender.com/api/v1/payments/webhook',
     }
 
-    # Função SÍNCRONA (SDK usa requests): chame com asyncio.to_thread a partir de
-    # código async para não bloquear o event loop.
     preference = sdk.preference().create(preference_data)
 
     init_point = (preference.get('response') or {}).get('init_point')

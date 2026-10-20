@@ -7,17 +7,6 @@ from app.core.config import settings
 
 
 def client_ip(request: Request) -> str:
-    """IP real do cliente, sem se deixar enganar por X-Forwarded-For forjado.
-
-    Atrás de proxy (Render, Cloudflare...), `request.client.host` é o IP do PROXY:
-    todos os usuários cairiam no mesmo balde de rate limit (um atacante esgotaria o
-    limite de login de TODO mundo). Por outro lado, confiar no X-Forwarded-For
-    inteiro deixa o cliente escolher o próprio IP. O correto é contar a partir da
-    DIREITA: cada proxy confiável acrescenta o IP que viu ao final do cabeçalho.
-
-    TRUSTED_PROXY_HOPS = quantos proxies confiáveis existem na frente da aplicação
-    (0 = nenhum: usa o IP do socket).
-    """
     hops = settings.TRUSTED_PROXY_HOPS
 
     if hops > 0:

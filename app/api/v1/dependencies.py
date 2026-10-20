@@ -18,8 +18,6 @@ BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
 CONTEXT_PATH = BASE_DIR / 'groq' / 'groq_context.md'
 
-# Cliente ASSÍNCRONO: o `Groq` síncrono bloqueava o event loop durante toda a geração
-# (a API inteira ficava parada enquanto um usuário esperava a resposta da IA).
 client = AsyncGroq(
     api_key=settings.API_KEY_GROQ,
     timeout=settings.GROQ_TIMEOUT_SECONDS,
@@ -58,8 +56,6 @@ async def get_current_user(request: Request, db: DBSession, r: rediscon) -> User
     if not user:
         raise HTTPException(status_code=409, detail='Usuário não encontrado!')
 
-    # Conta desativada, senha/e-mail trocados (token_version) ou logout (jti
-    # revogado) invalidam o token imediatamente, sem esperar o 'exp'.
     if (
         not user.is_active
         or payload.get('tv', 0) != user.token_version
@@ -85,8 +81,6 @@ async def completion(
             {'role': 'user', 'content': message},
         ],
         'temperature': GROQ_TEMPERATURE,
-        # Teto de saída: sem ele uma "injeção" que ignore o limite de 2 frases do
-        # prompt gera respostas enormes (custo e abuso do modelo como chat livre).
         'max_completion_tokens': settings.GROQ_MAX_COMPLETION_TOKENS,
         'stream': False,
     }
@@ -95,7 +89,6 @@ async def completion(
         params['reasoning_effort'] = 'low'
 
     if user_ref:
-        # Identificador opaco do usuário final (permite à Groq rastrear abuso).
         params['user'] = user_ref
 
     return await client.chat.completions.create(**params)

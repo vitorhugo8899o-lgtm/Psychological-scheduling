@@ -39,7 +39,6 @@ async def new_user(db: DBSession, user_data: UserCreate) -> User:
         )
     except Exception:
         await db.rollback()
-        # O detalhe técnico (SQL, parâmetros, hash) vai só para o log/Sentry.
         logging.exception('[Users] Falha inesperada ao criar usuário')
         raise HTTPException(
             status_code=500, detail='Erro inesperado ao criar o usuário.'
@@ -65,7 +64,6 @@ async def update_data(db: DBSession, user: CurrentUser, update: UserUpdate) -> U
     try:
         user.email = update.email
         user.password = auth_repo.hash_password(update.password)
-        # Invalida todos os tokens emitidos antes da troca de e-mail/senha.
         user.token_version += 1
 
         await db.commit()

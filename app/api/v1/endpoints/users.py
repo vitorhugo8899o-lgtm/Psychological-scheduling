@@ -54,8 +54,6 @@ async def login_user(
 async def user_logout(
     request: Request, user: CurrentUser, response: Response, r: rediscon
 ):
-    # Revoga o token no servidor: apagar o cookie no navegador não basta se o
-    # token já tiver sido copiado.
     await auth_service.revoke_token(r, getattr(request.state, 'token_payload', {}))
 
     response.delete_cookie(

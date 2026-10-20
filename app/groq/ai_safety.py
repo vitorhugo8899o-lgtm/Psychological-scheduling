@@ -1,17 +1,3 @@
-"""Camadas de segurança em volta do assistente de IA (Mira).
-
-O prompt de sistema é só UMA camada e depende da "boa vontade" do modelo. Aqui ficam
-as camadas determinísticas, que não dependem do modelo obedecer:
-
-1. normalização da entrada (remove caracteres invisíveis/de controle usados para
-   esconder instruções);
-2. atalho de segurança para mensagens que indicam risco de vida (a clínica atende
-   saúde mental: responder "Não posso ajudar com isso" a quem está em crise é um
-   risco real);
-3. saneamento da saída (HTML, links, e-mails e vazamento do prompt) e limite de
-   tamanho.
-"""
-
 import re
 import unicodedata
 from dataclasses import dataclass
@@ -27,13 +13,11 @@ CRISIS_REPLY = (
     'e podemos ajudar você a agendar um atendimento na clínica.'
 )
 
-# Caracteres de controle, "zero width" e de direção (bidi) usados para esconder texto.
 _INVISIBLE = re.compile(
     '[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f-\u009f'
     '\u200b-\u200f\u202a-\u202e\u2060-\u2064\u2066-\u2069\ufeff]'
 )
 
-# Frases (sem acento, minúsculas) que indicam risco à vida ou autolesão.
 _CRISIS_PATTERNS = [
     re.compile(pattern)
     for pattern in (
@@ -56,8 +40,6 @@ _TAG = re.compile(r'<[^>]{0,200}>')
 _URL = re.compile(r'(?i)\b(?:https?://|www\.)\S+')
 _EMAIL = re.compile(r'\S+@\S+\.\S+')
 
-# Trechos característicos do prompt de sistema: se aparecerem na resposta, o modelo
-# está vazando as instruções.
 _LEAK_MARKERS = (
     'contexto do agente',
     'escopo de atendimento',
@@ -123,8 +105,6 @@ def sanitize_model_output(text: str | None) -> SafeReply:
     if not cleaned:
         return SafeReply(FALLBACK_REPLY, cacheable=False)
 
-    # Só guarda em cache resposta que saiu do modelo SEM precisar de saneamento
-    # (e sem truncar): uma resposta suspeita nunca é replicada para outros usuários.
     untouched = cleaned == collapsed and len(cleaned) <= MAX_REPLY_CHARS
 
     return SafeReply(_truncate(cleaned), cacheable=untouched)

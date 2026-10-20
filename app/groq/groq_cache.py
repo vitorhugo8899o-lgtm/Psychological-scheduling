@@ -8,7 +8,6 @@ from app.groq.ai_safety import normalize_message
 
 CACHE_TTL_SECONDS = 1800
 
-# Mudou o prompt de sistema -> as respostas antigas deixam de valer (a chave muda).
 PROMPT_VERSION = hashlib.sha256(PROMPT_SYSTEM.encode('utf-8')).hexdigest()[:8]
 
 

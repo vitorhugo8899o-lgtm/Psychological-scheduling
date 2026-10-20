@@ -22,29 +22,18 @@ class Settings(BaseSettings):
     SENTRY_DSN: str
     MERCADO_PAGO_SECRET: str
 
-    # --- Opções de segurança (todas com padrão compatível com o comportamento atual)
-    # Origens permitidas (CORS + verificação de Origin), separadas por vírgula.
-    # Vazio = usa a lista padrão definida em app/main.py.
     CORS_ORIGINS: str = ''
-    # /docs, /redoc e /openapi.json ficam desligados em produção, a menos que
-    # ENABLE_DOCS=true.
     ENABLE_DOCS: bool = False
-    # Quantos proxies confiáveis existem na frente da aplicação (Render, Cloudflare...).
-    # 0 = usa o IP do socket. Veja app/redis/limiter.py.
     TRUSTED_PROXY_HOPS: int = 0
-    # Tolerância (segundos) do timestamp do webhook do Mercado Pago (anti-replay).
     WEBHOOK_TOLERANCE_SECONDS: int = 300
-    # Consultas pendentes (sem pagamento) deixam de bloquear a agenda após este prazo.
     PENDING_APPOINTMENT_TTL_MINUTES: int = 30
     MAX_PENDING_APPOINTMENTS_PER_USER: int = 2
-    # Antecedência mínima (horas) para cancelar/remarcar uma consulta.
     CANCEL_MIN_HOURS_BEFORE: int = 24
-    # Bloqueio de login por conta após N falhas dentro da janela.
+
     LOGIN_MAX_FAILURES: int = 10
     LOGIN_FAILURE_WINDOW_SECONDS: int = 900
-    # Tamanho máximo do corpo da requisição (o maior payload legítimo: prontuário).
     MAX_REQUEST_BODY_BYTES: int = 1_000_000
-    # Assistente de IA
+
     GROQ_MODEL: str = 'openai/gpt-oss-20b'
     GROQ_MAX_COMPLETION_TOKENS: int = 512
     GROQ_TIMEOUT_SECONDS: float = 20.0

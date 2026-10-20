@@ -335,7 +335,6 @@ async def test_try_get_psychs_desactive(token_client, user_psych_desactive):
 async def test_create_record(
     db_session, token_psych, user_client, service, schedule_psych, schedule
 ):
-    # Prontuário só para atendimento realizado: confirmado e já iniciado.
     schedule.status = 'confirmed'
     schedule.date_time = datetime(2026, 5, 10, 12, 30, tzinfo=timezone.utc)
     await db_session.commit()

@@ -35,7 +35,6 @@ async def send_message(
     if not message:
         raise HTTPException(status_code=422, detail='Digite uma mensagem válida.')
 
-    # Segurança do paciente vem ANTES de FAQ, cache e IA, e não depende do modelo.
     if is_crisis_message(message):
         return {'source': 'safety', 'response': CRISIS_REPLY}
 

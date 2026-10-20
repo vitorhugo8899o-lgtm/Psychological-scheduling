@@ -20,9 +20,6 @@ from app.schemas.custom_schema import AppointmentStatus
 
 
 def active_appointment_condition():
-    """Consultas que ocupam a agenda: confirmadas OU pendentes ainda dentro do
-    prazo de pagamento. Pendente expirada NÃO bloqueia mais o horário (antes uma
-    consulta nunca paga travava a agenda para sempre)."""
     cutoff = datetime.now(UTC) - timedelta(
         minutes=settings.PENDING_APPOINTMENT_TTL_MINUTES
     )
@@ -37,7 +34,6 @@ def active_appointment_condition():
 
 
 async def count_open_pending_appointments(db: DBSession, user_id: int) -> int:
-    """Consultas futuras do cliente aguardando pagamento (dentro do prazo)."""
     now = datetime.now(UTC)
     cutoff = now - timedelta(minutes=settings.PENDING_APPOINTMENT_TTL_MINUTES)
 
@@ -218,9 +214,6 @@ async def search_available_psychologists(
             )
         )
     ).where(
-        # Ocupado = existe consulta ATIVA que SOBREPÕE [search_date, search_date+dur).
-        # Antes só se comparava o início (`date_time < fim`), então qualquer consulta
-        # passada ou anterior excluía o psicólogo de todas as buscas futuras.
         not_(
             exists(
                 select(1)
@@ -250,10 +243,6 @@ async def search_available_psychologists(
 async def get_appointment_for_update(
     db: DBSession, appointment_id: int
 ) -> Appointment | None:
-    """Busca a consulta travando a linha (SELECT ... FOR UPDATE).
-
-    Serializa webhooks concorrentes do mesmo pagamento/consulta.
-    """
     stmt = (
         select(Appointment)
         .options(selectinload(Appointment.service))
@@ -269,7 +258,6 @@ async def get_appointment_for_update(
 async def find_confirmed_overlap(
     db: DBSession, appointment: Appointment
 ) -> Appointment | None:
-    """Outra consulta CONFIRMADA do mesmo psicólogo que colide com esta."""
     start = ensure_utc(appointment.date_time)
     end = start + timedelta(minutes=appointment.service.duration_minutes)
 

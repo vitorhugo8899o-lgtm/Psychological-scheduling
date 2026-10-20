@@ -189,8 +189,8 @@ async def test_approved_payment_never_revives_a_canceled_appointment(
     assert response.status_code == HTTPStatus.CREATED
     status, payments = await scenario.state(appointment.id)
     assert status == CANCELED
-    assert payments == {'123': PaymentStatus.approved}  # o dinheiro entrou
-    flag.assert_called_once()  # e alguém precisa ser avisado (reembolso)
+    assert payments == {'123': PaymentStatus.approved}
+    flag.assert_called_once()
 
 
 @pytest.mark.asyncio
@@ -218,7 +218,6 @@ async def test_rejected_attempt_keeps_pending_and_retry_can_confirm(
     _mp_returns(mp, appointment.id, status='rejected')
     await scenario.webhook(data_id='111')
     status, _ = await scenario.state(appointment.id)
-    # Antes: cancelava na hora e liberava o horário para outra pessoa.
     assert status == PENDING
 
     _mp_returns(mp, appointment.id, status='approved')
@@ -246,7 +245,7 @@ async def test_approved_payment_for_a_taken_slot_is_not_confirmed(
     scenario, mock_signature, mp, flag
 ):
     mine = await scenario.appointment(PENDING)
-    await scenario.appointment(  # outra pessoa já confirmou um horário que colide
+    await scenario.appointment(
         CONFIRMED, user=scenario.user2, when=APPOINTMENT_AT + timedelta(minutes=20)
     )
     _mp_returns(mp, mine.id)
@@ -358,12 +357,10 @@ async def test_real_signature_fresh_ok_replayed_and_tampered_rejected(token_clie
     replayed = await call('123', body, ten_minutes_ago)
     assert replayed.status_code == HTTPStatus.UNAUTHORIZED
 
-    # assinatura válida para o id 123 reaproveitada com outro id na query
     other = {'type': 'payment', 'data': {'id': '124'}}
     tampered = await call('124', other, now_ms)
     assert tampered.status_code == HTTPStatus.UNAUTHORIZED
 
-    # assinatura válida para 123 + corpo apontando para OUTRO pagamento
     swapped = await call('123', {'type': 'payment', 'data': {'id': '999'}}, now_ms)
     assert swapped.status_code == HTTPStatus.BAD_REQUEST
 
@@ -437,15 +434,12 @@ async def test_slow_mercado_pago_call_does_not_block_the_event_loop(
     ticks = 0
 
     def slow_create(_data):
-        # Mede quantas voltas o event loop deu ENQUANTO o SDK "esperava a rede".
         window['start'] = ticks
         time.sleep(0.3)
         window['end'] = ticks
         return {'status': 201, 'response': {'init_point': 'https://checkout-fake.com'}}
 
     async def ticker():
-        # sleep(0) só cede o controle ao loop (sem timers: o freezegun, ativo em
-        # todos os testes, congela o relógio do asyncio e travaria um sleep(0.01)).
         nonlocal ticks
         while True:
             await asyncio.sleep(0)
@@ -460,5 +454,4 @@ async def test_slow_mercado_pago_call_does_not_block_the_event_loop(
         task.cancel()
 
     assert response.status_code == HTTPStatus.CREATED
-    # SDK no event loop: 0 voltas durante a espera; em thread: milhares
     assert window['end'] - window['start'] >= 100  # noqa: PLR2004

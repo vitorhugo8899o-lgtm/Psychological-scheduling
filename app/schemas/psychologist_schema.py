@@ -106,7 +106,6 @@ class PsychologistAvaliabiliteBlock(BaseModel):
                     'O dia da semana deve estar entre 0 (Segunda) e 6 (Domingo)'  # noqa
                 )
 
-        # remove repetidos preservando a ordem (cada dia vira consultas ao banco)
         return list(dict.fromkeys(values))
 
     class Config:
@@ -205,7 +204,6 @@ class PsychResponse(BaseModel):
 class MedicalRecordCreate(BaseModel):
     id_user: int
     id_appoiment: int
-    # Sem teto, um único POST poderia enviar centenas de MB para o banco.
     description: str = Field(min_length=1, max_length=10_000)
 
 

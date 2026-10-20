@@ -30,9 +30,6 @@ async def create_payment(
     '/payments/webhook', status_code=201, response_model=PaymentResponse | dict
 )
 async def mercado_pago_webhook(request: Request, db: DBSession):
-    # O id ASSINADO pelo Mercado Pago é o do query param `data.id` (faz parte do
-    # manifest do HMAC). O id do corpo JSON não é assinado: nunca pode ser a fonte
-    # da verdade.
     signed_data_id = request.query_params.get('data.id')
 
     try:
@@ -41,7 +38,6 @@ async def mercado_pago_webhook(request: Request, db: DBSession):
             request.headers.get('x-request-id'),
             signed_data_id,
             settings.MERCADO_PAGO_SECRET,
-            # Janela anti-replay: assinatura antiga demais é rejeitada.
             tolerance_seconds=settings.WEBHOOK_TOLERANCE_SECONDS,
         )
     except InvalidWebhookSignatureError:

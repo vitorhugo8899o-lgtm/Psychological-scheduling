@@ -11,8 +11,8 @@ from app.api.v1.util.util import cancellation_window_closed
 from app.schemas.custom_schema import AppointmentStatus
 
 PASSWORD = 'Senha12@#'
-NOW = datetime(2026, 5, 11, 0, 0, tzinfo=timezone.utc)  # relógio congelado nos testes
-SLOT = '2026-05-11T12:30:00.000Z'  # mesmo horário da fixture `schedule`
+NOW = datetime(2026, 5, 11, 0, 0, tzinfo=timezone.utc)
+SLOT = '2026-05-11T12:30:00.000Z'
 
 
 async def _login_as(client, email):
@@ -46,10 +46,6 @@ async def _add_appointment(db, psych, service, user, when, status):  # noqa: PLR
     await db.commit()
     await db.refresh(appointment)
     return appointment
-
-
-# ----------------------------------------------------------------------- IDOR
-
 
 @pytest.mark.asyncio
 async def test_other_client_cannot_touch_someone_elses_appointment(
@@ -126,9 +122,6 @@ async def test_psychologist_cannot_write_record_for_a_patient_that_is_not_theirs
     )
 
 
-# ------------------------------------------- agenda travada por consultas não pagas
-
-
 @pytest.mark.asyncio
 async def test_fresh_unpaid_appointment_still_blocks_the_slot(
     client, availability, service, schedule, user_client2
@@ -144,7 +137,7 @@ async def test_fresh_unpaid_appointment_still_blocks_the_slot(
 async def test_expired_unpaid_appointment_no_longer_blocks_the_slot(
     client, db_session, availability, service, schedule
 ):
-    schedule.created_at = NOW - timedelta(minutes=31)  # TTL padrão: 30 min
+    schedule.created_at = NOW - timedelta(minutes=31)
     await db_session.commit()
 
     other = models.User(fullname='Outra Pessoa', email='outra@example.com')
@@ -181,7 +174,7 @@ async def test_confirmed_appointment_blocks_the_slot_even_when_old(
 async def test_client_cannot_hold_more_than_the_limit_of_unpaid_appointments(
     db_session, availability, service, user_client, token_client
 ):
-    for day in (12, 13):  # duas reservas pendentes (limite padrão = 2)
+    for day in (12, 13):
         await _add_appointment(
             db_session,
             availability,
@@ -216,14 +209,10 @@ async def test_paid_appointments_do_not_count_against_the_unpaid_limit(
     assert response.status_code == HTTPStatus.CREATED
 
 
-# ------------------------------------------------- janela de cancelamento/remarcação
-
-
 @pytest.mark.asyncio
 async def test_cannot_cancel_or_reschedule_inside_the_notice_window(
     availability, token_client, service, schedule
 ):
-    # A fixture marca a consulta ~12h depois do "agora" congelado: menos de 24h.
     cancel = await token_client.post(
         '/api/v1/appointments/cancel', json={'id_appointment': schedule.id}
     )
@@ -280,9 +269,6 @@ def test_notice_window_boundaries():
     assert cancellation_window_closed(NOW + timedelta(hours=5), min_hours=2) is False
 
 
-# ------------------------------------------------------------- simulação de horários
-
-
 @pytest.mark.asyncio
 async def test_old_appointments_do_not_hide_the_psychologist_from_new_searches(
     db_session, availability, service, user_client, token_client
@@ -310,7 +296,6 @@ async def test_old_appointments_do_not_hide_the_psychologist_from_new_searches(
 async def test_simulation_excludes_only_overlapping_appointments(
     availability, service, schedule, token_client
 ):
-    # `schedule` ocupa 12:30Z (+ duração do serviço)
     overlapping = await token_client.post(
         '/api/v1/appointments/simulation',
         json={'date_time': '2026-05-11T12:50:00Z', 'service_id': service.id},

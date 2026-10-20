@@ -1,5 +1,3 @@
-"""Regressão: limites e validações de entrada (auditoria de segurança)."""
-
 from datetime import time
 from http import HTTPStatus
 
@@ -66,8 +64,6 @@ def test_availability_request_has_a_block_limit():
 
 @pytest.mark.parametrize('day', [-1, 7, 99])
 def test_delete_availability_rejects_invalid_weekday(day):
-    # Antes o validador RETORNAVA o ValueError (nunca falhava) e o objeto de erro
-    # virava parâmetro SQL.
     with pytest.raises(ValidationError):
         DeleteAvailabilySchema(
             days_of_the_week=day, start_time='08:00', end_time='09:00'

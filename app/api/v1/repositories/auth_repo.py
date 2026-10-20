@@ -29,7 +29,6 @@ def create_token(data: dict) -> str:
     now = datetime.now(timezone.utc)
     expire = now + timedelta(minutes=settings.ACESSES_TOKEN_EXPIRE_MINUTES)
 
-    # iat/jti permitem auditar e revogar tokens individualmente (logout).
     to_encode.update({'exp': expire, 'iat': now, 'jti': uuid.uuid4().hex})
 
     encode_jwt = jwt.encode(to_encode, settings.SECRET_KEY, settings.ALGORITHM)

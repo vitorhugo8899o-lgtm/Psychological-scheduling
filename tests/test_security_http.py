@@ -30,11 +30,8 @@ def frozen_time():
     return
 
 
-FRONT = 'http://localhost:5173'  # permitido fora de produção
+FRONT = 'http://localhost:5173'
 LOGOUT = '/api/v1/logout'
-
-
-# --------------------------------------------------------------- CSRF / Origin
 
 
 @pytest.mark.asyncio
@@ -44,7 +41,6 @@ async def test_cross_site_state_change_with_session_cookie_is_blocked(token_clie
     assert blocked.status_code == HTTPStatus.FORBIDDEN
     assert blocked.json() == {'detail': 'Origem não autorizada.'}
 
-    # a sessão NÃO foi derrubada pelo site malicioso
     still_logged = await token_client.get('/api/v1/services')
     assert still_logged.status_code == HTTPStatus.OK
 
@@ -94,7 +90,7 @@ async def test_login_csrf_from_another_site_is_blocked(client, user_client):
 async def test_safe_methods_are_not_affected_by_the_origin_guard(token_client):
     response = await token_client.get('/api/v1/services', headers={'Origin': EVIL})
 
-    assert response.status_code == HTTPStatus.OK  # (o CORS impede o site de ler)
+    assert response.status_code == HTTPStatus.OK
 
 
 @pytest.mark.asyncio
@@ -126,9 +122,6 @@ def test_allowed_origins_can_be_configured_by_environment(monkeypatch):
     assert allowed_origins() == ['https://app.clinica.com', 'https://b.com']
 
 
-# ---------------------------------------------------------- cabeçalhos e /docs
-
-
 @pytest.mark.asyncio
 async def test_api_responses_carry_security_headers(token_client):
     response = await token_client.get('/api/v1/services')
@@ -138,7 +131,7 @@ async def test_api_responses_carry_security_headers(token_client):
     assert response.headers['x-frame-options'] == 'DENY'
     assert response.headers['referrer-policy'] == 'no-referrer'
     assert "frame-ancestors 'none'" in response.headers['content-security-policy']
-    assert 'strict-transport-security' not in response.headers  # só em produção
+    assert 'strict-transport-security' not in response.headers
 
 
 @pytest.mark.asyncio
@@ -167,9 +160,6 @@ def test_api_docs_are_disabled_in_production_unless_explicitly_enabled(monkeypat
     assert docs_kwargs() == {}
 
 
-# ------------------------------------------------------- rate limit atrás de proxy
-
-
 def _request(headers=None, client=('10.0.0.9', 5000)):
     raw = [(k.lower().encode(), v.encode()) for k, v in (headers or {}).items()]
     return Request({
@@ -194,10 +184,10 @@ def test_forged_forwarded_for_is_ignored_without_trusted_proxy(monkeypatch):
     ('hops', 'header', 'expected'),
     [
         (1, '203.0.113.7', '203.0.113.7'),
-        (1, '9.9.9.9, 203.0.113.7', '203.0.113.7'),  # prefixo forjado é ignorado
+        (1, '9.9.9.9, 203.0.113.7', '203.0.113.7'),
         (2, '198.51.100.1, 203.0.113.7', '198.51.100.1'),
         (2, 'fake, 198.51.100.1, 203.0.113.7', '198.51.100.1'),
-        (2, '203.0.113.7', '10.0.0.9'),  # menos entradas que proxies: IP do socket
+        (2, '203.0.113.7', '10.0.0.9'),
         (1, '', '10.0.0.9'),
     ],
 )
@@ -258,9 +248,7 @@ async def test_rate_limit_is_per_user_not_per_shared_ip():
     bia = {'Authorization': 'Bearer ' + auth_repo.create_token({'sub': 'bia@x.com'})}
 
     assert [await _hit(app, '1.1.1.1', ana) for _ in range(3)] == [200, 200, 429]
-    # a Ana trocando de IP continua limitada...
     assert await _hit(app, '2.2.2.2', ana) == HTTPStatus.TOO_MANY_REQUESTS
-    # ...e a Bia, no MESMO IP da Ana, não é afetada
     assert await _hit(app, '1.1.1.1', bia) == HTTPStatus.OK
 
 
@@ -268,10 +256,10 @@ async def test_rate_limit_is_per_user_not_per_shared_ip():
 async def test_rate_limit_behind_proxy_separates_real_clients(monkeypatch):
     monkeypatch.setattr(settings, 'TRUSTED_PROXY_HOPS', 1)
     app = _limited_app(client_ip)
-    proxy = '10.0.0.1'  # todos chegam pelo mesmo proxy
+    proxy = '10.0.0.1'
 
     one = {'X-Forwarded-For': '203.0.113.1'}
-    forged = {'X-Forwarded-For': '9.9.9.9, 203.0.113.1'}  # tenta se passar por outro
+    forged = {'X-Forwarded-For': '9.9.9.9, 203.0.113.1'}
     two = {'X-Forwarded-For': '203.0.113.2'}
 
     assert await _hit(app, proxy, one) == HTTPStatus.OK

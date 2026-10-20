@@ -60,7 +60,6 @@ async def test_deactivated_account_token_stops_working(client, user_client):
 
     assert (await client.delete('/api/v1/users')).status_code == HTTPStatus.NO_CONTENT
 
-    # O token copiado antes da desativação NÃO pode continuar valendo.
     client.cookies.clear()
     response = await client.get('/api/v1/services', headers=_bearer(token))
 
@@ -148,7 +147,6 @@ async def test_deactivated_account_is_indistinguishable_without_the_password(
 
     assert wrong.status_code == unknown.status_code == HTTPStatus.UNAUTHORIZED
     assert wrong.json() == unknown.json()
-    # Só quem sabe a senha descobre que a conta está desativada.
     assert right.status_code == HTTPStatus.FORBIDDEN
 
 
@@ -162,7 +160,6 @@ async def test_login_is_blocked_after_repeated_failures(
         failed = await _login(client, password='Errada12@#')
         assert failed.status_code == HTTPStatus.UNAUTHORIZED
 
-    # Mesmo com a senha correta, a conta fica temporariamente bloqueada.
     blocked = await _login(client)
     assert blocked.status_code == HTTPStatus.TOO_MANY_REQUESTS
 

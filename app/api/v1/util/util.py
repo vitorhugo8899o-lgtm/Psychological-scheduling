@@ -16,6 +16,8 @@ if TYPE_CHECKING:
 
 T = TypeVar('T', bound=BaseModel)
 
+LIKE_ESCAPE = '\\'
+
 
 def ensure_utc(dt: datetime) -> datetime:
     if dt.tzinfo is None:
@@ -39,11 +41,7 @@ def time_passed(date_compare: datetime) -> bool:
     return datetime.now(UTC) >= date_compare + timedelta(hours=24)
 
 
-LIKE_ESCAPE = '\\'
-
-
 def escape_like(value: str) -> str:
-    """Escapa `%` e `_` (curingas do LIKE) para busca literal por texto digitado."""
     return (
         value
         .replace(LIKE_ESCAPE, LIKE_ESCAPE * 2)
@@ -55,9 +53,6 @@ def escape_like(value: str) -> str:
 def cancellation_window_closed(
     date_time: datetime, min_hours: int | None = None
 ) -> bool:
-    """True quando faltam menos de `min_hours` horas para a consulta (ou ela já
-    passou). Antes a conta era feita 24h DEPOIS da consulta, permitindo cancelar ou
-    remarcar uma sessão que já aconteceu."""
     hours = settings.CANCEL_MIN_HOURS_BEFORE if min_hours is None else min_hours
 
     return ensure_utc(date_time) - datetime.now(UTC) < timedelta(hours=hours)
@@ -104,10 +99,6 @@ class CacheManager(Generic[T]):
     async def get_or_set(
         self, r: rediscon, identifier: Any, db_fallback: Callable[[], Awaitable[Any]]
     ) -> T | None:
-        """
-        Busca no Redis. Se não achar, usa a função db_fallback para buscar no banco,
-        salva no Redis e retorna o objeto tipado.
-        """
         cache_key = self._get_key(identifier)
 
         try:

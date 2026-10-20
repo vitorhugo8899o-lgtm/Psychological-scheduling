@@ -195,8 +195,6 @@ async def medical_record(db: DBSession, user: CurrentUser, record: MedicalRecord
             status_code=409, detail='Você ainda não teve uma consulta com esse usuário.'
         )
 
-    # Prontuário documenta um atendimento REALIZADO: consulta pendente (não paga),
-    # cancelada ou que ainda não começou não pode gerar registro clínico.
     if (
         consulted.status != AppointmentStatus.confirmed
         or ensure_utc(consulted.date_time) > datetime.now(UTC)
