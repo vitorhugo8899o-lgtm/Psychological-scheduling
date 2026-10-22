@@ -29,7 +29,7 @@ class Token(BaseModel):
 class UserLoginResponse(BaseModel):
     email: EmailStr
     fullname: str
-    role: str
+    role: UserRole
 
 
 class LoginSuccess(BaseModel):
