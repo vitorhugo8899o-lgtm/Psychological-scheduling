@@ -152,7 +152,7 @@ async def validate_cookie(request: Request, user: CurrentUser):
     user_info = {
         'email': f'{user.email}',
         'fullname': f'{user.fullname}',
-        'role': f'{user.role}',
+        'role': f'{user.role.value}',
     }
 
     return {'status': 'success', 'user': user_info}
