@@ -75,9 +75,9 @@ async def mercado_pago_webhook(request: Request, db: DBSession):
             (secret or '') != (secret or '').strip(),
         )
         try:
-    live_mode = (await request.json()).get('live_mode')
-except Exception:
-    live_mode = None
+            live_mode = (await request.json()).get('live_mode')
+        except Exception:
+            live_mode = None
         raise HTTPException(
             status_code=401,
             detail='Invalid webhook signature',
