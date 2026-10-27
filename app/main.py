@@ -103,23 +103,6 @@ def _origin_from_referer(referer: str | None) -> str | None:
 
     return f'{parts.scheme}://{parts.netloc}'
 
-
-@app.middleware('http')
-async def csrf_origin_guard(request: Request, call_next):
-    if request.method in UNSAFE_METHODS:
-        origin = request.headers.get('origin') or _origin_from_referer(
-            request.headers.get('referer')
-        )
-        same_origin = origin == f'{request.url.scheme}://{request.headers.get("host")}'
-
-        if origin is not None and origin not in allowed_origins() and not same_origin:
-            return JSONResponse(
-                status_code=403, content={'detail': 'Origem não autorizada.'}
-            )
-
-    return await call_next(request)
-
-
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins(),
