@@ -1,4 +1,7 @@
+import hashlib
+import hmac
 import logging
+import os
 from http import HTTPStatus
 
 from fastapi import APIRouter, HTTPException, Request
@@ -15,10 +18,6 @@ from app.api.v1.services.payment_service import (
 from app.core.config import settings
 from app.redis.limiter import limiter, user_or_ip_key
 from app.schemas.payment_schema import PaymentCreate, PaymentResponse
-
-import hashlib
-import hmac
-import os
 
 payment_route = APIRouter()
 
@@ -65,19 +64,25 @@ async def mercado_pago_webhook(request: Request, db: DBSession):
             settings.MERCADO_PAGO_SECRET,
             tolerance_seconds=settings.WEBHOOK_TOLERANCE_SECONDS,
         )
-    except InvalidWebhookSignatureError as exc:
+    except InvalidWebhookSignatureError:
         secret = settings.MERCADO_PAGO_SECRET
-        logging.warning(
-            'Webhook diag: atual_confere=%s alt_confere=%s tam_atual=%s tem_espaco=%s',
-            _signature_matches(request, secret, signed_data_id),
-            _signature_matches(request, os.getenv('MERCADO_PAGO_SECRET_ALT'), signed_data_id),
-            len(secret or ''),
-            (secret or '') != (secret or '').strip(),
-        )
+        alt = os.getenv('MERCADO_PAGO_SECRET_ALT')
+
         try:
             live_mode = (await request.json()).get('live_mode')
         except Exception:
             live_mode = None
+
+        logging.warning(
+            'Webhook diag: atual_confere=%s alt_definida=%s alt_confere=%s '
+            'live_mode=%s tam_atual=%s tem_espaco=%s',
+            _signature_matches(request, secret, signed_data_id),
+            bool(alt),
+            _signature_matches(request, alt, signed_data_id),
+            live_mode,
+            len(secret or ''),
+            (secret or '') != (secret or '').strip(),
+        )
         raise HTTPException(
             status_code=401,
             detail='Invalid webhook signature',
