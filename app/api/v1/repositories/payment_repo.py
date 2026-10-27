@@ -25,7 +25,7 @@ def create_preference(data: PaymentePreference, id_appointment: int):
         ],
         'back_urls': {
             'success': f'{settings.LINK_FRONTEND}payment-confirm',
-            'failure': f'{settings.LINK_FRONTEND}',
+            'failure': f'{settings.LINK_FRONTEND}payment-cancelled',
             'pending': f'{settings.LINK_FRONTEND}',
         },
         'auto_return': 'approved',
