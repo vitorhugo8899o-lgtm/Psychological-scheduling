@@ -16,7 +16,28 @@ from app.core.config import settings
 from app.redis.limiter import limiter, user_or_ip_key
 from app.schemas.payment_schema import PaymentCreate, PaymentResponse
 
+import hashlib
+import hmac
+import os
+
 payment_route = APIRouter()
+
+
+def _signature_matches(request: Request, secret: str | None, data_id: str) -> bool:
+    raw = request.headers.get('x-signature') or ''
+    parts = dict(p.strip().split('=', 1) for p in raw.split(',') if '=' in p)
+    ts, v1 = parts.get('ts'), parts.get('v1')
+
+    if not (ts and v1 and secret):
+        return False
+
+    manifest = (
+        f"id:{data_id.lower()};"
+        f"request-id:{request.headers.get('x-request-id')};ts:{ts};"
+    )
+    digest = hmac.new(secret.encode(), manifest.encode(), hashlib.sha256).hexdigest()
+
+    return hmac.compare_digest(digest, v1)
 
 
 @payment_route.post('/payments', status_code=HTTPStatus.CREATED)
@@ -45,12 +66,13 @@ async def mercado_pago_webhook(request: Request, db: DBSession):
             tolerance_seconds=settings.WEBHOOK_TOLERANCE_SECONDS,
         )
     except InvalidWebhookSignatureError as exc:
+        secret = settings.MERCADO_PAGO_SECRET
         logging.warning(
-            'Webhook 401: motivo=%s x_signature=%s x_request_id=%s data_id=%s',
-            exc,
-            bool(request.headers.get('x-signature')),
-            bool(request.headers.get('x-request-id')),
-            signed_data_id,
+            'Webhook diag: atual_confere=%s alt_confere=%s tam_atual=%s tem_espaco=%s',
+            _signature_matches(request, secret, signed_data_id),
+            _signature_matches(request, os.getenv('MERCADO_PAGO_SECRET_ALT'), signed_data_id),
+            len(secret or ''),
+            (secret or '') != (secret or '').strip(),
         )
         raise HTTPException(
             status_code=401,
