@@ -1,3 +1,4 @@
+import logging
 import sys
 from contextlib import asynccontextmanager
 from urllib.parse import urlsplit
@@ -12,7 +13,6 @@ from sqlalchemy import text
 from app.api.v1.router import api_router
 from app.core.config import settings
 from app.db.session import engine
-import logging
 
 sentry_sdk.init(dsn=settings.SENTRY_DSN, send_default_pii=False, traces_sample_rate=0.1)
 
@@ -75,6 +75,8 @@ def allowed_origins() -> list[str]:
 
 UNSAFE_METHODS = {'POST', 'PUT', 'PATCH', 'DELETE'}
 
+CSRF_EXEMPT_PATHS = {'/api/v1/payments/webhook'}
+
 
 @app.middleware('http')
 async def limit_body_size(request: Request, call_next):
@@ -103,6 +105,29 @@ def _origin_from_referer(referer: str | None) -> str | None:
 
     return f'{parts.scheme}://{parts.netloc}'
 
+
+@app.middleware('http')
+async def csrf_origin_guard(request: Request, call_next):
+    if request.method in UNSAFE_METHODS and request.url.path not in CSRF_EXEMPT_PATHS:
+        origin = request.headers.get('origin') or _origin_from_referer(
+            request.headers.get('referer')
+        )
+        same_origin = origin == f'{request.url.scheme}://{request.headers.get("host")}'
+
+        if origin is not None and origin not in allowed_origins() and not same_origin:
+            logging.warning(
+                'CSRF 403: path=%s origin=%s referer=%s',
+                request.url.path,
+                request.headers.get('origin'),
+                request.headers.get('referer'),
+            )
+            return JSONResponse(
+                status_code=403, content={'detail': 'Origem não autorizada.'}
+            )
+
+    return await call_next(request)
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=allowed_origins(),
@@ -114,33 +139,26 @@ app.add_middleware(
 )
 
 
-CSRF_EXEMPT_PATHS = {'/api/v1/payments/webhook'}
-
-
 @app.middleware('http')
-async def csrf_origin_guard(request: Request, call_next):
-    if (
-        request.method in UNSAFE_METHODS
-        and request.url.path not in CSRF_EXEMPT_PATHS
-    ):
-        origin = request.headers.get('origin') or _origin_from_referer(
-            request.headers.get('referer')
+async def security_headers(request: Request, call_next):
+    response = await call_next(request)
+
+    response.headers.setdefault('X-Content-Type-Options', 'nosniff')
+    response.headers.setdefault('Referrer-Policy', 'no-referrer')
+    response.headers.setdefault('X-Frame-Options', 'DENY')
+
+    if request.url.path.startswith('/api/'):
+        response.headers.setdefault('Cache-Control', 'no-store')
+        response.headers.setdefault(
+            'Content-Security-Policy', "default-src 'none'; frame-ancestors 'none'"
         )
-        same_origin = origin == f'{request.url.scheme}://{request.headers.get("host")}'
 
-        if origin is not None and origin not in allowed_origins() and not same_origin:
-            logging.warning(
-                'CSRF 403: path=%s origin=%s referer=%s ua=%s',
-                request.url.path,
-                request.headers.get('origin'),
-                request.headers.get('referer'),
-                request.headers.get('user-agent'),
-            )
-            return JSONResponse(
-                status_code=403, content={'detail': 'Origem não autorizada.'}
-            )
+    if settings.is_production:
+        response.headers.setdefault(
+            'Strict-Transport-Security', 'max-age=31536000; includeSubDomains'
+        )
 
-    return await call_next(request)
+    return response
 
 
 @app.exception_handler(RateLimitExceeded)
