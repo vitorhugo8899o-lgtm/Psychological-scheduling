@@ -1,3 +1,4 @@
+import logging
 from http import HTTPStatus
 
 from fastapi import APIRouter, HTTPException, Request
@@ -32,6 +33,9 @@ async def create_payment(
 async def mercado_pago_webhook(request: Request, db: DBSession):
     signed_data_id = request.query_params.get('data.id')
 
+    if request.query_params.get('topic') and not signed_data_id:
+        return {'success': True, 'detail': 'IPN ignorado'}
+
     try:
         WebhookSignatureValidator.validate(
             request.headers.get('x-signature'),
@@ -40,7 +44,14 @@ async def mercado_pago_webhook(request: Request, db: DBSession):
             settings.MERCADO_PAGO_SECRET,
             tolerance_seconds=settings.WEBHOOK_TOLERANCE_SECONDS,
         )
-    except InvalidWebhookSignatureError:
+    except InvalidWebhookSignatureError as exc:
+        logging.warning(
+            'Webhook 401: motivo=%s x_signature=%s x_request_id=%s data_id=%s',
+            exc,
+            bool(request.headers.get('x-signature')),
+            bool(request.headers.get('x-request-id')),
+            signed_data_id,
+        )
         raise HTTPException(
             status_code=401,
             detail='Invalid webhook signature',
